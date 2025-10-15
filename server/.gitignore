@@ -1,0 +1,59 @@
+# ====================================
+# Node.js + TypeScript Git Ignore File
+# ====================================
+
+# --- Node modules ---
+node_modules/
+
+# --- Build output ---
+dist/
+build/
+out/
+coverage/
+
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Environment variables ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- OS-specific files ---
+.DS_Store
+Thumbs.db
+
+# --- IDE / Editor configs ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# --- Temporary files ---
+.tmp/
+temp/
+*.tmp
+
+# --- Test / Coverage tools ---
+coverage/
+.nyc_output/
+
+# --- Lockfiles (optional, if you use only one manager) ---
+# Uncomment only if you want to ignore other package managers’ lock files
+# yarn.lock
+# pnpm-lock.yaml
+
+# --- Optional: ignore local scripts or debug ---
+scripts/local/
