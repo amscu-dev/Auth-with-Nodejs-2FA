@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "../../middlewares/catchAsyncHandler";
+import { asyncHandler } from "@/middlewares/catchAsyncHandler";
 import { AuthService } from "./auth.service";
-import { HTTPSTATUS } from "../../config/http.config";
-import { registerSchema } from "../../common/validators/auth.validator";
+import { HTTPSTATUS } from "@/config/http.config";
+import { registerSchema } from "@/common/validators/auth.validator";
 
 export class AuthController {
   private authService: AuthService;

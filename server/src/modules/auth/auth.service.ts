@@ -1,4 +1,4 @@
-import { RegisterData } from "../../common/interface/auth.interface";
+import { RegisterData } from "@/common/interface/auth.interface";
 
 export class AuthService {
   public async register(registerData: RegisterData) {

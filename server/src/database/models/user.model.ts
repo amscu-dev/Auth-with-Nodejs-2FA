@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { compareValue, hashValue } from "../../common/utils/bcrypt";
+import { compareValue, hashValue } from "@/common/utils/bcrypt";
 
 // ! User Types
 interface UserPreference {

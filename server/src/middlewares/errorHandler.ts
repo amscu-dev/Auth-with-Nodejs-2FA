@@ -1,6 +1,6 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
-import { HTTPSTATUS } from "../config/http.config";
-import { AppError } from "../common/utils/AppError";
+import { HTTPSTATUS } from "@/config/http.config";
+import { AppError } from "@/common/utils/AppError";
 
 export const errorHandler: ErrorRequestHandler = (
   error,

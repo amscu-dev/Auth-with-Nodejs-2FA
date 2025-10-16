@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { VerficationEnum } from "../../common/enums/verification-code.enum";
+import { VerficationEnum } from "@/common/enums/verification-code.enum";
+import { generateUniqueCode } from "@/common/utils/uuid";
 
 export interface VerificationCodeDocument extends Document {
   userId: Schema.Types.ObjectId;
