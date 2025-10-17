@@ -9,7 +9,6 @@ export const registerSchema = z
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: passwordSchema,
-    userAgent: z.string().optional(),
   })
   .superRefine((val, ctx) => {
     if (val.password !== val.confirmPassword) {
@@ -24,4 +23,5 @@ export const registerSchema = z
 export const loginSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
+  userAgent: z.string().optional(),
 });

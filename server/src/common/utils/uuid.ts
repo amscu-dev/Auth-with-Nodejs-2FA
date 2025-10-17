@@ -1,5 +1,5 @@
-import { v4 as uuid4 } from "uuid";
+import { randomUUID } from "crypto";
 
 export function generateUniqueCode() {
-  return uuid4().replace(/-/g, "").substring(0, 25);
+  return randomUUID().replace(/-/g, "").substring(0, 25);
 }

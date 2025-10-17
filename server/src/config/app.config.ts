@@ -6,9 +6,11 @@ const appConfig = () => ({
   PORT: getEnv("PORT", "5000"),
   BASE_PATH: getEnv("BASE_PATH", "/api/v1"),
   JWT: {
-    SECRET: getEnv("JWT_SECRET"),
+    PRIVATE_KEY: getEnv("JWT_PRIVATE_KEY"),
+    PUBLIC_KEY: getEnv("JWT_PUBLIC_KEY"),
     EXPIRES_IN: getEnv("JWT_EXPIRES_IN", "15m"),
-    REFRESH_SECRET: getEnv("JWT_REFRESH_SECRET"),
+    REFRESH_PRIVATE_KEY: getEnv("JWT_REFRESH_PRIVATE_KEY"),
+    REFRESH_PUBLIC_KEY: getEnv("JWT_REFRESH_PUBLIC_KEY"),
     REFRESH_EXPIRES_IN: getEnv("JWT_REFRESH_EXPIRES_IN", "30d"),
   },
 });
