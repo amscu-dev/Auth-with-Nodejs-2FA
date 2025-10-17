@@ -6,7 +6,12 @@ import {
   loginSchema,
   registerSchema,
 } from "@/common/validators/auth.validator";
-import { setAuthenticationCookies } from "@/common/utils/cookie";
+import {
+  getAccessTokenCookieOptions,
+  getRefreshTokenCookieOptions,
+  setAuthenticationCookies,
+} from "@/common/utils/cookie";
+import { UnauthorizedException } from "@/common/utils/catch-errors";
 
 export class AuthController {
   private authService: AuthService;
@@ -52,6 +57,35 @@ export class AuthController {
           message: "User successfully login.",
           mfaRequired,
           user,
+        });
+    }
+  );
+
+  public refresh = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const refreshToken = req.cookies.refreshToken as string | undefined;
+
+      if (!refreshToken) {
+        throw new UnauthorizedException(
+          "User is not authorized to perform this action.Missing refresh token."
+        );
+      }
+
+      const { newRefreshToken, accessToken } =
+        await this.authService.refreshToken(refreshToken);
+
+      if (newRefreshToken) {
+        res.cookie(
+          "refreshToken",
+          refreshToken,
+          getRefreshTokenCookieOptions()
+        );
+      }
+      return res
+        .status(HTTPSTATUS.OK)
+        .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
+        .json({
+          message: "Refresh Access successfully processed.",
         });
     }
   );

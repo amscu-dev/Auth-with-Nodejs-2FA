@@ -26,6 +26,7 @@ const sessionSchema = new Schema<SessionDocument>({
   expiredAt: {
     type: Date,
     required: true,
+    // ! SAME TIME AS EXPIRATION DATE FOR REFRESH TOKEN
     default: thirtyDaysFromNow,
   },
 });

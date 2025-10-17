@@ -26,9 +26,10 @@ export const errorHandler: ErrorRequestHandler = (
 ): any => {
   console.error(`Error occured on: PATH : ${req.path}`, error);
 
-  // * De cercetat de ce asa?
+  // ! IF ERROR IS ON REFRESH API, WE DELETE BOTH EXISTENT ACCESS AND REFRESH TOKENS
   if (req.path === REFRESH_PATH) {
     clearAuthenticationCookies(res);
+    console.log("STERG COOKIER URILE DACA PICA REFRESH :", res);
   }
 
   // ! Syntax Errors (JS or JSON errors)

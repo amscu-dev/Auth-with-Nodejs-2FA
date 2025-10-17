@@ -2,14 +2,27 @@ import ms from "ms";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import { VerficationEnum } from "@/common/enums/verification-code.enum";
 import { LoginData, RegisterData } from "@/common/interface/auth.interface";
-import { BadRequestException } from "@/common/utils/catch-errors";
-import { fortyFiveMinutesFromNow } from "@/common/utils/date-time";
+import {
+  BadRequestException,
+  UnauthorizedException,
+} from "@/common/utils/catch-errors";
+import {
+  calculateExpirationDate,
+  fortyFiveMinutesFromNow,
+  ONE_DAY_IN_MS,
+} from "@/common/utils/date-time";
 import { config } from "@/config/app.config";
 import SessionModel from "@/database/models/session.model";
 import UserModel from "@/database/models/user.model";
 import VerificationCodeModel from "@/database/models/verification.model";
 import jwt from "jsonwebtoken";
 import decodeBase64 from "@/common/utils/decodeBase64";
+import {
+  accessTokenSignOptions,
+  refreshTokenSignOptions,
+  signJwtToken,
+  verifyJwt,
+} from "@/common/utils/jwt";
 export class AuthService {
   public async register(registerData: RegisterData) {
     const { name, email, password } = registerData;
@@ -51,7 +64,7 @@ export class AuthService {
     });
     if (!user) {
       throw new BadRequestException(
-        "Invalid email or password provided",
+        "Invalid email or password provided.",
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
@@ -59,7 +72,7 @@ export class AuthService {
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       throw new BadRequestException(
-        "Invalid email or password provided",
+        "Invalid email or password provided.",
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
@@ -72,30 +85,69 @@ export class AuthService {
     });
 
     // ! CREATE TOKENS
-    const accessToken = jwt.sign(
+    const accessToken = signJwtToken(
       {
         userId: user._id,
         sessionId: session._id,
       },
-      decodeBase64(config.JWT.PRIVATE_KEY),
-      {
-        algorithm: "RS256",
-        expiresIn: config.JWT.EXPIRES_IN as ms.StringValue,
-        audience: ["user"],
-      }
+      { ...accessTokenSignOptions }
     );
-    const refreshToken = jwt.sign(
+
+    const refreshToken = signJwtToken(
       {
         sessionId: session._id,
       },
-      decodeBase64(config.JWT.REFRESH_PRIVATE_KEY),
-      {
-        algorithm: "RS256",
-        expiresIn: config.JWT.REFRESH_EXPIRES_IN as ms.StringValue,
-        audience: ["user"],
-      }
+      { ...refreshTokenSignOptions }
     );
 
     return { user, accessToken, refreshToken, mfaRequired: false };
+  }
+
+  public async refreshToken(refreshToken: string) {
+    // ! VALIDATE INTEGRITY OF TOKEN
+    const payload = verifyJwt(refreshToken, "REFRESH_TOKEN");
+    if (!payload) {
+      throw new UnauthorizedException("Invalid refresh token.");
+    }
+
+    // ! VERIFY INTEGRITY OF SESSION
+    const session = await SessionModel.findById(payload.sessionId);
+    const now = Date.now();
+
+    if (!session) {
+      throw new UnauthorizedException("Session does not exists.");
+    }
+    if (session.expiredAt.getTime() <= now) {
+      // ** TODO DELETE EX SESSION
+      throw new UnauthorizedException("Session expired.");
+    }
+
+    const sessionRequireRefresh =
+      session.expiredAt.getTime() - now <= ONE_DAY_IN_MS;
+
+    if (sessionRequireRefresh) {
+      session.expiredAt = calculateExpirationDate(
+        config.JWT.REFRESH_EXPIRES_IN
+      );
+      await session.save();
+    }
+
+    const newRefreshToken = sessionRequireRefresh
+      ? signJwtToken(
+          {
+            sessionId: session._id,
+          },
+          { ...refreshTokenSignOptions }
+        )
+      : undefined;
+
+    const accessToken = signJwtToken(
+      {
+        userId: session.userId,
+        sessionId: session._id,
+      },
+      { ...accessTokenSignOptions }
+    );
+    return { newRefreshToken, accessToken };
   }
 }
