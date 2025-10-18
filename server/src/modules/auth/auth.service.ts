@@ -39,6 +39,7 @@ import { compareValue, hashValue } from "@/common/utils/bcrypt";
 import PasswordResetLogModel, {
   Location,
 } from "@/database/models/resetPasswordLog.model";
+import logPasswordReset from "@/common/utils/logPasswordReset";
 export class AuthService {
   public async register(registerData: RegisterData) {
     const { name, email, password } = registerData;
@@ -328,17 +329,15 @@ export class AuthService {
 
     // ! Identify IP Adress
     let location: Location = {
-      city: undefined,
-      region: undefined,
-      country: undefined,
+      city: "unknown",
+      region: "unknown",
+      country: "unknown",
     };
     if (ip) {
       const geo = geoip.lookup(ip);
-      if (geo) {
-        location.city = geo.city;
-        location.region = geo.region;
-        location.country = geo.country;
-      }
+      location.city = geo?.city || "unknown";
+      location.region = geo?.region || "unknown";
+      location.country = geo?.country || "unknown";
     }
 
     if (!validCode) {
@@ -348,15 +347,15 @@ export class AuthService {
       );
     }
     if (validCode.used) {
-      await PasswordResetLogModel.create({
+      await logPasswordReset({
         userId: validCode.userId,
-        ip: ip,
-        userAgent: userAgent,
-        method: "email",
+        ip,
+        userAgent,
         status: "failed",
         reason: "This verification code has already been used.",
         location,
       });
+
       throw new BadRequestException(
         "This verification code has already been used.",
         ErrorCode.VERIFICATION_ERROR
@@ -364,15 +363,15 @@ export class AuthService {
     }
     // ! Code its expired throw error and delete code
     if (validCode.expiresAt < new Date()) {
-      await PasswordResetLogModel.create({
+      await logPasswordReset({
         userId: validCode.userId,
-        ip: ip,
-        userAgent: userAgent,
-        method: "email",
+        ip,
+        userAgent,
         status: "failed",
         reason: "Expired verification code.",
         location,
       });
+      await PasswordResetLogModel.create({});
       throw new BadRequestException(
         "Expired verification code.Please request a new one.",
         ErrorCode.VERIFICATION_ERROR
@@ -395,15 +394,15 @@ export class AuthService {
     for (const oldHash of [currentUser?.password, ...currentUser.oldPassword]) {
       const isMatch = await compareValue(password, oldHash);
       if (isMatch) {
-        await PasswordResetLogModel.create({
+        await logPasswordReset({
           userId: validCode.userId,
-          ip: ip,
-          userAgent: userAgent,
-          method: "email",
+          ip,
+          userAgent,
           status: "failed",
           reason: "User attempted to reuse an old password.",
           location,
         });
+
         throw new BadRequestException(
           "You cannot reuse an old password.",
           ErrorCode.VALIDATION_ERROR
@@ -433,20 +432,15 @@ export class AuthService {
         );
 
         // Create a new password log
-        await PasswordResetLogModel.create(
-          [
-            {
-              userId: validCode.userId,
-              ip: ip,
-              userAgent: userAgent,
-              method: "email",
-              status: "success",
-              reason: "User sucessfully reset his password.",
-              location,
-            },
-          ],
-          { session: mongoSession }
-        );
+        await logPasswordReset({
+          userId: validCode.userId,
+          ip,
+          userAgent,
+          status: "success",
+          reason: "User sucessfully reset his password.",
+          location,
+          session: mongoSession,
+        });
       });
       //  ! sent email for confirmed password change
       await apiRequestWithRetry(() => {
