@@ -1,3 +1,4 @@
+import geoip from "geoip-lite";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { LoginData, RegisterData } from "@/common/interface/auth.interface";
@@ -27,12 +28,17 @@ import {
 } from "@/common/utils/jwt";
 import { sendEmail } from "@/mailers/mailer";
 import {
+  passwordResetSuccessTemplate,
   passwordResetTemplate,
   verifyEmailTemplate,
 } from "@/mailers/templates/template";
 import mongoose from "mongoose";
 import apiRequestWithRetry from "@/common/utils/retry-api";
 import { HTTPSTATUS } from "@/config/http.config";
+import { compareValue, hashValue } from "@/common/utils/bcrypt";
+import PasswordResetLogModel, {
+  Location,
+} from "@/database/models/resetPasswordLog.model";
 export class AuthService {
   public async register(registerData: RegisterData) {
     const { name, email, password } = registerData;
@@ -233,7 +239,7 @@ export class AuthService {
           {
             isEmailVerified: true,
           },
-          { new: true }
+          { new: true, session: mongoSession }
         );
 
         if (!updatedUser) {
@@ -242,7 +248,7 @@ export class AuthService {
             ErrorCode.VALIDATION_ERROR
           );
         }
-        await validCode.deleteOne();
+        await validCode.deleteOne({ session: mongoSession });
 
         return updatedUser;
       });
@@ -250,7 +256,7 @@ export class AuthService {
     } catch (error) {
       throw error;
     } finally {
-      mongoSession.endSession();
+      await mongoSession.endSession();
     }
   }
   public async forgotPassword(email: string) {
@@ -308,5 +314,160 @@ export class AuthService {
     return {
       url: resetLink,
     };
+  }
+  public async resetPassword(
+    verificationCode: string,
+    password: string,
+    ip: string | undefined,
+    userAgent: string | undefined
+  ) {
+    const validCode = await VerificationCodeModel.findOne({
+      code: verificationCode,
+      type: VerificationEnum.PASSWORD_RESET,
+    });
+
+    // ! Identify IP Adress
+    let location: Location = {
+      city: undefined,
+      region: undefined,
+      country: undefined,
+    };
+    if (ip) {
+      const geo = geoip.lookup(ip);
+      if (geo) {
+        location.city = geo.city;
+        location.region = geo.region;
+        location.country = geo.country;
+      }
+    }
+
+    if (!validCode) {
+      throw new BadRequestException(
+        "Invalid verification code.",
+        ErrorCode.VERIFICATION_ERROR
+      );
+    }
+    if (validCode.used) {
+      await PasswordResetLogModel.create({
+        userId: validCode.userId,
+        ip: ip,
+        userAgent: userAgent,
+        method: "email",
+        status: "failed",
+        reason: "This verification code has already been used.",
+        location,
+      });
+      throw new BadRequestException(
+        "This verification code has already been used.",
+        ErrorCode.VERIFICATION_ERROR
+      );
+    }
+    // ! Code its expired throw error and delete code
+    if (validCode.expiresAt < new Date()) {
+      await PasswordResetLogModel.create({
+        userId: validCode.userId,
+        ip: ip,
+        userAgent: userAgent,
+        method: "email",
+        status: "failed",
+        reason: "Expired verification code.",
+        location,
+      });
+      throw new BadRequestException(
+        "Expired verification code.Please request a new one.",
+        ErrorCode.VERIFICATION_ERROR
+      );
+    }
+
+    // ! Hash New Password, Compare with old password ,Update the new password
+
+    const hashedPassword = await hashValue(password);
+
+    const currentUser = await UserModel.findById(validCode.userId);
+
+    if (!currentUser) {
+      throw new NotFoundException(
+        "User not found",
+        ErrorCode.RESOURCE_NOT_FOUND
+      );
+    }
+
+    for (const oldHash of [currentUser?.password, ...currentUser.oldPassword]) {
+      const isMatch = await compareValue(password, oldHash);
+      if (isMatch) {
+        await PasswordResetLogModel.create({
+          userId: validCode.userId,
+          ip: ip,
+          userAgent: userAgent,
+          method: "email",
+          status: "failed",
+          reason: "User attempted to reuse an old password.",
+          location,
+        });
+        throw new BadRequestException(
+          "You cannot reuse an old password.",
+          ErrorCode.VALIDATION_ERROR
+        );
+      }
+    }
+
+    // ! Initialize a Mongo Session for mark code as used, register new password created in db, and update the user
+    const mongoSession = await mongoose.startSession();
+    try {
+      await mongoSession.withTransaction(async () => {
+        // Save Modified User
+        currentUser.oldPassword.unshift(currentUser.password);
+        currentUser.password = hashedPassword;
+        await currentUser.save({ session: mongoSession });
+
+        // Mark curent code as used
+        validCode.used = true;
+        await validCode.save({ session: mongoSession });
+
+        // Delete all sessions
+        await SessionModel.deleteMany(
+          {
+            userId: currentUser._id,
+          },
+          { session: mongoSession }
+        );
+
+        // Create a new password log
+        await PasswordResetLogModel.create(
+          [
+            {
+              userId: validCode.userId,
+              ip: ip,
+              userAgent: userAgent,
+              method: "email",
+              status: "success",
+              reason: "User sucessfully reset his password.",
+              location,
+            },
+          ],
+          { session: mongoSession }
+        );
+      });
+      //  ! sent email for confirmed password change
+      await apiRequestWithRetry(() => {
+        return sendEmail({
+          to: currentUser.email,
+          ...passwordResetSuccessTemplate(
+            ip,
+            userAgent,
+            location.city,
+            location.region,
+            location.country
+          ),
+        });
+      });
+    } catch (error) {
+      throw new InternalServerException(
+        "Failed to save user",
+        ErrorCode.INTERNAL_SERVER_ERROR
+      );
+    } finally {
+      await mongoSession.endSession();
+    }
   }
 }

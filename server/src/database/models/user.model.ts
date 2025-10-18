@@ -12,6 +12,7 @@ export interface UserDocument extends Document {
   name: string;
   email: string;
   password: string;
+  oldPassword: string[];
   isEmailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -31,6 +32,7 @@ const userSchema = new Schema<UserDocument>(
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
+    oldPassword: { type: [String], required: false, default: [] },
     isEmailVerified: { type: Boolean, default: false },
     userPreferences: { type: userPreferencesSchema, default: {} },
   },

@@ -10,6 +10,7 @@ import {
   verificationEmailSchema,
 } from "@/common/validators/auth.validator";
 import {
+  clearAuthenticationCookies,
   getAccessTokenCookieOptions,
   getRefreshTokenCookieOptions,
   setAuthenticationCookies,
@@ -128,6 +129,28 @@ export class AuthController {
 
       return res.status(HTTPSTATUS.OK).json({
         message: "Password reset email sent",
+      });
+    }
+  );
+
+  public resetPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { verificationCode, password } = resetPasswordSchema.parse(
+        req.body
+      );
+      const ip = req.ip;
+      const userAgent = req.headers["user-agent"];
+
+      await this.authService.resetPassword(
+        verificationCode,
+        password,
+        ip,
+        userAgent
+      );
+
+      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
+        message:
+          "Password reset completed. If you didn’t request this change, please contact support immediately",
       });
     }
   );

@@ -6,6 +6,7 @@ export interface VerificationCodeDocument extends Document {
   userId: Schema.Types.ObjectId;
   code: string;
   type: VerificationEnum;
+  used: boolean;
   expiresAt: Date;
   createdAt: Date;
 }
@@ -16,6 +17,11 @@ const verificationCodeSchema = new Schema<VerificationCodeDocument>({
     ref: "User",
     index: true,
     required: true,
+  },
+  used: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
   code: {
     type: String,
