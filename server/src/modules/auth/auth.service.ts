@@ -3,12 +3,17 @@ import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { LoginData, RegisterData } from "@/common/interface/auth.interface";
 import {
   BadRequestException,
+  HttpException,
+  InternalServerException,
+  NotFoundException,
   UnauthorizedException,
 } from "@/common/utils/catch-errors";
 import {
+  anHourFromNow,
   calculateExpirationDate,
   fortyFiveMinutesFromNow,
   ONE_DAY_IN_MS,
+  threeMinutesAgo,
 } from "@/common/utils/date-time";
 import { config } from "@/config/app.config";
 import SessionModel from "@/database/models/session.model";
@@ -21,9 +26,13 @@ import {
   verifyJwt,
 } from "@/common/utils/jwt";
 import { sendEmail } from "@/mailers/mailer";
-import { verifyEmailTemplate } from "@/mailers/templates/template";
+import {
+  passwordResetTemplate,
+  verifyEmailTemplate,
+} from "@/mailers/templates/template";
 import mongoose from "mongoose";
 import apiRequestWithRetry from "@/common/utils/retry-api";
+import { HTTPSTATUS } from "@/config/http.config";
 export class AuthService {
   public async register(registerData: RegisterData) {
     const { name, email, password } = registerData;
@@ -161,7 +170,7 @@ export class AuthService {
       throw new UnauthorizedException("Session does not exists.");
     }
     if (session.expiredAt.getTime() <= now) {
-      // ** TODO DELETE EX SESSION
+      // ** TODO DELETE EX SESSION - Maybe we want to keep history of sessions?
       throw new UnauthorizedException("Session expired.");
     }
 
@@ -194,17 +203,28 @@ export class AuthService {
     return { newRefreshToken, accessToken };
   }
   public async verifyEmail(code: string) {
-    // * TODO Maybe we divide between invalid and expired
+    // ! Divide between invalid and expired and delete expired ones.
     const validCode = await VerificationCodeModel.findOne({
       code: code,
       type: VerificationEnum.EMAIL_VERIFICATION,
       expiresAt: { $gt: new Date() },
     });
     if (!validCode) {
-      throw new BadRequestException("Invalid or expired verification code");
+      throw new BadRequestException(
+        "Invalid verification code.",
+        ErrorCode.VERIFICATION_ERROR
+      );
+    }
+    // ! Code its expired throw error and delete code
+    if (validCode.expiresAt < new Date()) {
+      await validCode.deleteOne();
+      throw new BadRequestException(
+        "Expired verification code.Please request a new one.",
+        ErrorCode.VERIFICATION_ERROR
+      );
     }
 
-    // ! Update User + Delete Verif Code in the same Mongo Session
+    // ! If code good: Update User + Delete Verif Code in the same Mongo Session
     const mongoSession = await mongoose.startSession();
     try {
       const updatedUser = await mongoSession.withTransaction(async () => {
@@ -232,5 +252,61 @@ export class AuthService {
     } finally {
       mongoSession.endSession();
     }
+  }
+  public async forgotPassword(email: string) {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundException(
+        "User not found",
+        ErrorCode.RESOURCE_NOT_FOUND
+      );
+    }
+
+    // ! check mail rate limit is 2 per 3 minutes interval
+
+    const timeAgo = threeMinutesAgo();
+    const maxAttempts = 2;
+
+    const count = await VerificationCodeModel.countDocuments({
+      userId: user._id,
+      type: VerificationEnum.PASSWORD_RESET,
+      createdAt: { $gt: timeAgo },
+    });
+
+    if (count >= maxAttempts) {
+      throw new HttpException(
+        "Too many request,try again later",
+        HTTPSTATUS.TOO_MANY_REQUESTS,
+        ErrorCode.AUTH_TOO_MANY_ATTEMPTS
+      );
+    }
+    // ! Create a new Code
+    const expiresAt = anHourFromNow();
+    const validCode = await VerificationCodeModel.create({
+      userId: user._id,
+      type: VerificationEnum.PASSWORD_RESET,
+      expiresAt,
+    });
+
+    // ! Create reset Link
+    const resetLink = `${config.APP_ORIGIN}/reset-password?code=${
+      validCode.code
+    }&exp=${expiresAt.getTime()}`;
+
+    const isResetPasswordEmailSend = await apiRequestWithRetry(() =>
+      sendEmail({
+        to: user.email,
+        ...passwordResetTemplate(resetLink),
+      })
+    );
+
+    if (!isResetPasswordEmailSend) {
+      throw new InternalServerException();
+    }
+
+    return {
+      url: resetLink,
+    };
   }
 }

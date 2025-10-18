@@ -3,8 +3,10 @@ import { asyncHandler } from "@/middlewares/catchAsyncHandler";
 import { AuthService } from "./auth.service";
 import { HTTPSTATUS } from "@/config/http.config";
 import {
+  emailSchema,
   loginSchema,
   registerSchema,
+  resetPasswordSchema,
   verificationEmailSchema,
 } from "@/common/validators/auth.validator";
 import {
@@ -38,7 +40,6 @@ export class AuthController {
       });
     }
   );
-
   public login = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // Validate Input
@@ -78,7 +79,6 @@ export class AuthController {
         });
     }
   );
-
   public refresh = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const refreshToken = req.cookies.refreshToken as string | undefined;
@@ -107,7 +107,6 @@ export class AuthController {
         });
     }
   );
-
   public verifyEmail = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // * TODO POTI ADAUGA SI EMAIL AICI SI LE ENCODEZI IN URL
@@ -118,6 +117,17 @@ export class AuthController {
       return res.status(HTTPSTATUS.OK).json({
         message: "Email verified successfully",
         code: LOGIN.CONFIRMED_EMAIL_RETURN_TO_LOGIN,
+      });
+    }
+  );
+  public forgotPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const email = emailSchema.parse(req.body.email);
+
+      await this.authService.forgotPassword(email);
+
+      return res.status(HTTPSTATUS.OK).json({
+        message: "Password reset email sent",
       });
     }
   );

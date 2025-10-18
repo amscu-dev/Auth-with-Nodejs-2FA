@@ -9,7 +9,7 @@ export const passwordSchema = z
   .regex(/[\W_]/, {
     message: "Password must contain at least one special character",
   });
-// * TODO: de verificat
+
 export const verficationCodeSchema = z.string().trim().min(1).max(255);
 
 export const registerSchema = z
