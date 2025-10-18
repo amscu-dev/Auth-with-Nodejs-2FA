@@ -18,5 +18,7 @@ const appConfig = () => ({
       "30d"
     ) as ms.StringValue,
   },
+  MAILER_SENDER: getEnv("MAILER_SENDER"),
+  RESEND_API_KEY: getEnv("RESEND_API_KEY"),
 });
 export const config = appConfig();

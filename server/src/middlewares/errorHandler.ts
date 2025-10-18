@@ -6,6 +6,8 @@ import {
   clearAuthenticationCookies,
   REFRESH_PATH,
 } from "@/common/utils/cookie";
+import mongoose from "mongoose";
+import { ErrorCode } from "@/common/enums/error-code.enum";
 
 const formatZodError = (res: Response, error: z.ZodError) => {
   const errors = error.issues.map((error) => ({
@@ -14,6 +16,7 @@ const formatZodError = (res: Response, error: z.ZodError) => {
   }));
   return res.status(HTTPSTATUS.BAD_REQUEST).json({
     message: "Validation failed",
+    errorCode: ErrorCode.VALIDATION_ERROR,
     errors: errors,
   });
 };
@@ -36,12 +39,34 @@ export const errorHandler: ErrorRequestHandler = (
   if (error instanceof SyntaxError) {
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       messsage: "Invalid JSON format, please check your request body.",
+      errorCode: ErrorCode.INVALID_FORMAT,
     });
   }
 
   // ! Validation Errors thrown by Zod
   if (error instanceof z.ZodError) {
     return formatZodError(res, error);
+  }
+  // ! === Mongoose / MongoDB Errors ===
+  if (error instanceof mongoose.Error.ValidationError) {
+    return res.status(HTTPSTATUS.BAD_REQUEST).json({
+      message: "Validation failed",
+      errorCode: ErrorCode.VALIDATION_ERROR,
+    });
+  }
+
+  if (error instanceof mongoose.Error.CastError) {
+    return res.status(HTTPSTATUS.BAD_REQUEST).json({
+      message: "Invalid resource ID format",
+      errorCode: ErrorCode.VALIDATION_ERROR,
+    });
+  }
+
+  if (error.errorLabels?.includes("TransientTransactionError")) {
+    return res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json({
+      message: "Transaction aborted, please retry.",
+      errorCode: ErrorCode.INTERNAL_SERVER_ERROR,
+    });
   }
 
   // ! Guard Clauses - Business or Application Logic
@@ -52,6 +77,7 @@ export const errorHandler: ErrorRequestHandler = (
     });
   }
 
+  // ! Fallback
   return res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json({
     message: "Internal Server Error",
     error: error?.message || "Unknown error occurred",

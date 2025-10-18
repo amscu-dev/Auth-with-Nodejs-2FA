@@ -5,6 +5,7 @@ import { HTTPSTATUS } from "@/config/http.config";
 import {
   loginSchema,
   registerSchema,
+  verificationEmailSchema,
 } from "@/common/validators/auth.validator";
 import {
   getAccessTokenCookieOptions,
@@ -12,6 +13,7 @@ import {
   setAuthenticationCookies,
 } from "@/common/utils/cookie";
 import { UnauthorizedException } from "@/common/utils/catch-errors";
+import LOGIN from "@/common/enums/login-codes";
 
 export class AuthController {
   private authService: AuthService;
@@ -25,11 +27,14 @@ export class AuthController {
         ...req.body,
       });
       // Talk with DB
-      const { user } = await this.authService.register(body);
+      const { user, isVerificationEmailSend } = await this.authService.register(
+        body
+      );
+
       // Return response to USER
       return res.status(HTTPSTATUS.CREATED).json({
         message: "User successfully registered.",
-        data: user,
+        data: { ...user, isVerificationEmailSend },
       });
     }
   );
@@ -43,10 +48,23 @@ export class AuthController {
         userAgent,
       });
       // Talk with DB
+      // ! SIGN-UP CONFIRMATION
+      const isCompletedSignUP = await this.authService.confirmSignUp(
+        body.email
+      );
+      // ! REDIRECT USER TO EMAIL VERIFICATION
+      if (!isCompletedSignUP) {
+        return res.status(HTTPSTATUS.OK).json({
+          message: "Email not verified",
+          code: LOGIN.CONFIRM_SIGN_UP,
+        });
+      }
+
+      // ! LOGIN LOGIC
       const { user, accessToken, refreshToken, mfaRequired } =
         await this.authService.login(body);
 
-      //  Return response to USER
+      // ! Return response to USER
       return setAuthenticationCookies({
         res,
         accessToken,
@@ -87,6 +105,20 @@ export class AuthController {
         .json({
           message: "Refresh Access successfully processed.",
         });
+    }
+  );
+
+  public verifyEmail = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      // * TODO POTI ADAUGA SI EMAIL AICI SI LE ENCODEZI IN URL
+      const { code } = verificationEmailSchema.parse(req.body);
+
+      await this.authService.verifyEmail(code);
+
+      return res.status(HTTPSTATUS.OK).json({
+        message: "Email verified successfully",
+        code: LOGIN.CONFIRMED_EMAIL_RETURN_TO_LOGIN,
+      });
     }
   );
 }

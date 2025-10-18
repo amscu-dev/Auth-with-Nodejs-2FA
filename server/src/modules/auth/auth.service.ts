@@ -1,6 +1,5 @@
-import ms from "ms";
 import { ErrorCode } from "@/common/enums/error-code.enum";
-import { VerficationEnum } from "@/common/enums/verification-code.enum";
+import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { LoginData, RegisterData } from "@/common/interface/auth.interface";
 import {
   BadRequestException,
@@ -15,14 +14,16 @@ import { config } from "@/config/app.config";
 import SessionModel from "@/database/models/session.model";
 import UserModel from "@/database/models/user.model";
 import VerificationCodeModel from "@/database/models/verification.model";
-import jwt from "jsonwebtoken";
-import decodeBase64 from "@/common/utils/decodeBase64";
 import {
   accessTokenSignOptions,
   refreshTokenSignOptions,
   signJwtToken,
   verifyJwt,
 } from "@/common/utils/jwt";
+import { sendEmail } from "@/mailers/mailer";
+import { verifyEmailTemplate } from "@/mailers/templates/template";
+import mongoose from "mongoose";
+import apiRequestWithRetry from "@/common/utils/retry-api";
 export class AuthService {
   public async register(registerData: RegisterData) {
     const { name, email, password } = registerData;
@@ -37,24 +38,68 @@ export class AuthService {
       );
     }
 
-    const newUser = await UserModel.create({
-      name,
+    // ! Create And Execute Transaction
+    const session = await mongoose.startSession();
+    try {
+      const { verificationCode, newUser } = await session.withTransaction(
+        async () => {
+          const [newUser] = await UserModel.create(
+            [
+              {
+                name,
+                email,
+                password,
+              },
+            ],
+            { session }
+          );
+
+          const userId = newUser._id;
+
+          const [verificationCode] = await VerificationCodeModel.create(
+            [
+              {
+                userId,
+                type: VerificationEnum.EMAIL_VERIFICATION,
+                expiresAt: fortyFiveMinutesFromNow(),
+              },
+            ],
+            { session }
+          );
+          return { verificationCode, newUser };
+        }
+      );
+      // ! SEND EMAIL
+      const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}`;
+      const isVerificationEmailSend = await apiRequestWithRetry(() => {
+        return sendEmail({
+          to: newUser.email,
+          ...verifyEmailTemplate(verificationURL),
+        });
+      });
+      const userJson = newUser.toJSON();
+      return {
+        user: userJson,
+        isVerificationEmailSend,
+      };
+    } catch (error) {
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  public async confirmSignUp(email: string) {
+    const user = await UserModel.findOne({
       email,
-      password,
     });
-
-    const userId = newUser._id;
-
-    const verificationCode = await VerificationCodeModel.create({
-      userId,
-      type: VerficationEnum.EMAIL_VERIFICATION,
-      expiresAt: fortyFiveMinutesFromNow(),
-    });
-    // * TODO: Sending verification email link
-
-    return {
-      user: newUser,
-    };
+    if (!user) {
+      throw new BadRequestException(
+        "Invalid email or password provided.",
+        ErrorCode.AUTH_USER_NOT_FOUND
+      );
+    }
+    if (user.isEmailVerified) return true;
+    return false;
   }
   public async login(loginData: LoginData) {
     const { email, password, userAgent } = loginData;
@@ -68,7 +113,6 @@ export class AuthService {
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
-
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       throw new BadRequestException(
@@ -77,7 +121,7 @@ export class AuthService {
       );
     }
 
-    // * Check if the user enabled 2FA return user=null
+    // * TODO Check if the user enabled 2FA return user=null
     // ! CREATE SESSION
     const session = await SessionModel.create({
       userId: user._id,
@@ -102,7 +146,6 @@ export class AuthService {
 
     return { user, accessToken, refreshToken, mfaRequired: false };
   }
-
   public async refreshToken(refreshToken: string) {
     // ! VALIDATE INTEGRITY OF TOKEN
     const payload = verifyJwt(refreshToken, "REFRESH_TOKEN");
@@ -149,5 +192,45 @@ export class AuthService {
       { ...accessTokenSignOptions }
     );
     return { newRefreshToken, accessToken };
+  }
+  public async verifyEmail(code: string) {
+    // * TODO Maybe we divide between invalid and expired
+    const validCode = await VerificationCodeModel.findOne({
+      code: code,
+      type: VerificationEnum.EMAIL_VERIFICATION,
+      expiresAt: { $gt: new Date() },
+    });
+    if (!validCode) {
+      throw new BadRequestException("Invalid or expired verification code");
+    }
+
+    // ! Update User + Delete Verif Code in the same Mongo Session
+    const mongoSession = await mongoose.startSession();
+    try {
+      const updatedUser = await mongoSession.withTransaction(async () => {
+        const updatedUser = await UserModel.findByIdAndUpdate(
+          validCode.userId,
+          {
+            isEmailVerified: true,
+          },
+          { new: true }
+        );
+
+        if (!updatedUser) {
+          throw new BadRequestException(
+            "Unable to verify email address",
+            ErrorCode.VALIDATION_ERROR
+          );
+        }
+        await validCode.deleteOne();
+
+        return updatedUser;
+      });
+      return { user: updatedUser };
+    } catch (error) {
+      throw error;
+    } finally {
+      mongoSession.endSession();
+    }
   }
 }
