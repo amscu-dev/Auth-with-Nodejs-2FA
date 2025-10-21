@@ -6,6 +6,7 @@ declare global {
     interface User extends UserDocument {}
     interface Request {
       sessionId?: string;
+      requestId: string;
     }
   }
 }

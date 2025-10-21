@@ -30,5 +30,11 @@
       "name": "JsonWebTokenError",
       "message": "invalid signature"
     }
+  },
+  "sucess-format": {
+    "status": "success",
+    "data": "",
+    "metadata": "",
+    "links": ""
   }
 }

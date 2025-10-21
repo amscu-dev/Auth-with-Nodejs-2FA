@@ -20,6 +20,7 @@ import {
   UnauthorizedException,
 } from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
+import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
 
 export class AuthController {
   private authService: AuthService;
@@ -38,10 +39,18 @@ export class AuthController {
       );
 
       // Return response to USER
-      return res.status(HTTPSTATUS.CREATED).json({
-        message: "User successfully registered.",
-        data: { ...user, isVerificationEmailSend },
-      });
+      return res.status(HTTPSTATUS.CREATED).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.CREATED,
+          message:
+            "Registration successful. A verification email has been sent to your email address.",
+          data: { ...user, isVerificationEmailSend },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
     }
   );
   public login = asyncHandler(
@@ -59,10 +68,18 @@ export class AuthController {
       );
       // ! REDIRECT USER TO EMAIL VERIFICATION
       if (!isCompletedSignUP) {
-        return res.status(HTTPSTATUS.OK).json({
-          message: "Email not verified",
-          code: LOGIN.CONFIRM_SIGN_UP,
-        });
+        return res.status(HTTPSTATUS.OK).json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message:
+              "Authentication pending: your email address has not yet been verified. Please confirm your email to proceed.",
+            data: { nextStep: LOGIN.CONFIRM_SIGN_UP },
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
       }
 
       // ! LOGIN LOGIC
@@ -76,11 +93,17 @@ export class AuthController {
         refreshToken,
       })
         .status(HTTPSTATUS.OK)
-        .json({
-          message: "User successfully login.",
-          mfaRequired,
-          user,
-        });
+        .json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message: "Authentication successful: User successfully login.",
+            data: { mfaRequired, user },
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
     }
   );
   public refresh = asyncHandler(
@@ -106,9 +129,17 @@ export class AuthController {
       return res
         .status(HTTPSTATUS.OK)
         .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
-        .json({
-          message: "Refresh Access successfully processed.",
-        });
+        .json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message:
+              "Access token successfully refreshed. Your session remains active.",
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
     }
   );
   public verifyEmail = asyncHandler(
@@ -118,10 +149,20 @@ export class AuthController {
 
       await this.authService.verifyEmail(code);
 
-      return res.status(HTTPSTATUS.OK).json({
-        message: "Email verified successfully",
-        code: LOGIN.CONFIRMED_EMAIL_RETURN_TO_LOGIN,
-      });
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          statusCode: HTTPSTATUS.OK,
+          success: true,
+          message:
+            "Email address successfully verified. You can now proceed to login.",
+          data: {
+            nextStep: LOGIN.CONFIRMED_EMAIL_RETURN_TO_LOGIN,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
     }
   );
   public forgotPassword = asyncHandler(
@@ -130,12 +171,17 @@ export class AuthController {
 
       await this.authService.forgotPassword(email);
 
-      return res.status(HTTPSTATUS.OK).json({
-        message: "Password reset email sent",
-      });
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.OK,
+          message:
+            "Password reset request successfully processed. Please check your email for further instructions.",
+          metadata: { requestId: req.requestId },
+        })
+      );
     }
   );
-
   public resetPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { verificationCode, password } = resetPasswordSchema.parse(
@@ -151,10 +197,19 @@ export class AuthController {
         userAgent
       );
 
-      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
-        message:
-          "Password reset completed. If you didn’t request this change, please contact support immediately",
-      });
+      return clearAuthenticationCookies(res)
+        .status(HTTPSTATUS.OK)
+        .json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message:
+              "Password reset completed. If you didn’t request this change, please contact support immediately",
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
     }
   );
   public logout = asyncHandler(
@@ -167,9 +222,18 @@ export class AuthController {
       }
       await this.authService.logout(sessionId);
 
-      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
-        message: "Logout successful: you have been securely signed out.",
-      });
+      return clearAuthenticationCookies(res)
+        .status(HTTPSTATUS.OK)
+        .json(
+          new ApiResponse({
+            statusCode: HTTPSTATUS.OK,
+            success: true,
+            message: "Logout successful: you have been securely signed out.",
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
     }
   );
 }

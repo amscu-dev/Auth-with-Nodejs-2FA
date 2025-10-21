@@ -10,6 +10,8 @@ import { HTTPSTATUS } from "./config/http.config";
 import authRoutes from "./modules/auth/auth.routes";
 import passport from "./middlewares/passport";
 import { authenticateJWT } from "./common/strategies/jwt.strategy";
+import sessionRoutes from "./modules/session/session.routes";
+import addRequestId from "./middlewares/requestId";
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;
@@ -17,6 +19,7 @@ const BASE_PATH = config.BASE_PATH;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ credentials: true, origin: config.APP_ORIGIN }));
+app.use(addRequestId);
 app.use(cookieParser());
 app.use(passport.initialize());
 
@@ -35,6 +38,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // ! Auth
 app.use(`${BASE_PATH}/auth`, authRoutes);
+app.use(`${BASE_PATH}/session`, authenticateJWT, sessionRoutes);
 
 app.use(errorHandler);
 

@@ -1,5 +1,6 @@
+import { SessionController } from "./session.controller";
 import { SessionService } from "./session.service";
 
 const sessionService = new SessionService();
-
-export { sessionService };
+const sessionController = new SessionController(sessionService);
+export { sessionService, sessionController };
