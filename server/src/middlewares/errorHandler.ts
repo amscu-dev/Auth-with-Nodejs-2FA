@@ -8,6 +8,7 @@ import {
 } from "@/common/utils/cookie";
 import mongoose from "mongoose";
 import { ErrorCode } from "@/common/enums/error-code.enum";
+import { AuthenticationException } from "@/common/utils/catch-errors";
 
 const formatZodError = (res: Response, error: z.ZodError) => {
   const errors = error.issues.map((error) => ({
@@ -69,8 +70,20 @@ export const errorHandler: ErrorRequestHandler = (
     });
   }
 
+  // ! check to cancel cookies NOT FOR EXPIRED ONES!
+  if (error instanceof AuthenticationException && error instanceof AppError) {
+    if (error.errorCode !== ErrorCode.AUTH_TOKEN_EXPIRED) {
+      clearAuthenticationCookies(res);
+    }
+    return res.status(error.statusCode).json({
+      messsage: error.message,
+      errorCode: error.errorCode,
+    });
+  }
+
   // ! Guard Clauses - Business or Application Logic
   if (error instanceof AppError) {
+    console.log("aici");
     return res.status(error.statusCode).json({
       messsage: error.message,
       errorCode: error.errorCode,

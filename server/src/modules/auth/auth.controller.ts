@@ -15,7 +15,10 @@ import {
   getRefreshTokenCookieOptions,
   setAuthenticationCookies,
 } from "@/common/utils/cookie";
-import { UnauthorizedException } from "@/common/utils/catch-errors";
+import {
+  NotFoundException,
+  UnauthorizedException,
+} from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
 
 export class AuthController {
@@ -151,6 +154,21 @@ export class AuthController {
       return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
         message:
           "Password reset completed. If you didn’t request this change, please contact support immediately",
+      });
+    }
+  );
+  public logout = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const sessionId = req.sessionId;
+      if (!sessionId) {
+        throw new NotFoundException(
+          "Logout failed: no active session found or the session has already expireds."
+        );
+      }
+      await this.authService.logout(sessionId);
+
+      return clearAuthenticationCookies(res).status(HTTPSTATUS.OK).json({
+        message: "Logout successful: you have been securely signed out.",
       });
     }
   );

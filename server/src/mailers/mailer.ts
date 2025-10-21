@@ -10,7 +10,7 @@ type Params = {
 };
 const mailer_sender =
   config.NODE_ENV === "development"
-    ? "onboarding@resend.dev>>"
+    ? "onboarding@resend.dev"
     : `<${config.MAILER_SENDER}>`;
 
 export const sendEmail = async ({

@@ -2,7 +2,6 @@ import { config } from "@/config/app.config";
 import { SessionDocument } from "@/database/models/session.model";
 import { UserDocument } from "@/database/models/user.model";
 import jwt from "jsonwebtoken";
-import ms from "ms";
 import decodeBase64 from "./decodeBase64";
 
 // ! These are added by default by jwt library based on options provided

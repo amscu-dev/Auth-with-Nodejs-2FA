@@ -17,7 +17,9 @@ export interface UserDocument extends Document {
   createdAt: Date;
   updatedAt: Date;
   userPreferences: UserPreferences;
+  // ! Methods added to models must be typed here
   comparePassword(value: string): Promise<boolean>;
+  validateNewPassword(newPassword: string): Promise<boolean>;
 }
 
 // ! User Schemas
@@ -55,11 +57,23 @@ userSchema.methods.comparePassword = async function (value: string) {
   return compareValue(value, this.password);
 };
 
+userSchema.methods.validateNewPassword = async function (newPassword: string) {
+  const oldPasswords = [this.password, ...(this.oldPassword || [])];
+  for (const oldHash of oldPasswords) {
+    const isMatch = await compareValue(newPassword, oldHash);
+    if (isMatch) {
+      return false;
+    }
+  }
+  return true;
+};
+
 // ! Exclude some prop when convert to JSON
 userSchema.set("toJSON", {
   transform: function (doc, ret: Record<string, any>) {
     delete ret.userPreferences.twoFactorSecret;
     delete ret.password;
+    delete ret.oldPassword;
     return ret;
   },
 });

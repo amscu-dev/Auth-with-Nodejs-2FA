@@ -28,6 +28,15 @@ export class UnauthorizedException extends AppError {
   }
 }
 
+export class AuthenticationException extends AppError {
+  constructor(message = "Unauthorized Access", errorCode?: ErrorCode) {
+    super(
+      message,
+      HTTPSTATUS.UNAUTHORIZED,
+      errorCode || ErrorCode.ACCESS_UNAUTHORIZED
+    );
+  }
+}
 export class InternalServerException extends AppError {
   constructor(message = "Internal Server Error", errorCode?: ErrorCode) {
     super(

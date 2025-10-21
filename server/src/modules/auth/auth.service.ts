@@ -35,11 +35,11 @@ import {
 import mongoose from "mongoose";
 import apiRequestWithRetry from "@/common/utils/retry-api";
 import { HTTPSTATUS } from "@/config/http.config";
-import { compareValue, hashValue } from "@/common/utils/bcrypt";
 import PasswordResetLogModel, {
   Location,
 } from "@/database/models/resetPasswordLog.model";
 import logPasswordReset from "@/common/utils/logPasswordReset";
+
 export class AuthService {
   public async register(registerData: RegisterData) {
     const { name, email, password } = registerData;
@@ -371,7 +371,7 @@ export class AuthService {
         reason: "Expired verification code.",
         location,
       });
-      await PasswordResetLogModel.create({});
+
       throw new BadRequestException(
         "Expired verification code.Please request a new one.",
         ErrorCode.VERIFICATION_ERROR
@@ -379,8 +379,6 @@ export class AuthService {
     }
 
     // ! Hash New Password, Compare with old password ,Update the new password
-
-    const hashedPassword = await hashValue(password);
 
     const currentUser = await UserModel.findById(validCode.userId);
 
@@ -391,23 +389,22 @@ export class AuthService {
       );
     }
 
-    for (const oldHash of [currentUser?.password, ...currentUser.oldPassword]) {
-      const isMatch = await compareValue(password, oldHash);
-      if (isMatch) {
-        await logPasswordReset({
-          userId: validCode.userId,
-          ip,
-          userAgent,
-          status: "failed",
-          reason: "User attempted to reuse an old password.",
-          location,
-        });
+    const isNewPasswordValid = await currentUser.validateNewPassword(password);
 
-        throw new BadRequestException(
-          "You cannot reuse an old password.",
-          ErrorCode.VALIDATION_ERROR
-        );
-      }
+    if (!isNewPasswordValid) {
+      await logPasswordReset({
+        userId: validCode.userId,
+        ip,
+        userAgent,
+        status: "failed",
+        reason: "User attempted to reuse an old password.",
+        location,
+      });
+
+      throw new BadRequestException(
+        "You cannot reuse an old password.",
+        ErrorCode.VALIDATION_ERROR
+      );
     }
 
     // ! Initialize a Mongo Session for mark code as used, register new password created in db, and update the user
@@ -416,7 +413,8 @@ export class AuthService {
       await mongoSession.withTransaction(async () => {
         // Save Modified User
         currentUser.oldPassword.unshift(currentUser.password);
-        currentUser.password = hashedPassword;
+        // ! Will be hashed in 'save' middleware
+        currentUser.password = password;
         await currentUser.save({ session: mongoSession });
 
         // Mark curent code as used
@@ -463,5 +461,9 @@ export class AuthService {
     } finally {
       await mongoSession.endSession();
     }
+  }
+  public async logout(sessionId: string) {
+    // ! Existence of Current Session is already verified in JWT Strategy Middleware
+    return await SessionModel.findByIdAndDelete(sessionId);
   }
 }
