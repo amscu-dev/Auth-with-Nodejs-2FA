@@ -36,7 +36,7 @@ const userSchema = new Schema<UserDocument>(
     password: { type: String, required: true },
     oldPassword: { type: [String], required: false, default: [] },
     isEmailVerified: { type: Boolean, default: false },
-    userPreferences: { type: userPreferencesSchema, default: {} },
+    userPreferences: { type: userPreferencesSchema, _id: false, default: {} },
   },
   {
     timestamps: true,

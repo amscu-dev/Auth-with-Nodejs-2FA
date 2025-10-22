@@ -30,6 +30,7 @@ const passwordResetLogSchema = new Schema<PasswordResetLogDocument>({
       platform: { type: String },
     },
     required: true,
+    _id: false,
   },
   method: { type: String, enum: ["email"], default: "email" },
   status: { type: String, enum: ["success", "failed"], required: true },

@@ -30,6 +30,7 @@ const sessionSchema = new Schema<SessionDocument>({
       platform: { type: String },
     },
     required: true,
+    _id: false,
   },
   createdAt: {
     type: Date,

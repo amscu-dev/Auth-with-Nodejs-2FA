@@ -229,6 +229,9 @@ export class AuthController {
             statusCode: HTTPSTATUS.OK,
             success: true,
             message: "Logout successful: you have been securely signed out.",
+            data: {
+              nextStep: LOGIN.LOGOUT,
+            },
             metadata: {
               requestId: req.requestId,
             },

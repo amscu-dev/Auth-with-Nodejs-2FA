@@ -39,7 +39,7 @@ const options: StrategyOptionsWithRequest = {
     },
   ]),
   issuer: config.APP_NAME,
-  audience: ["usessr"],
+  audience: ["user"],
   algorithms: ["RS256"],
   secretOrKey: decodeBase64(config.JWT.PUBLIC_KEY),
   passReqToCallback: true,
@@ -50,7 +50,6 @@ const verifyCallback: VerifyCallbackWithRequest = async (
   done
 ) => {
   try {
-    console.log("A TRECUT TOKENUL VERIFICAREA");
     // ! Check if user exists
     const user = await userService.findUserById(payload.userId);
     if (!user) {
@@ -65,6 +64,7 @@ const verifyCallback: VerifyCallbackWithRequest = async (
     }
 
     // ! Check if session exists
+    // it cat throw not found from function
     const session = await sessionService.findSessionById(payload.sessionId);
 
     if (!session) {
@@ -77,7 +77,7 @@ const verifyCallback: VerifyCallbackWithRequest = async (
     }
 
     // ! Check if user have this session
-    const isNotUserSession = session.userId.toString() !== payload.userId;
+    const isNotUserSession = session.userId.id !== payload.userId;
     if (isNotUserSession) {
       return done(
         new AuthenticationException(
@@ -89,9 +89,9 @@ const verifyCallback: VerifyCallbackWithRequest = async (
 
     // ! Attach session to request
     req.sessionId = payload.sessionId;
-
     return done(null, user);
   } catch (error) {
+    console.log("imi prinde cumva eroarea aici?");
     return done(error, false);
   }
 };
@@ -112,22 +112,30 @@ export const authenticateJWT = (
     {
       session: false,
     },
-    (err: any, user: any, info: { name: string; message: string }) => {
-      if (!user && info.name === "JsonWebTokenError") {
-        throw new AuthenticationException(
-          `Authentication failed: ${info.message}`,
-          ErrorCode.AUTH_INVALID_TOKEN
-        );
+    (
+      err: any,
+      user: any,
+      info: { name: string; message: string } | undefined
+    ) => {
+      if (info) {
+        if (!user && info.name === "JsonWebTokenError") {
+          throw new AuthenticationException(
+            `Authentication failed: ${info.message}`,
+            ErrorCode.AUTH_INVALID_TOKEN
+          );
+        }
+        if (!user && info.name === "TokenExpiredError") {
+          throw new AuthenticationException(
+            `Authentication failed: ${info.message}`,
+            ErrorCode.AUTH_TOKEN_EXPIRED
+          );
+        }
       }
-      if (!user && info.name === "TokenExpiredError") {
-        throw new AuthenticationException(
-          `Authentication failed: ${info.message}`,
-          ErrorCode.AUTH_TOKEN_EXPIRED
-        );
-      }
-
       if (user && !err) {
         req.user = user;
+      }
+      if (err) {
+        next(err);
       }
       next();
     }
