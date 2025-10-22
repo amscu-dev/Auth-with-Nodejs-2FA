@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { UserAgent } from "./session.model";
 
 export interface Location {
   city?: string | undefined;
@@ -10,7 +11,7 @@ export interface PasswordResetLogDocument extends Document {
   userId: Schema.Types.ObjectId;
   timestamp: Date;
   ip?: string | undefined;
-  userAgent?: string;
+  userAgent: UserAgent;
   method?: "email";
   status: "success" | "failed";
   reason?: string;
@@ -21,7 +22,15 @@ const passwordResetLogSchema = new Schema<PasswordResetLogDocument>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   timestamp: { type: Date, default: Date.now },
   ip: { type: String },
-  userAgent: { type: String },
+  userAgent: {
+    type: {
+      browser: { type: String },
+      version: { type: String },
+      os: { type: String },
+      platform: { type: String },
+    },
+    required: true,
+  },
   method: { type: String, enum: ["email"], default: "email" },
   status: { type: String, enum: ["success", "failed"], required: true },
   reason: { type: String },

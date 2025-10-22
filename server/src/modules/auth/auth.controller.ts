@@ -56,10 +56,10 @@ export class AuthController {
   public login = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // Validate Input
-      const userAgent = req.headers["user-agent"];
+      const uaSource = req.headers["user-agent"];
       const body = loginSchema.parse({
         ...req.body,
-        userAgent,
+        uaSource,
       });
       // Talk with DB
       // ! SIGN-UP CONFIRMATION

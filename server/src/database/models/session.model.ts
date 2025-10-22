@@ -1,9 +1,16 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { thirtyDaysFromNow } from "@/common/utils/date-time";
 
+export interface UserAgent {
+  browser: string;
+  version: string;
+  os: string;
+  platform: string;
+}
+
 export interface SessionDocument extends Document {
   userId: Schema.Types.ObjectId;
-  userAgent?: string;
+  userAgent: UserAgent;
   expiredAt: Date;
   createdAt: Date;
 }
@@ -16,8 +23,13 @@ const sessionSchema = new Schema<SessionDocument>({
     required: true,
   },
   userAgent: {
-    type: String,
-    required: false,
+    type: {
+      browser: { type: String },
+      version: { type: String },
+      os: { type: String },
+      platform: { type: String },
+    },
+    required: true,
   },
   createdAt: {
     type: Date,

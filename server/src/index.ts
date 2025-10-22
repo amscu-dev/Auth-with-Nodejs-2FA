@@ -12,7 +12,6 @@ import passport from "./middlewares/passport";
 import { authenticateJWT } from "./common/strategies/jwt.strategy";
 import sessionRoutes from "./modules/session/session.routes";
 import addRequestId from "./middlewares/requestId";
-
 const app = express();
 const BASE_PATH = config.BASE_PATH;
 

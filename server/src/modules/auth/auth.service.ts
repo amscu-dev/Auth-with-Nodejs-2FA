@@ -1,3 +1,4 @@
+import useragent from "express-useragent";
 import geoip from "geoip-lite";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import { VerificationEnum } from "@/common/enums/verification-code.enum";
@@ -118,7 +119,7 @@ export class AuthService {
     return false;
   }
   public async login(loginData: LoginData) {
-    const { email, password, userAgent } = loginData;
+    const { email, password, uaSource } = loginData;
     // ! USER VERIFICATION
     const user = await UserModel.findOne({
       email,
@@ -137,11 +138,19 @@ export class AuthService {
       );
     }
 
+    // parse UA
+    const parsedUA = useragent.parse(uaSource ?? "unknown");
+
     // * TODO Check if the user enabled 2FA return user=null
     // ! CREATE SESSION
     const session = await SessionModel.create({
       userId: user._id,
-      userAgent,
+      userAgent: {
+        browser: parsedUA.browser || "unknown",
+        version: parsedUA.version || "unknown",
+        os: parsedUA.os || "unknown",
+        platform: parsedUA.platform || "unknown",
+      },
     });
 
     // ! CREATE TOKENS

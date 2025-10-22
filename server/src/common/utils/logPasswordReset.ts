@@ -2,6 +2,7 @@ import PasswordResetLogModel, {
   Location,
 } from "@/database/models/resetPasswordLog.model";
 import mongoose, { Schema } from "mongoose";
+import useragent from "express-useragent";
 
 const logPasswordReset = async ({
   userId,
@@ -20,7 +21,8 @@ const logPasswordReset = async ({
   location: Location;
   session?: mongoose.mongo.ClientSession;
 }) => {
-  const userAgentValue = userAgent || "unknown";
+  const parsedUA = useragent.parse(userAgent ?? "unknown");
+
   const ipValue = ip || "unknown";
   await PasswordResetLogModel.create(
     {
@@ -28,7 +30,12 @@ const logPasswordReset = async ({
       status,
       reason,
       ip: ipValue,
-      userAgent: userAgentValue,
+      userAgent: {
+        browser: parsedUA.browser || "unknown",
+        version: parsedUA.version || "unknown",
+        os: parsedUA.os || "unknown",
+        platform: parsedUA.platform || "unknown",
+      },
       location,
       method: "email",
     },
