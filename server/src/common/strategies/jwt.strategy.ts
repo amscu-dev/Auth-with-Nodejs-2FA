@@ -5,10 +5,7 @@ import {
   StrategyOptionsWithRequest,
   Strategy as JwtStrategy,
 } from "passport-jwt";
-import {
-  AuthenticationException,
-  UnauthorizedException,
-} from "../utils/catch-errors";
+import { AuthenticationException } from "../utils/catch-errors";
 import { ErrorCode } from "../enums/error-code.enum";
 import { config } from "@/config/app.config";
 import passport, { PassportStatic } from "passport";
@@ -114,7 +111,7 @@ export const authenticateJWT = (
     },
     (
       err: any,
-      user: any,
+      user: Express.User,
       info: { name: string; message: string } | undefined
     ) => {
       if (info) {

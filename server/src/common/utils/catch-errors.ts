@@ -18,6 +18,15 @@ export class BadRequestException extends AppError {
   }
 }
 
+export class ConflictException extends AppError {
+  constructor(
+    message = "Resource already exists or action conflicts with current state.",
+    errorCode?: ErrorCode
+  ) {
+    super(message, HTTPSTATUS.CONFLICT, errorCode);
+  }
+}
+
 export class UnauthorizedException extends AppError {
   constructor(message = "Unauthorized Access", errorCode?: ErrorCode) {
     super(

@@ -9,7 +9,13 @@ interface CookiePayloadType {
   refreshToken: string;
 }
 
+interface MFACookiePayloadType {
+  res: Response;
+  mfaToken: string;
+}
+
 export const REFRESH_PATH = `${config.BASE_PATH}/auth/refresh`;
+export const MFA_PATH = `${config.BASE_PATH}/mfa`;
 
 const defaults: CookieOptions = {
   httpOnly: true,
@@ -35,6 +41,22 @@ export const getAccessTokenCookieOptions = (): CookieOptions => {
     path: "/",
   };
 };
+
+export const getMFATokenCookieOptions = (): CookieOptions => {
+  const expiresIn = config.MFA_TOKEN.EXPIRES_IN as ms.StringValue;
+  const expires = calculateExpirationDate(expiresIn);
+  return {
+    ...defaults,
+    expires,
+    path: MFA_PATH,
+  };
+};
+
+export const setMFATokenCookie = ({
+  res,
+  mfaToken,
+}: MFACookiePayloadType): Response =>
+  res.cookie("mfaToken", mfaToken, getMFATokenCookieOptions());
 
 export const setAuthenticationCookies = ({
   res,

@@ -16,6 +16,13 @@ export interface RefreshTokenPayload extends jwt.JwtPayload {
   sessionId: SessionDocument["_id"];
 }
 
+export interface MFATokenPayload extends jwt.JwtPayload {
+  sub: string;
+  userId: UserDocument["_id"];
+  loginAttemptId: string;
+  type: "mfa";
+}
+
 export type SignOptsAndSecret = jwt.SignOptions & {
   secret: jwt.Secret | jwt.PrivateKey;
 };
@@ -35,8 +42,13 @@ export const refreshTokenSignOptions: SignOptsAndSecret = {
   secret: decodeBase64(config.JWT.REFRESH_PRIVATE_KEY),
 };
 
+export const mfaTokenOptions: SignOptsAndSecret = {
+  expiresIn: config.MFA_TOKEN.EXPIRES_IN || "5m",
+  secret: config.MFA_TOKEN.SECRET_KEY,
+};
+
 export const signJwtToken = (
-  payload: AccessTokenPayload | RefreshTokenPayload,
+  payload: AccessTokenPayload | RefreshTokenPayload | MFATokenPayload,
   options: SignOptsAndSecret
 ) => {
   const { secret, ...opts } = options;

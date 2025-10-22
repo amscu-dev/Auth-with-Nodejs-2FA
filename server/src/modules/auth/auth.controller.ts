@@ -14,6 +14,7 @@ import {
   getAccessTokenCookieOptions,
   getRefreshTokenCookieOptions,
   setAuthenticationCookies,
+  setMFATokenCookie,
 } from "@/common/utils/cookie";
 import {
   NotFoundException,
@@ -61,7 +62,7 @@ export class AuthController {
         ...req.body,
         uaSource,
       });
-      // Talk with DB
+
       // ! SIGN-UP CONFIRMATION
       const isCompletedSignUP = await this.authService.confirmSignUp(
         body.email
@@ -83,8 +84,25 @@ export class AuthController {
       }
 
       // ! LOGIN LOGIC
-      const { user, accessToken, refreshToken, mfaRequired } =
+      const { user, accessToken, refreshToken, mfaRequired, mfaToken } =
         await this.authService.login(body);
+
+      if (mfaRequired && !accessToken && mfaToken) {
+        return setMFATokenCookie({ res, mfaToken })
+          .status(HTTPSTATUS.OK)
+          .json(
+            new ApiResponse({
+              success: true,
+              statusCode: HTTPSTATUS.OK,
+              message:
+                "Login successful! Two-factor authentication is required to complete the sign-in process.",
+              data: { mfaRequired, user, nextStep: LOGIN.MFA_REQUIRED },
+              metadata: {
+                requestId: req.requestId,
+              },
+            })
+          );
+      }
 
       // ! Return response to USER
       return setAuthenticationCookies({
@@ -98,7 +116,7 @@ export class AuthController {
             success: true,
             statusCode: HTTPSTATUS.OK,
             message: "Authentication successful: User successfully login.",
-            data: { mfaRequired, user },
+            data: { mfaRequired, user, nextStep: LOGIN.OK },
             metadata: {
               requestId: req.requestId,
             },

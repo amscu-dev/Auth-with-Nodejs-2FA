@@ -23,6 +23,7 @@ import UserModel from "@/database/models/user.model";
 import VerificationCodeModel from "@/database/models/verification.model";
 import {
   accessTokenSignOptions,
+  mfaTokenOptions,
   refreshTokenSignOptions,
   signJwtToken,
   verifyJwt,
@@ -36,10 +37,9 @@ import {
 import mongoose from "mongoose";
 import apiRequestWithRetry from "@/common/utils/retry-api";
 import { HTTPSTATUS } from "@/config/http.config";
-import PasswordResetLogModel, {
-  Location,
-} from "@/database/models/resetPasswordLog.model";
+import { Location } from "@/database/models/resetPasswordLog.model";
 import logPasswordReset from "@/common/utils/logPasswordReset";
+import { generateUniqueCode } from "@/common/utils/uuid";
 
 export class AuthService {
   public async register(registerData: RegisterData) {
@@ -124,6 +124,7 @@ export class AuthService {
     const user = await UserModel.findOne({
       email,
     });
+
     if (!user) {
       throw new BadRequestException(
         "Invalid email or password provided.",
@@ -142,6 +143,27 @@ export class AuthService {
     const parsedUA = useragent.parse(uaSource ?? "unknown");
 
     // * TODO Check if the user enabled 2FA return user=null
+    if (user.userPreferences.enable2FA) {
+      // ! Send a temp token for recording an auth session
+      const authSessionId = generateUniqueCode();
+      const mfaToken = signJwtToken(
+        {
+          sub: user._id.toString(),
+          userId: user._id,
+          type: "mfa",
+          loginAttemptId: authSessionId,
+        },
+        { ...mfaTokenOptions, algorithm: "HS256" }
+      );
+      return {
+        user: null,
+        mfaRequired: true,
+        mfaToken,
+        accessToken: "",
+        refreshToken: "",
+      };
+    }
+
     // ! CREATE SESSION
     const session = await SessionModel.create({
       userId: user._id,
@@ -169,7 +191,13 @@ export class AuthService {
       { ...refreshTokenSignOptions }
     );
 
-    return { user, accessToken, refreshToken, mfaRequired: false };
+    return {
+      user,
+      accessToken,
+      refreshToken,
+      mfaRequired: false,
+      mfaToken: "",
+    };
   }
   public async refreshToken(refreshToken: string) {
     // ! VALIDATE INTEGRITY OF TOKEN
