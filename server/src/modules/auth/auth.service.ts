@@ -142,7 +142,7 @@ export class AuthService {
     // parse UA
     const parsedUA = useragent.parse(uaSource ?? "unknown");
 
-    // * TODO Check if the user enabled 2FA return user=null
+    // ! CHECK IF USER HAS MFA ENABLED
     if (user.userPreferences.enable2FA) {
       // ! Send a temp token for recording an auth session
       const authSessionId = generateUniqueCode();
@@ -325,6 +325,26 @@ export class AuthService {
         ErrorCode.AUTH_TOO_MANY_ATTEMPTS
       );
     }
+    // ! CHECK IF USER HAS MFA ENABLED
+    if (user.userPreferences.enable2FA) {
+      // ! Send a temp token for recording an auth session
+      const authSessionId = generateUniqueCode();
+      const mfaToken = signJwtToken(
+        {
+          sub: user._id.toString(),
+          userId: user._id,
+          type: "mfa",
+          loginAttemptId: authSessionId,
+        },
+        { ...mfaTokenOptions, algorithm: "HS256" }
+      );
+      return {
+        url: "",
+        mfaRequired: true,
+        mfaToken,
+      };
+    }
+
     // ! Create a new Code
     const expiresAt = anHourFromNow();
     const validCode = await VerificationCodeModel.create({
@@ -351,6 +371,8 @@ export class AuthService {
 
     return {
       url: resetLink,
+      mfaRequired: false,
+      mfaToken: "",
     };
   }
   public async resetPassword(

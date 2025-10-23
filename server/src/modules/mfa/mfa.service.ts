@@ -6,11 +6,12 @@ import { Request } from "express";
 import {
   BadRequestException,
   ConflictException,
+  InternalServerException,
   NotFoundException,
 } from "@/common/utils/catch-errors";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import TempTOTPSecretModel from "@/database/models/tempTOTPSecret.model";
-import { tenMinutesFromNow } from "@/common/utils/date-time";
+import { anHourFromNow, tenMinutesFromNow } from "@/common/utils/date-time";
 import UserModel from "@/database/models/user.model";
 import SessionModel from "@/database/models/session.model";
 import {
@@ -21,6 +22,11 @@ import {
 import { generateBackupCodes } from "@/common/utils/generate-backup-codes";
 import { BackupCodeType } from "@/common/validators/backup.validator";
 import { decrypt, encrypt } from "@/common/utils/encrypt-decrypt";
+import VerificationCodeModel from "@/database/models/verification.model";
+import { VerificationEnum } from "@/common/enums/verification-code.enum";
+import apiRequestWithRetry from "@/common/utils/retry-api";
+import { sendEmail } from "@/mailers/mailer";
+import { passwordResetTemplate } from "@/mailers/templates/template";
 
 export class MfaService {
   public async generateMFASetup(req: Express.Request) {
@@ -123,6 +129,72 @@ export class MfaService {
         enabled2FA: user.userPreferences.enable2FA,
         backupCodes,
       },
+    };
+  }
+
+  public async verifyMFAForChangingPassword(code: string, req: Request) {
+    const currentUser = req.user as Express.User;
+
+    if (!currentUser) {
+      throw new NotFoundException("User not found.");
+    }
+    if (
+      !currentUser.userPreferences.twoFactorSecret ||
+      !currentUser.userPreferences.enable2FA
+    ) {
+      throw new ConflictException(
+        "Two-factor authentication is disabled.",
+        ErrorCode.MFA_ALREADY_DISABLED
+      );
+    }
+    // ! Decrypt Key
+    const decryptedKey = decrypt(
+      currentUser.userPreferences.twoFactorSecret,
+      currentUser.id,
+      config.CRYPTO_SYMMETRIC_KEY
+    );
+    // ! Verify 2FA
+    const isValid = speakeasy.totp.verify({
+      secret: decryptedKey,
+      encoding: "base32",
+      token: code,
+      window: 1,
+    });
+
+    if (!isValid) {
+      throw new BadRequestException(
+        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
+        ErrorCode.MFA_INVALID_VERIFICATION_CODE
+      );
+    }
+
+    // ! We already check for limit rate in /forgotPassword API so we can proceed to send email.
+    // ! Create a new Code
+    const expiresAt = anHourFromNow();
+    const validCode = await VerificationCodeModel.create({
+      userId: currentUser._id,
+      type: VerificationEnum.PASSWORD_RESET,
+      expiresAt,
+    });
+
+    // ! Create reset Link
+    const resetLink = `${config.APP_ORIGIN}/reset-password?code=${
+      validCode.code
+    }&exp=${expiresAt.getTime()}`;
+
+    const isResetPasswordEmailSend = await apiRequestWithRetry(() =>
+      sendEmail({
+        to: currentUser.email,
+        ...passwordResetTemplate(resetLink),
+      })
+    );
+
+    if (!isResetPasswordEmailSend) {
+      throw new InternalServerException();
+    }
+
+    return {
+      url: resetLink,
     };
   }
 

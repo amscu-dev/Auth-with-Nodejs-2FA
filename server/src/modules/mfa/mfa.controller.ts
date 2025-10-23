@@ -56,7 +56,6 @@ export class MfaController {
       );
     }
   );
-
   public revokeMFA = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { code } = verifyMfaSchema.parse({ ...req.body });
@@ -78,7 +77,6 @@ export class MfaController {
       );
     }
   );
-
   public verifyMFAForLogin = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { code } = verifyMfaSchema.parse({ ...req.body });
@@ -107,6 +105,29 @@ export class MfaController {
         );
     }
   );
+  public verifyMFAForChangingPassword = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { code } = verifyMfaSchema.parse({ ...req.body });
+
+      await this.mfaService.verifyMFAForChangingPassword(code, req);
+      return res
+        .status(HTTPSTATUS.OK)
+        .clearCookie("mfaToken", {
+          path: MFA_PATH,
+        })
+        .json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message:
+              "Password reset request successfully processed. Please check your email for further instructions.",
+            data: { mfaRequired: false, nextStep: LOGIN.OK },
+            metadata: { requestId: req.requestId },
+          })
+        );
+    }
+  );
+
   public loginWithBackupCode = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
@@ -135,7 +156,6 @@ export class MfaController {
         );
     }
   );
-
   public disableMFAWithBackupCode = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });

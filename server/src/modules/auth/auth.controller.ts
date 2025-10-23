@@ -187,7 +187,25 @@ export class AuthController {
     async (req: Request, res: Response): Promise<any> => {
       const email = emailSchema.parse(req.body.email);
 
-      await this.authService.forgotPassword(email);
+      const { url, mfaRequired, mfaToken } =
+        await this.authService.forgotPassword(email);
+
+      if (mfaRequired && mfaToken) {
+        return setMFATokenCookie({ res, mfaToken })
+          .status(HTTPSTATUS.OK)
+          .json(
+            new ApiResponse({
+              success: true,
+              statusCode: HTTPSTATUS.OK,
+              message:
+                "Two-factor authentication required. Please enter your verification code to complete login.",
+              data: { mfaRequired, nextStep: LOGIN.MFA_REQUIRED },
+              metadata: {
+                requestId: req.requestId,
+              },
+            })
+          );
+      }
 
       return res.status(HTTPSTATUS.OK).json(
         new ApiResponse({
@@ -195,6 +213,7 @@ export class AuthController {
           statusCode: HTTPSTATUS.OK,
           message:
             "Password reset request successfully processed. Please check your email for further instructions.",
+          data: { mfaRequired, nextStep: LOGIN.OK },
           metadata: { requestId: req.requestId },
         })
       );
