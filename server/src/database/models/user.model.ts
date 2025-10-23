@@ -1,11 +1,14 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { compareValue, hashValue } from "@/common/utils/bcrypt";
+import { BackupCodeType } from "@/common/validators/backup.validator";
+import { PasswordType } from "@/common/interface/auth.interface";
 
 // ! User Types
 interface UserPreferences {
   enable2FA: boolean;
   emailNotification: boolean;
   twoFactorSecret?: string;
+  backupCodes?: string[];
 }
 
 export interface UserDocument extends Document {
@@ -19,15 +22,19 @@ export interface UserDocument extends Document {
   updatedAt: Date;
   userPreferences: UserPreferences;
   // ! Methods added to models must be typed here
-  comparePassword(value: string): Promise<boolean>;
-  validateNewPassword(newPassword: string): Promise<boolean>;
+  comparePassword(value: PasswordType): Promise<boolean>;
+  validateNewPassword(newPassword: PasswordType): Promise<boolean>;
+  validateBackupCode(
+    string: BackupCodeType
+  ): Promise<{ isValidBackupCode: boolean; matchedCode: string }>;
 }
 
 // ! User Schemas
 const userPreferencesSchema = new Schema<UserPreferences>({
   enable2FA: { type: Boolean, default: false },
   emailNotification: { type: Boolean, default: true },
-  twoFactorSecret: { type: String, default: false },
+  twoFactorSecret: { type: String },
+  backupCodes: { type: [String], required: false, default: [] },
 });
 
 const userSchema = new Schema<UserDocument>(
@@ -54,11 +61,13 @@ userSchema.pre("save", async function (next) {
 });
 
 // ! Adding a method on User Doc
-userSchema.methods.comparePassword = async function (value: string) {
+userSchema.methods.comparePassword = async function (value: PasswordType) {
   return compareValue(value, this.password);
 };
 
-userSchema.methods.validateNewPassword = async function (newPassword: string) {
+userSchema.methods.validateNewPassword = async function (
+  newPassword: PasswordType
+) {
   const oldPasswords = [this.password, ...(this.oldPassword || [])];
   for (const oldHash of oldPasswords) {
     const isMatch = await compareValue(newPassword, oldHash);
@@ -69,10 +78,23 @@ userSchema.methods.validateNewPassword = async function (newPassword: string) {
   return true;
 };
 
+userSchema.methods.validateBackupCode = async function (
+  backupCode: BackupCodeType
+) {
+  for (const code of this.userPreferences.backupCodes) {
+    const match = await compareValue(backupCode, code);
+    if (match) {
+      return { isValidBackupCode: true, matchedCode: code };
+    }
+  }
+  return { isValidBackupCode: false, matchedCode: "" };
+};
+
 // ! Exclude some prop when convert to JSON
 userSchema.set("toJSON", {
   transform: function (doc, ret: Record<string, any>) {
     delete ret.userPreferences.twoFactorSecret;
+    delete ret.userPreferences.backupCodes;
     delete ret.password;
     delete ret.oldPassword;
     return ret;

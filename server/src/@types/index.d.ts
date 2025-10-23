@@ -5,6 +5,7 @@ declare global {
   namespace Express {
     interface User extends UserDocument {}
     interface Request {
+      loginAttemptId?: string;
       sessionId?: string;
       requestId: string;
     }

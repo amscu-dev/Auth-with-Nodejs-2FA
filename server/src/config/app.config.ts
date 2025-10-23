@@ -5,6 +5,7 @@ const appConfig = () => ({
   APP_NAME: getEnv("APP_NAME", "MERN_AUTH_DEMO"),
   APP_ORIGIN: getEnv("APP_ORIGIN", "localhost"),
   DB_URI: getEnv("DB_URI"),
+
   PORT: getEnv("PORT", "5000"),
   BASE_PATH: getEnv("BASE_PATH", "/api/v1"),
   JWT: {
@@ -22,6 +23,7 @@ const appConfig = () => ({
     EXPIRES_IN: getEnv("MFA_TOKEN_EXPIRES_IN", "5m") as ms.StringValue,
     SECRET_KEY: getEnv("MFA_TOKEN_SECRET_KEY"),
   },
+  CRYPTO_SYMMETRIC_KEY: getEnv("CRYPTO_SYMMETRIC_KEY"),
   MAILER_SENDER: getEnv("MAILER_SENDER"),
   RESEND_API_KEY: getEnv("RESEND_API_KEY"),
 });

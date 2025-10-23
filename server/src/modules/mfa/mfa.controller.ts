@@ -6,6 +6,7 @@ import { verifyMfaSchema } from "@/common/validators/mfa.validator";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
 import LOGIN from "@/common/enums/login-codes";
 import { MFA_PATH, setAuthenticationCookies } from "@/common/utils/cookie";
+import { verifyBackupCodeSchema } from "@/common/validators/backup.validator";
 
 export class MfaController {
   private mfaService: MfaService;
@@ -104,6 +105,60 @@ export class MfaController {
             },
           })
         );
+    }
+  );
+  public loginWithBackupCode = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
+      const { updatedUser, accessToken, refreshToken, mfaRequired } =
+        await this.mfaService.loginWithBackupCode(backupCode, req);
+
+      return setAuthenticationCookies({
+        res,
+        accessToken,
+        refreshToken,
+      })
+        .clearCookie("mfaToken", {
+          path: MFA_PATH,
+        })
+        .status(HTTPSTATUS.OK)
+        .json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message: "Authentication successful: User successfully login.",
+            data: { mfaRequired, user: updatedUser, nextStep: LOGIN.OK },
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
+    }
+  );
+
+  public disableMFAWithBackupCode = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
+
+      const { updatedUser } = await this.mfaService.disableMFAWithBackupCode(
+        backupCode,
+        req
+      );
+
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          statusCode: HTTPSTATUS.OK,
+          success: true,
+          message:
+            "Two-factor authentication has been successfully disabled for your account.",
+          data: {
+            user: updatedUser,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
     }
   );
 }

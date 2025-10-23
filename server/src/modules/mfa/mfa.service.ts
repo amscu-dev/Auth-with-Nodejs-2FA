@@ -18,6 +18,9 @@ import {
   refreshTokenSignOptions,
   signJwtToken,
 } from "@/common/utils/jwt";
+import { generateBackupCodes } from "@/common/utils/generate-backup-codes";
+import { BackupCodeType } from "@/common/validators/backup.validator";
+import { decrypt, encrypt } from "@/common/utils/encrypt-decrypt";
 
 export class MfaService {
   public async generateMFASetup(req: Express.Request) {
@@ -91,6 +94,7 @@ export class MfaService {
       secret: tempSecretDocument.secret,
       encoding: "base32",
       token: code,
+      window: 1,
     });
 
     if (!isValid) {
@@ -100,13 +104,24 @@ export class MfaService {
       );
     }
 
+    // ! Encrypt 2fa key
+    const encryptedTwoFactorSecret = encrypt(
+      tempSecretDocument.secret,
+      user.id,
+      config.CRYPTO_SYMMETRIC_KEY
+    );
+
+    const { backupCodes, hashedBackupCodes } = await generateBackupCodes(8);
     user.userPreferences.enable2FA = true;
-    user.userPreferences.twoFactorSecret = tempSecretDocument.secret;
+    // ! we store encrypted version of the key
+    user.userPreferences.twoFactorSecret = encryptedTwoFactorSecret;
+    user.userPreferences.backupCodes = hashedBackupCodes;
     await user.save();
 
     return {
       userPreferences: {
         enabled2FA: user.userPreferences.enable2FA,
+        backupCodes,
       },
     };
   }
@@ -126,9 +141,18 @@ export class MfaService {
         ErrorCode.MFA_ALREADY_DISABLED
       );
     }
+
+    // ! First we decrypt the 2fa key
+
+    const decryptedKey = decrypt(
+      currentUser.userPreferences.twoFactorSecret,
+      currentUser.id,
+      config.CRYPTO_SYMMETRIC_KEY
+    );
     // ! Verify 2FA Before revoke
     const isValid = speakeasy.totp.verify({
-      secret: currentUser.userPreferences.twoFactorSecret,
+      // ! we verify with decrypted key
+      secret: decryptedKey,
       encoding: "base32",
       token: code,
       window: 1,
@@ -143,6 +167,7 @@ export class MfaService {
 
     currentUser.userPreferences.enable2FA = false;
     currentUser.userPreferences.twoFactorSecret = undefined;
+    currentUser.userPreferences.backupCodes = undefined;
     const updatedUser = await currentUser.save();
 
     return { updatedUser };
@@ -164,9 +189,15 @@ export class MfaService {
         ErrorCode.MFA_ALREADY_DISABLED
       );
     }
+
+    const decryptedKey = decrypt(
+      currentUser.userPreferences.twoFactorSecret,
+      currentUser.id,
+      config.CRYPTO_SYMMETRIC_KEY
+    );
     // ! Verify 2FA Before revoke
     const isValid = speakeasy.totp.verify({
-      secret: currentUser.userPreferences.twoFactorSecret,
+      secret: decryptedKey,
       encoding: "base32",
       token: code,
       window: 1,
@@ -207,5 +238,108 @@ export class MfaService {
     );
 
     return { currentUser, accessToken, refreshToken, mfaRequired: false };
+  }
+  public async loginWithBackupCode(code: BackupCodeType, req: Request) {
+    const currentUser = req.user as Express.User;
+
+    const uaSource = req.headers["user-agent"];
+    const parsedUA = useragent.parse(uaSource ?? "unknown");
+
+    if (!currentUser) {
+      throw new NotFoundException("User not found.");
+    }
+
+    // ! Verify validity of backupcode
+    const { isValidBackupCode, matchedCode } =
+      await currentUser.validateBackupCode(code);
+
+    if (!isValidBackupCode) {
+      throw new BadRequestException(
+        "The backup code you entered is invalid or has already been used. Please try a different one.",
+        ErrorCode.BACKUPCODE_INVALID_CODE
+      );
+    }
+    // ! Remove used code
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      currentUser._id,
+      { $pull: { "userPreferences.backupCodes": matchedCode } },
+      { new: true }
+    );
+
+    // ! CREATE SESSION
+    const session = await SessionModel.create({
+      userId: currentUser._id,
+      userAgent: {
+        browser: parsedUA.browser || "unknown",
+        version: parsedUA.version || "unknown",
+        os: parsedUA.os || "unknown",
+        platform: parsedUA.platform || "unknown",
+      },
+    });
+
+    // ! CREATE TOKENS
+    const accessToken = signJwtToken(
+      {
+        userId: currentUser._id,
+        sessionId: session._id,
+      },
+      { ...accessTokenSignOptions }
+    );
+
+    const refreshToken = signJwtToken(
+      {
+        sessionId: session._id,
+      },
+      { ...refreshTokenSignOptions }
+    );
+
+    return { updatedUser, accessToken, refreshToken, mfaRequired: false };
+  }
+  public async disableMFAWithBackupCode(code: BackupCodeType, req: Request) {
+    const currentUser = req.user as Express.User;
+    // ! Check if user have 2fa disabled
+    if (
+      !currentUser.userPreferences.twoFactorSecret ||
+      !currentUser.userPreferences.enable2FA
+    ) {
+      throw new ConflictException(
+        "Two-factor authentication is already disabled.",
+        ErrorCode.MFA_ALREADY_DISABLED
+      );
+    }
+    // ! Verify validity of backupcode
+    const { isValidBackupCode, matchedCode } =
+      await currentUser.validateBackupCode(code);
+
+    if (!isValidBackupCode) {
+      throw new BadRequestException(
+        "The backup code you entered is invalid or has already been used. Please try a different one.",
+        ErrorCode.BACKUPCODE_INVALID_CODE
+      );
+    }
+    // ! Remove all codes + disabled 2fa + remove 2fa secret;
+    const updatedUser = await UserModel.findOneAndUpdate(
+      {
+        _id: currentUser._id,
+        "userPreferences.backupCodes": { $elemMatch: { $eq: matchedCode } },
+      },
+      {
+        $set: {
+          "userPreferences.enable2FA": false,
+          "userPreferences.backupCodes": [],
+        },
+        $unset: {
+          "userPreferences.twoFactorSecret": "",
+        },
+      },
+      { new: true } // <- aici
+    );
+    if (!updatedUser) {
+      throw new BadRequestException(
+        "The backup code you entered is invalid or has already been used.",
+        ErrorCode.BACKUPCODE_INVALID_CODE
+      );
+    }
+    return { updatedUser };
   }
 }
