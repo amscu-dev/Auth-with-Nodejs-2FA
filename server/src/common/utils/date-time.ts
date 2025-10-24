@@ -15,6 +15,11 @@ export const tenMinutesFromNow = (): Date => {
   now.setMinutes(now.getMinutes() + 10);
   return now;
 };
+export const fiveMinutesFromNow = (): Date => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + 5);
+  return now;
+};
 export const tenMinutesAgo = (): Date => new Date(Date.now() - 10 * 60 * 1000);
 
 export const threeMinutesAgo = (): Date => new Date(Date.now() - 3 * 60 * 1000);

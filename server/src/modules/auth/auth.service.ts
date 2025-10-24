@@ -152,6 +152,7 @@ export class AuthService {
           userId: user._id,
           type: "mfa",
           loginAttemptId: authSessionId,
+          purpose: "login",
         },
         { ...mfaTokenOptions, algorithm: "HS256" }
       );
@@ -335,6 +336,7 @@ export class AuthService {
           userId: user._id,
           type: "mfa",
           loginAttemptId: authSessionId,
+          purpose: "forgot_password",
         },
         { ...mfaTokenOptions, algorithm: "HS256" }
       );

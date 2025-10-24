@@ -8,6 +8,7 @@ export default function addRequestId(
 ) {
   const requestId = generateUniqueCode();
   req.requestId = requestId;
+  res.setHeader("X-Powered-By", "MERN_AUTH_DEMO");
   res.setHeader("X-Request-Id", requestId);
   next();
 }

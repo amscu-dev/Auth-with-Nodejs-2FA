@@ -13,6 +13,7 @@ import { authenticateJWT } from "./common/strategies/jwt.strategy";
 import sessionRoutes from "./modules/session/session.routes";
 import addRequestId from "./middlewares/requestId";
 import mfaRoutes from "./modules/mfa/mfa.routes";
+import oidcSessionRoutes from "./modules/oidc-session/oidc-sesion.routes";
 const app = express();
 const BASE_PATH = config.BASE_PATH;
 
@@ -35,6 +36,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/session`, authenticateJWT, sessionRoutes);
 app.use(`${BASE_PATH}/mfa`, mfaRoutes);
+app.use(`${BASE_PATH}/oidc`, oidcSessionRoutes);
 
 app.use(errorHandler);
 

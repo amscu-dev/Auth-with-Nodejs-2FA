@@ -16,11 +16,13 @@ export interface RefreshTokenPayload extends jwt.JwtPayload {
   sessionId: SessionDocument["_id"];
 }
 
+export type MFAPurpose = "login" | "forgot_password";
 export interface MFATokenPayload extends jwt.JwtPayload {
   sub: string;
   userId: UserDocument["_id"];
   loginAttemptId: string;
   type: "mfa";
+  purpose: "forgot_password" | "login";
 }
 
 export type SignOptsAndSecret = jwt.SignOptions & {

@@ -11,6 +11,7 @@ import { ErrorCode } from "../enums/error-code.enum";
 import { userService } from "@/modules/user/user.module";
 import passport, { PassportStatic } from "passport";
 import { NextFunction, Request, Response } from "express";
+import { MFAPurpose } from "../utils/jwt";
 
 interface MFATokenPayload extends jwt.JwtPayload {
   sub: string;
@@ -41,6 +42,34 @@ const verifyCallback: VerifyCallbackWithRequest = async (
         new AuthenticationException(
           "Invalid MFA token type.",
           ErrorCode.AUTH_INVALID_TOKEN
+        ),
+        false
+      );
+    }
+
+    // ! Check purpose of the token and request path
+    const requestPath = req.originalUrl || req.url;
+    const pathPurposeMap: Record<string, MFAPurpose> = {
+      [`${config.BASE_PATH}/mfa/verify-login`]: "login",
+      [`${config.BASE_PATH}/mfa/verify-forgot-password`]: "forgot_password",
+    };
+    const expectedPurpose = pathPurposeMap[requestPath];
+
+    if (!expectedPurpose) {
+      return done(
+        new AuthenticationException(
+          "Invalid MFA endpoint.",
+          ErrorCode.AUTH_INVALID_PATH
+        ),
+        false
+      );
+    }
+
+    if (payload.purpose !== expectedPurpose) {
+      return done(
+        new AuthenticationException(
+          `MFA token purpose mismatch. Expected '${expectedPurpose}', got '${payload.purpose}'.`,
+          ErrorCode.AUTH_INVALID_TOKEN_PURPOSE
         ),
         false
       );

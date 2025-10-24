@@ -9,6 +9,8 @@ interface UserPreferences {
   emailNotification: boolean;
   twoFactorSecret?: string;
   backupCodes?: string[];
+  registerMethod: "oidc" | "regular";
+  supportedAuthMethods: ("oidc" | "regular")[];
 }
 
 export interface UserDocument extends Document {
@@ -35,6 +37,17 @@ const userPreferencesSchema = new Schema<UserPreferences>({
   emailNotification: { type: Boolean, default: true },
   twoFactorSecret: { type: String },
   backupCodes: { type: [String], required: false, default: [] },
+  registerMethod: {
+    type: String,
+    enum: ["oidc", "regular"],
+    required: true,
+    default: "regular",
+  },
+  supportedAuthMethods: {
+    type: [String],
+    required: true,
+    default: ["regular"],
+  },
 });
 
 const userSchema = new Schema<UserDocument>(
