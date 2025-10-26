@@ -40,6 +40,7 @@ import { HTTPSTATUS } from "@/config/http.config";
 import { Location } from "@/database/models/resetPasswordLog.model";
 import logPasswordReset from "@/common/utils/logPasswordReset";
 import { generateUniqueCode } from "@/common/utils/uuid";
+import { MFASessionModel } from "@/database/models/mfaSession.model";
 
 export class AuthService {
   public async register(registerData: RegisterData) {
@@ -118,7 +119,7 @@ export class AuthService {
     if (user.isEmailVerified) return true;
     return false;
   }
-  public async login(loginData: LoginData) {
+  public async login(loginData: LoginData, ip: string) {
     const { email, password, uaSource } = loginData;
     // ! USER VERIFICATION
     const user = await UserModel.findOne({
@@ -145,13 +146,22 @@ export class AuthService {
     // ! CHECK IF USER HAS MFA ENABLED
     if (user.userPreferences.enable2FA) {
       // ! Send a temp token for recording an auth session
-      const authSessionId = generateUniqueCode();
+
+      const tokenId = generateUniqueCode();
+      const mfaSession = await MFASessionModel.create({
+        tokenJTI: tokenId,
+        userId: user._id,
+        mfaSessionPurpose: "forgot_password",
+        requestIP: ip,
+      });
+
       const mfaToken = signJwtToken(
         {
           sub: user._id.toString(),
+          jti: tokenId,
           userId: user._id,
           type: "mfa",
-          loginAttemptId: authSessionId,
+          mfaSessionId: mfaSession.id,
           purpose: "login",
         },
         { ...mfaTokenOptions, algorithm: "HS256" }
@@ -298,7 +308,7 @@ export class AuthService {
       await mongoSession.endSession();
     }
   }
-  public async forgotPassword(email: string) {
+  public async forgotPassword(email: string, ip: string) {
     const user = await UserModel.findOne({ email });
 
     if (!user) {
@@ -329,13 +339,21 @@ export class AuthService {
     // ! CHECK IF USER HAS MFA ENABLED
     if (user.userPreferences.enable2FA) {
       // ! Send a temp token for recording an auth session
-      const authSessionId = generateUniqueCode();
+
+      const tokenId = generateUniqueCode();
+      const mfaSession = await MFASessionModel.create({
+        tokenJTI: tokenId,
+        userId: user._id,
+        mfaSessionPurpose: "forgot_password",
+        requestIP: ip,
+      });
       const mfaToken = signJwtToken(
         {
           sub: user._id.toString(),
+          jti: tokenId,
           userId: user._id,
           type: "mfa",
-          loginAttemptId: authSessionId,
+          mfaSessionId: mfaSession.id,
           purpose: "forgot_password",
         },
         { ...mfaTokenOptions, algorithm: "HS256" }

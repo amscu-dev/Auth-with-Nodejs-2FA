@@ -27,6 +27,15 @@ export class ConflictException extends AppError {
   }
 }
 
+export class ForbiddenException extends AppError {
+  constructor(
+    message = "You do not have permission to perform this action.",
+    errorCode?: ErrorCode
+  ) {
+    super(message, HTTPSTATUS.FORBIDDEN, errorCode);
+  }
+}
+
 export class UnauthorizedException extends AppError {
   constructor(message = "Unauthorized Access", errorCode?: ErrorCode) {
     super(

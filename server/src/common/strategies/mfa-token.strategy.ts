@@ -11,14 +11,8 @@ import { ErrorCode } from "../enums/error-code.enum";
 import { userService } from "@/modules/user/user.module";
 import passport, { PassportStatic } from "passport";
 import { NextFunction, Request, Response } from "express";
-import { MFAPurpose } from "../utils/jwt";
-
-interface MFATokenPayload extends jwt.JwtPayload {
-  sub: string;
-  userId: string;
-  type: "mfa";
-  loginAttemptId: string;
-}
+import { MFAPurpose, MFATokenPayload } from "../utils/jwt";
+import { MFASessionModel } from "@/database/models/mfaSession.model";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
@@ -81,6 +75,22 @@ const verifyCallback: VerifyCallbackWithRequest = async (
         new AuthenticationException(
           "MFA authentication failed: user not found.",
           ErrorCode.AUTH_USER_NOT_FOUND
+        ),
+        false
+      );
+    }
+
+    const mfaSession = await MFASessionModel.findOne({
+      tokenJTI: payload.jti,
+      userId: payload.userId,
+      consumed: false,
+      _id: payload.mfaSessionId,
+    });
+    if (!mfaSession) {
+      return done(
+        new AuthenticationException(
+          "MFA authentication failed: session consumed, expired or invalid.",
+          ErrorCode.MFA_INVALID_SESSION
         ),
         false
       );

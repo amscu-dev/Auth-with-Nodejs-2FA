@@ -8,10 +8,18 @@ oidcSessionRoutes.get(
   "/google/auth-url",
   oidcSessionController.getGoogleAuthorizationURL
 );
-
 oidcSessionRoutes.get(
   "/google/callback",
-  oidcSessionController.authenticateUser
+  oidcSessionController.authenticateGoogleUser
 );
 
+// ! GITHUB
+oidcSessionRoutes.get(
+  "/github/auth-url",
+  oidcSessionController.getGithubAuthorizationURL
+);
+oidcSessionRoutes.get(
+  "/github/callback",
+  oidcSessionController.authenticateGithubUser
+);
 export default oidcSessionRoutes;

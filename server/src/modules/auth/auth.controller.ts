@@ -85,7 +85,7 @@ export class AuthController {
 
       // ! LOGIN LOGIC
       const { user, accessToken, refreshToken, mfaRequired, mfaToken } =
-        await this.authService.login(body);
+        await this.authService.login(body, req.ip || "");
 
       if (mfaRequired && !accessToken && mfaToken) {
         return setMFATokenCookie({ res, mfaToken })
@@ -188,7 +188,7 @@ export class AuthController {
       const email = emailSchema.parse(req.body.email);
 
       const { url, mfaRequired, mfaToken } =
-        await this.authService.forgotPassword(email);
+        await this.authService.forgotPassword(email, req.ip || "");
 
       if (mfaRequired && mfaToken) {
         return setMFATokenCookie({ res, mfaToken })

@@ -20,9 +20,10 @@ export type MFAPurpose = "login" | "forgot_password";
 export interface MFATokenPayload extends jwt.JwtPayload {
   sub: string;
   userId: UserDocument["_id"];
-  loginAttemptId: string;
+  mfaSessionId: string;
+  jti: string;
   type: "mfa";
-  purpose: "forgot_password" | "login";
+  purpose: MFAPurpose;
 }
 
 export type SignOptsAndSecret = jwt.SignOptions & {

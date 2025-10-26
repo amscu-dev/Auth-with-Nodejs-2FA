@@ -47,6 +47,7 @@ export async function verifyOAuthIDToken<T>({
   return { payload: payload as T, protectedHeader };
 }
 
+// ! GOOGLE
 export function getGoogleAuthorizationURL({
   state,
   codeChallenge,
@@ -61,7 +62,6 @@ export function getGoogleAuthorizationURL({
     response_type: "code",
     client_id: config.GOOGLE_OAUTH_CLIENT_ID,
     scope: "openid profile email",
-    prompt: "consent",
     redirect_uri: config.GOOGLE_OAUTH_REDIRECT_URI,
     state: state,
     code_challenge: codeChallenge,
@@ -89,4 +89,53 @@ export function getGoogleTokenEndpointURL({
   });
 
   return { TOKEN_ENDPOINT_BASE_URL, queryParams };
+}
+
+// ! GITHUB
+export function getGithubAuthorizationURL({
+  state,
+  codeChallenge,
+}: {
+  state: string;
+  codeChallenge: string;
+}): string {
+  const AUTHORIZATION_ENDPOINT = "https://github.com/login/oauth/authorize";
+
+  const queryParams = new URLSearchParams({
+    client_id: config.GITHUB_OAUTH_CLIENT_ID,
+    redirect_uri: config.GITHUB_OAUTH_REDIRECT_URI,
+    scope: "user read:user user:email",
+    state: state,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
+    allow_signup: "true",
+    access_type: "offline",
+    prompt: "select_account",
+  });
+
+  return `${AUTHORIZATION_ENDPOINT}?${queryParams.toString()}`;
+}
+
+export function getGithubTokenEndpointURL({
+  code,
+  codeVerifier,
+}: {
+  code: string;
+  codeVerifier: string;
+}) {
+  const TOKEN_ENDPOINT_BASE_URL = "https://github.com/login/oauth/access_token";
+  const queryParams = new URLSearchParams({
+    client_id: config.GITHUB_OAUTH_CLIENT_ID,
+    client_secret: config.GITHUB_OAUTH_SECRET_KEY,
+    code: code,
+    redirect_uri: config.GITHUB_OAUTH_REDIRECT_URI,
+    code_verifier: codeVerifier,
+  });
+
+  return { TOKEN_ENDPOINT_BASE_URL, queryParams };
+}
+
+export function getGithubUserEndpointURL(): string {
+  const USER_ENDPOINT_BASE_URL = "https://api.github.com/user";
+  return USER_ENDPOINT_BASE_URL;
 }
