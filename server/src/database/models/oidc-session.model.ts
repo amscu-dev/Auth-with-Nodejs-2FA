@@ -1,6 +1,6 @@
 import { Document, Schema, model } from "mongoose";
 
-export interface OIDCSession extends Document {
+export interface OIDCSessionDocument extends Document {
   state: string;
   codeVerifier: string;
   codeChallenge: string;
@@ -10,7 +10,7 @@ export interface OIDCSession extends Document {
   expiresAt: Date;
 }
 
-const OIDCSessionSchema = new Schema<OIDCSession>({
+const OIDCSessionSchema = new Schema<OIDCSessionDocument>({
   state: {
     type: String,
     required: true,
@@ -45,7 +45,7 @@ const OIDCSessionSchema = new Schema<OIDCSession>({
 
 OIDCSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export const OIDCSessionModel = model<OIDCSession>(
+export const OIDCSessionModel = model<OIDCSessionDocument>(
   "OIDCSession",
   OIDCSessionSchema
 );

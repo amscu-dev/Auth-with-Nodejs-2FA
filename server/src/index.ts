@@ -14,6 +14,7 @@ import sessionRoutes from "./modules/session/session.routes";
 import addRequestId from "./middlewares/requestId";
 import mfaRoutes from "./modules/mfa/mfa.routes";
 import oidcSessionRoutes from "./modules/oidc-session/oidc-sesion.routes";
+import magicLinkRoutes from "./modules/magic-link/magic-link.routes";
 const app = express();
 const BASE_PATH = config.BASE_PATH;
 
@@ -37,6 +38,7 @@ app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/session`, authenticateJWT, sessionRoutes);
 app.use(`${BASE_PATH}/mfa`, mfaRoutes);
 app.use(`${BASE_PATH}/oidc`, oidcSessionRoutes);
+app.use(`${BASE_PATH}/magic-link`, magicLinkRoutes);
 
 app.use(errorHandler);
 

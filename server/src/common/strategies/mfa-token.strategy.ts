@@ -95,7 +95,8 @@ const verifyCallback: VerifyCallbackWithRequest = async (
         false
       );
     }
-
+    mfaSession.consumed = true;
+    await mfaSession.save();
     req.user = user;
     req.loginAttemptId = payload.loginAttemptId;
     done(null, user);

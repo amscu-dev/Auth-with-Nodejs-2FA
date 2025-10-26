@@ -26,6 +26,13 @@ export interface MFATokenPayload extends jwt.JwtPayload {
   purpose: MFAPurpose;
 }
 
+export interface MagicLinkTokenPayload extends jwt.JwtPayload {
+  jti: string;
+  userEmail: string;
+  magicLinkSession: string;
+  type: "magic-link";
+}
+
 export type SignOptsAndSecret = jwt.SignOptions & {
   secret: jwt.Secret | jwt.PrivateKey;
 };
@@ -50,8 +57,17 @@ export const mfaTokenOptions: SignOptsAndSecret = {
   secret: config.MFA_TOKEN.SECRET_KEY,
 };
 
+export const magicLinkTokenOptions: SignOptsAndSecret = {
+  expiresIn: config.MAGIC_LINK_TOKEN.EXPIRES_IN || "5m",
+  secret: config.MAGIC_LINK_TOKEN.SECRET_KEY,
+};
+
 export const signJwtToken = (
-  payload: AccessTokenPayload | RefreshTokenPayload | MFATokenPayload,
+  payload:
+    | AccessTokenPayload
+    | RefreshTokenPayload
+    | MFATokenPayload
+    | MagicLinkTokenPayload,
   options: SignOptsAndSecret
 ) => {
   const { secret, ...opts } = options;

@@ -2,7 +2,7 @@ import { fiveMinutesFromNow } from "@/common/utils/date-time";
 import { MFAPurpose } from "@/common/utils/jwt";
 import mongoose, { Document, Schema } from "mongoose";
 
-export interface MFASession extends Document {
+export interface MFASessionDocument extends Document {
   tokenJTI: string;
   userId: Schema.Types.ObjectId;
   consumed: boolean;
@@ -12,7 +12,7 @@ export interface MFASession extends Document {
   expiresAt: Date;
 }
 
-const MFASessionSchema = new Schema<MFASession>({
+const MFASessionSchema = new Schema<MFASessionDocument>({
   tokenJTI: {
     type: String,
     required: true,
@@ -47,7 +47,7 @@ const MFASessionSchema = new Schema<MFASession>({
 
 MFASessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export const MFASessionModel = mongoose.model<MFASession>(
+export const MFASessionModel = mongoose.model<MFASessionDocument>(
   "MFASession",
   MFASessionSchema
 );
