@@ -6,6 +6,7 @@ import {
   passkeyAuthenticationResponseJSONSchema,
   passkeyRegisterSchema,
   passkeyRegistrationResponseJSONSchema,
+  removePasskeyRequestSchema,
 } from "@/common/validators/passkey.validator";
 import { HTTPSTATUS } from "@/config/http.config";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
@@ -180,6 +181,33 @@ export class PasskeyController {
           message: "Passkey was successfully added.",
           data: {
             passkey,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
+    }
+  );
+  public generatePasskeyRemoveSession = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { userid, credentialid } = removePasskeyRequestSchema.parse(
+        req.params
+      );
+
+      const publicKeyCredentialRequestOptions =
+        await this.passkeyService.generatePasskeyRemoveSession(
+          userid,
+          credentialid,
+          req
+        );
+      return res.status(HTTPSTATUS.CREATED).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.CREATED,
+          message: "Passkey remove session has been successfully created.",
+          data: {
+            publicKeyCredentialRequestOptions,
           },
           metadata: {
             requestId: req.requestId,

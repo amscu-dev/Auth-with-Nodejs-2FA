@@ -31,5 +31,10 @@ passkeyRoutes.post(
   authenticateJWT,
   passkeyController.verifyPasskeyAddSession
 );
+passkeyRoutes.post(
+  "/remove-key/init/:userid/:credentialid",
+  authenticateJWT,
+  passkeyController.generatePasskeyRemoveSession
+);
 
 export default passkeyRoutes;

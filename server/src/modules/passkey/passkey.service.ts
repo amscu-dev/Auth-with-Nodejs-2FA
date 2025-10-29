@@ -526,4 +526,46 @@ export default class PasskeyService {
       mongoSession.endSession();
     }
   }
+  public async generatePasskeyRemoveSession(
+    userid: string,
+    credentialid: string,
+    req: Request
+  ) {
+    const currentUser = req.user as Express.User;
+    if (currentUser.id !== userid) {
+      throw new UnauthorizedException(
+        "You are not authorized to remove a passkey for this user."
+      );
+    }
+    const currentCredential = await PasskeyModel.findOne({
+      credentialID: credentialid,
+    });
+
+    if (!currentCredential) {
+      throw new NotFoundException("Passkey does not exists.");
+    }
+    if (userid !== currentCredential.userID.toString()) {
+      throw new UnauthorizedException(
+        "You are not authorized to remove a passkey for this user."
+      );
+    }
+    // ! Generate Options
+    const publicKeyCredentialRequestOptions =
+      await generateAuthenticationOptions({
+        timeout: 60000,
+        allowCredentials: [
+          {
+            id: currentCredential.credentialID,
+            transports: currentCredential.transports,
+          },
+        ],
+        userVerification: "required",
+        rpID: "localhost",
+      });
+    const passkeySession = await PasskeyChallengeSessionModel.create({
+      challenge: publicKeyCredentialRequestOptions.challenge,
+      passkeyChallengeSessionPurpose: "delete-key",
+    });
+    return publicKeyCredentialRequestOptions;
+  }
 }

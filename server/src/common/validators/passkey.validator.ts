@@ -14,6 +14,16 @@ export const addPasskeyRequestSchema = z.object({
   }),
 });
 
+export const removePasskeyRequestSchema = z.object({
+  userid: z
+    .string()
+    .trim()
+    .refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
+      message: "Invalid user ID format",
+    }),
+  credentialid: z.string().trim(),
+});
+
 const transportEnum = z.enum([
   "ble",
   "cable",
