@@ -161,4 +161,31 @@ export class PasskeyController {
       );
     }
   );
+  public verifyPasskeyAddSession = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { userid } = addPasskeyRequestSchema.parse(req.params);
+      const registrationResponse = passkeyRegistrationResponseJSONSchema.parse(
+        req.body
+      );
+      const passkey =
+        await this.passkeyService.verifyPasskeyAddSessionAndAddPasskey(
+          registrationResponse,
+          userid,
+          req
+        );
+      return res.status(HTTPSTATUS.CREATED).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.CREATED,
+          message: "Passkey was successfully added.",
+          data: {
+            passkey,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
+    }
+  );
 }

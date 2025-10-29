@@ -26,9 +26,10 @@ passkeyRoutes.post(
   authenticateJWT,
   passkeyController.generatePasskeyAddSession
 );
-// passkeyRoutes.post(
-//   "/add-passkey/verify",
-//   passkeyController.verifyPasskeyAddSession
-// );
+passkeyRoutes.post(
+  "/add-passkey/verify/:userid",
+  authenticateJWT,
+  passkeyController.verifyPasskeyAddSession
+);
 
 export default passkeyRoutes;

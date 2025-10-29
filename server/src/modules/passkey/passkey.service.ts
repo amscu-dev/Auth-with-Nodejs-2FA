@@ -421,4 +421,109 @@ export default class PasskeyService {
     });
     return publicKeyCredentialCreationOptions;
   }
+  public async verifyPasskeyAddSessionAndAddPasskey(
+    registrationResponse: RegistrationResponseJSON,
+    userid: string,
+    req: Request
+  ) {
+    const curentUser = req.user as Express.User;
+
+    if (curentUser.id !== userid) {
+      throw new UnauthorizedException(
+        "You are not authorized to add a passkey for this user."
+      );
+    }
+
+    const { challenge } = clientDataJSONSchema.parse(
+      JSON.parse(
+        decodeBase64(registrationResponse.response.clientDataJSON, "utf8")
+      )
+    );
+
+    // ! Find Session Challenge
+    const challengeSession = await PasskeyChallengeSessionModel.findOne({
+      challenge: challenge,
+      passkeyChallengeSessionPurpose: "add-new-key",
+      userId: userid,
+    });
+
+    if (!challengeSession) {
+      throw new BadRequestException(
+        "Passkey registration session not found.",
+        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      );
+    }
+
+    if (challengeSession.consumed) {
+      throw new ConflictException(
+        "Passkey registration session has already been used.",
+        ErrorCode.PASSKEY_CHALLENGE_ALREADY_CONSUMED
+      );
+    }
+
+    if (challengeSession.passkeyChallengeSessionPurpose !== "signup") {
+      throw new BadRequestException(
+        "Passkey registration session purpose is invalid.",
+        ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
+      );
+    }
+
+    // ! Verify Response
+    const verification = await verifyRegistrationResponse({
+      response: registrationResponse,
+      expectedChallenge: challenge,
+      expectedOrigin: "https://www.passkeys-debugger.io",
+      expectedRPID: "passkeys-debugger.io",
+      requireUserVerification: true,
+    });
+
+    if (
+      !verification.verified ||
+      !verification.registrationInfo ||
+      !verification.registrationInfo.userVerified
+    ) {
+      throw new BadRequestException(
+        "Passkey registration verification failed",
+        ErrorCode.VERIFICATION_ERROR
+      );
+    }
+
+    const mongoSession = await mongoose.startSession();
+    try {
+      const passkey = await mongoSession.withTransaction(async () => {
+        const passkey = new PasskeyModel({
+          userID: challengeSession.userId,
+          credentialID: verification.registrationInfo.credential.id,
+          credentialPublicKey: uint8ArrayToBase64(
+            verification.registrationInfo.credential.publicKey
+          ),
+          credentialType: verification.registrationInfo.credentialType,
+          authenticatorAttachment: registrationResponse.authenticatorAttachment,
+          publicKeyAlgorithm: registrationResponse.response.publicKeyAlgorithm,
+          counter: verification.registrationInfo.credential.counter,
+          transports: verification.registrationInfo.credential.transports,
+          aaguid: {
+            aaguid: verification.registrationInfo.aaguid,
+            name: getPasskeyProvider(verification.registrationInfo.aaguid),
+          },
+        });
+        curentUser.userPreferences.passkeys.push(passkey.id);
+        if (
+          !curentUser.userPreferences.supportedAuthMethods.includes("passkey")
+        ) {
+          curentUser.userPreferences.supportedAuthMethods.push("passkey");
+        }
+        challengeSession.consumed = true;
+        await challengeSession.save({ session: mongoSession });
+        await passkey.save({ session: mongoSession });
+        await curentUser.save({ session: mongoSession });
+        return passkey;
+      });
+      return passkey;
+    } catch (error) {
+      throw error;
+    } finally {
+      mongoSession.endSession();
+    }
+  }
 }
