@@ -1,6 +1,6 @@
 import { UserDocument } from "@/database/models/user.model";
 import { Request } from "express";
-
+import { MagicLinkSessionDocument } from "@/database/models/magicLinkSession.model";
 declare global {
   namespace Express {
     interface User extends UserDocument {}
@@ -8,13 +8,8 @@ declare global {
       loginAttemptId?: string;
       sessionId?: string;
       requestId: string;
+      magicLinkSession?: MagicLinkSessionDocument;
     }
+    interface MagicLinkSession extends MagicLinkSessionDocument {}
   }
-}
-
-declare module "pkce-challenge" {
-  export default function pkceChallenge(length?: number): {
-    code_verifier: string;
-    code_challenge: string;
-  };
 }

@@ -3,8 +3,9 @@ import { MFAPurpose } from "@/common/utils/jwt";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface MFASessionDocument extends Document {
+  _id: mongoose.Types.ObjectId;
   tokenJTI: string;
-  userId: Schema.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   consumed: boolean;
   mfaSessionPurpose: MFAPurpose;
   requestIP: string;

@@ -1,6 +1,7 @@
-import { Document, Schema, model } from "mongoose";
+import mongoose, { Document, Schema, model } from "mongoose";
 
 export interface OIDCSessionDocument extends Document {
+  _id: mongoose.Types.ObjectId;
   state: string;
   codeVerifier: string;
   codeChallenge: string;

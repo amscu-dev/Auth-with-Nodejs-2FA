@@ -3,7 +3,8 @@ import mongoose, { Schema } from "mongoose";
 import { Document } from "mongoose";
 
 export interface TempTOTPSecretDocument extends Document {
-  userId: Schema.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   secret: string;
   expiredAt: Date;
   createdAt: Date;

@@ -19,6 +19,7 @@ const appConfig = () => ({
       "30d"
     ) as ms.StringValue,
   },
+  PASSWORD_SECRET_PEPPER: getEnv("PASSWORD_SECRET_PEPPER"),
   MFA_TOKEN: {
     EXPIRES_IN: getEnv("MFA_TOKEN_EXPIRES_IN", "5m") as ms.StringValue,
     SECRET_KEY: getEnv("MFA_TOKEN_SECRET_KEY"),

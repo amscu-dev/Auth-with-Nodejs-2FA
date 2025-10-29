@@ -106,15 +106,15 @@ export class OIDCSessionService {
     // ! CREATE TOKENS
     const accessToken = signJwtToken(
       {
-        userId: user._id,
-        sessionId: sessionAuth._id,
+        userId: user.id,
+        sessionId: sessionAuth.id,
       },
       { ...accessTokenSignOptions }
     );
 
     const refreshToken = signJwtToken(
       {
-        sessionId: sessionAuth._id,
+        sessionId: sessionAuth.id,
       },
       { ...refreshTokenSignOptions }
     );

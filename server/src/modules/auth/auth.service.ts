@@ -157,9 +157,9 @@ export class AuthService {
 
       const mfaToken = signJwtToken(
         {
-          sub: user._id.toString(),
+          sub: user.id,
           jti: tokenId,
-          userId: user._id,
+          userId: user.id,
           type: "mfa",
           mfaSessionId: mfaSession.id,
           purpose: "login",
@@ -189,15 +189,15 @@ export class AuthService {
     // ! CREATE TOKENS
     const accessToken = signJwtToken(
       {
-        userId: user._id,
-        sessionId: session._id,
+        userId: user.id,
+        sessionId: session.id,
       },
       { ...accessTokenSignOptions }
     );
 
     const refreshToken = signJwtToken(
       {
-        sessionId: session._id,
+        sessionId: session.id,
       },
       { ...refreshTokenSignOptions }
     );
@@ -242,7 +242,7 @@ export class AuthService {
     const newRefreshToken = sessionRequireRefresh
       ? signJwtToken(
           {
-            sessionId: session._id,
+            sessionId: session.id,
           },
           { ...refreshTokenSignOptions }
         )
@@ -250,8 +250,8 @@ export class AuthService {
 
     const accessToken = signJwtToken(
       {
-        userId: session.userId,
-        sessionId: session._id,
+        userId: session.userId.toString(),
+        sessionId: session.id,
       },
       { ...accessTokenSignOptions }
     );
@@ -349,9 +349,9 @@ export class AuthService {
       });
       const mfaToken = signJwtToken(
         {
-          sub: user._id.toString(),
+          sub: user.id,
           jti: tokenId,
-          userId: user._id,
+          userId: user.id,
           type: "mfa",
           mfaSessionId: mfaSession.id,
           purpose: "forgot_password",
@@ -494,6 +494,11 @@ export class AuthService {
         currentUser.oldPassword.unshift(currentUser.password);
         // ! Will be hashed in 'save' middleware
         currentUser.password = password;
+        if (
+          !currentUser.userPreferences.supportedAuthMethods.includes("regular")
+        ) {
+          currentUser.userPreferences.supportedAuthMethods.push("regular");
+        }
         await currentUser.save({ session: mongoSession });
 
         // Mark curent code as used

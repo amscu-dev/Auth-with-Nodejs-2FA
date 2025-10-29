@@ -53,6 +53,23 @@ export const errorHandler: ErrorRequestHandler = (
     return formatZodError(res, req, error);
   }
   // ! === Mongoose / MongoDB Errors ===
+  if (
+    error instanceof mongoose.mongo.MongoServerError &&
+    error.code === 11000
+  ) {
+    // Extragi câmpul care a cauzat conflictul
+    const field = Object.keys(error.keyValue)[0];
+    const value = error.keyValue[field];
+
+    return res.status(HTTPSTATUS.CONFLICT).json({
+      success: false,
+      message: `Duplicate value for field "${field}"`,
+      errorCode: ErrorCode.VALIDATION_ERROR,
+      requestId: req.requestId,
+      field: field,
+      value: value,
+    });
+  }
   if (error instanceof mongoose.Error.ValidationError) {
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       success: false,

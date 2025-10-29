@@ -13,7 +13,7 @@ const logPasswordReset = async ({
   location,
   session,
 }: {
-  userId: Schema.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   status: "success" | "failed";
   reason: string;
   ip: string | undefined;

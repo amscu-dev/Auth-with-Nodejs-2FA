@@ -1,3 +1,18 @@
+process.on("uncaughtException", (err: any) => {
+  console.log("Uncaught Exceptions! 📛 Shutting down...");
+  console.error(err.name, err.message);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (err: any) => {
+  console.error(err?.name, err?.message);
+  console.log("Unhandled Promise Rejection! 📛 Shutting down...");
+  // server încă nu există aici dacă îl definești după importuri
+  server?.close(() => {
+    process.exit(1);
+  });
+});
+
 import "module-alias/register";
 import "dotenv/config";
 import cors from "cors";
@@ -5,7 +20,7 @@ import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import { config } from "./config/app.config";
 import connectDatabase from "./database/database";
-import { errorHandler } from "./middlewares/errorHandler";
+import { errorHandler as GlobalErrorHandler } from "./middlewares/errorHandler";
 import { HTTPSTATUS } from "./config/http.config";
 import authRoutes from "./modules/auth/auth.routes";
 import passport from "./middlewares/passport";
@@ -15,6 +30,10 @@ import addRequestId from "./middlewares/requestId";
 import mfaRoutes from "./modules/mfa/mfa.routes";
 import oidcSessionRoutes from "./modules/oidc-session/oidc-sesion.routes";
 import magicLinkRoutes from "./modules/magic-link/magic-link.routes";
+import { NotFoundException } from "./common/utils/catch-errors";
+import { ErrorCode } from "./common/enums/error-code.enum";
+import passkeyRoutes from "./modules/passkey/passkey.routes";
+
 const app = express();
 const BASE_PATH = config.BASE_PATH;
 
@@ -25,9 +44,7 @@ app.use(addRequestId);
 app.use(cookieParser());
 app.use(passport.initialize());
 
-// * TODO implement health endpoint
-// * TODO catch all routes
-app.get("/", (req: Request, res: Response) => {
+app.get("/health", (req: Request, res: Response) => {
   res.status(HTTPSTATUS.OK).json({
     message: "OK",
   });
@@ -39,10 +56,22 @@ app.use(`${BASE_PATH}/session`, authenticateJWT, sessionRoutes);
 app.use(`${BASE_PATH}/mfa`, mfaRoutes);
 app.use(`${BASE_PATH}/oidc`, oidcSessionRoutes);
 app.use(`${BASE_PATH}/magic-link`, magicLinkRoutes);
+app.use(`${BASE_PATH}/passkey`, passkeyRoutes);
 
-app.use(errorHandler);
+// Catch-all routes
+app.all("{*splat}", (req, res, next) => {
+  console.log(req.originalUrl);
+  next(
+    new NotFoundException(
+      `Can't find ${req.originalUrl} on this server!`,
+      ErrorCode.RESOURCE_NOT_FOUND
+    )
+  );
+});
+// Global error handler
+app.use(GlobalErrorHandler);
 
-app.listen(config.PORT, async () => {
+const server = app.listen(config.PORT, async () => {
   console.log(`Server listening on port ${config.PORT} in ${config.NODE_ENV}`);
   await connectDatabase();
 });

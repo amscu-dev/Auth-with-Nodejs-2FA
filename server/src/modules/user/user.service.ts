@@ -1,8 +1,8 @@
 import UserModel from "@/database/models/user.model";
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 export class UserService {
-  public async findUserById(userId: string | Schema.Types.ObjectId) {
+  public async findUserById(userId: string) {
     const user = await UserModel.findById(userId, {
       password: false,
     });

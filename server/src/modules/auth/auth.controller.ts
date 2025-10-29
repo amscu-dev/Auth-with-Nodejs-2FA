@@ -46,7 +46,11 @@ export class AuthController {
           statusCode: HTTPSTATUS.CREATED,
           message:
             "Registration successful. A verification email has been sent to your email address.",
-          data: { ...user, isVerificationEmailSend },
+          data: {
+            ...user,
+            isVerificationEmailSend,
+            nextStep: LOGIN.CONFIRM_SIGN_UP,
+          },
           metadata: {
             requestId: req.requestId,
           },

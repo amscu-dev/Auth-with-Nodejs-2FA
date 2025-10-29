@@ -8,18 +8,18 @@ import decodeBase64 from "./decodeBase64";
 
 export interface AccessTokenPayload extends jwt.JwtPayload {
   sub: string;
-  userId: UserDocument["_id"];
-  sessionId: SessionDocument["_id"];
+  userId: string;
+  sessionId: string;
 }
 
 export interface RefreshTokenPayload extends jwt.JwtPayload {
-  sessionId: SessionDocument["_id"];
+  sessionId: string;
 }
 
 export type MFAPurpose = "login" | "forgot_password";
 export interface MFATokenPayload extends jwt.JwtPayload {
   sub: string;
-  userId: UserDocument["_id"];
+  userId: string;
   mfaSessionId: string;
   jti: string;
   type: "mfa";

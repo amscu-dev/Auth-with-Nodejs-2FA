@@ -5,6 +5,7 @@ import {
 } from "@/common/utils/catch-errors";
 import SessionModel, { SessionDocument } from "@/database/models/session.model";
 import { UserDocument } from "@/database/models/user.model";
+import mongoose from "mongoose";
 
 export type PopulatedSession = SessionDocument & { userId: UserDocument };
 export class SessionService {

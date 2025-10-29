@@ -9,12 +9,13 @@ interface UserPreferences {
   emailNotification: boolean;
   twoFactorSecret?: string;
   backupCodes?: string[];
-  registerMethod: "oidc" | "regular";
-  supportedAuthMethods: ("oidc" | "regular")[];
+  registerMethod: "oidc" | "regular" | "magic-link" | "passkey";
+  supportedAuthMethods: ("oidc" | "regular" | "magic-link" | "passkey")[];
+  passkeys: Schema.Types.ObjectId[];
 }
 
 export interface UserDocument extends Document {
-  _id: Schema.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
   password: string;
@@ -39,7 +40,7 @@ const userPreferencesSchema = new Schema<UserPreferences>({
   backupCodes: { type: [String], required: false, default: [] },
   registerMethod: {
     type: String,
-    enum: ["oidc", "regular"],
+    enum: ["oidc", "regular", "magic-link", "passkey"],
     required: true,
     default: "regular",
   },
@@ -47,6 +48,11 @@ const userPreferencesSchema = new Schema<UserPreferences>({
     type: [String],
     required: true,
     default: ["regular"],
+  },
+  passkeys: {
+    type: [{ type: Schema.Types.ObjectId, ref: "Paskkey" }],
+    default: [],
+    required: true,
   },
 });
 
@@ -106,6 +112,8 @@ userSchema.methods.validateBackupCode = async function (
 // ! Exclude some prop when convert to JSON
 userSchema.set("toJSON", {
   transform: function (doc, ret: Record<string, any>) {
+    delete ret.userPreferences.registerMethod;
+    delete ret.userPreferences.supportedAuthMethods;
     delete ret.userPreferences.twoFactorSecret;
     delete ret.userPreferences.backupCodes;
     delete ret.password;

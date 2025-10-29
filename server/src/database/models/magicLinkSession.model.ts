@@ -2,11 +2,13 @@ import { fiveMinutesFromNow } from "@/common/utils/date-time";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface MagicLinkSessionDocument extends Document {
+  _id: mongoose.Types.ObjectId;
   tokenJTI: string;
   userEmail: string;
   consumed: boolean;
   createdAt: Date;
   expiresAt: Date;
+  sessionPurpose: "signin" | "signup";
 }
 
 const MagicLinkSessionSchema = new Schema<MagicLinkSessionDocument>({
@@ -32,6 +34,11 @@ const MagicLinkSessionSchema = new Schema<MagicLinkSessionDocument>({
     type: Date,
     required: true,
     default: fiveMinutesFromNow,
+  },
+  sessionPurpose: {
+    type: String,
+    enum: ["signin", "signup"],
+    required: true,
   },
 });
 

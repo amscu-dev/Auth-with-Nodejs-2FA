@@ -13,12 +13,7 @@ import { NextFunction, Request, Response } from "express";
 import { userService } from "@/modules/user/user.module";
 import decodeBase64 from "../utils/decodeBase64";
 import { sessionService } from "@/modules/session/session.module";
-
-interface JwtPayload extends jwt.JwtPayload {
-  sub: string;
-  userId: string;
-  sessionId: string;
-}
+import { AccessTokenPayload } from "../utils/jwt";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
@@ -43,7 +38,7 @@ const options: StrategyOptionsWithRequest = {
 };
 const verifyCallback: VerifyCallbackWithRequest = async (
   req: Request,
-  payload: JwtPayload,
+  payload: AccessTokenPayload,
   done
 ) => {
   try {

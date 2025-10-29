@@ -9,7 +9,8 @@ export interface UserAgent {
 }
 
 export interface SessionDocument extends Document {
-  userId: Schema.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   userAgent: UserAgent;
   expiredAt: Date;
   createdAt: Date;

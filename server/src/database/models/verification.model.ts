@@ -3,7 +3,8 @@ import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { generateUniqueCode } from "@/common/utils/uuid";
 
 export interface VerificationCodeDocument extends Document {
-  userId: Schema.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   code: string;
   type: VerificationEnum;
   used: boolean;

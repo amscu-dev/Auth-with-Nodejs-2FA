@@ -8,7 +8,8 @@ export interface Location {
 }
 
 export interface PasswordResetLogDocument extends Document {
-  userId: Schema.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   timestamp: Date;
   ip?: string | undefined;
   userAgent: UserAgent;
