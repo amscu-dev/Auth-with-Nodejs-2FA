@@ -216,4 +216,31 @@ export class PasskeyController {
       );
     }
   );
+  public verifyPasskeyRemoveSession = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { userid, credentialid } = removePasskeyRequestSchema.parse(
+        req.params
+      );
+      const authenticationResponse =
+        passkeyAuthenticationResponseJSONSchema.parse(req.body);
+      await this.passkeyService.verifyPasskeyRemoveSessionAndRemovePasskey(
+        userid,
+        credentialid,
+        authenticationResponse,
+        req
+      );
+
+      return res.status(HTTPSTATUS.CREATED).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.CREATED,
+          message: "Passkey  has been successfully removed.",
+          data: {},
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
+    }
+  );
 }

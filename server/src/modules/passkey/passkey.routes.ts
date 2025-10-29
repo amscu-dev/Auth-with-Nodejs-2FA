@@ -36,5 +36,10 @@ passkeyRoutes.post(
   authenticateJWT,
   passkeyController.generatePasskeyRemoveSession
 );
+passkeyRoutes.delete(
+  "/remove-key/verify/:userid/:credentialid",
+  authenticateJWT,
+  passkeyController.verifyPasskeyRemoveSession
+);
 
 export default passkeyRoutes;

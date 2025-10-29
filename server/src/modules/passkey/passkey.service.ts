@@ -370,7 +370,6 @@ export default class PasskeyService {
       mfaToken: "",
     };
   }
-
   public async generatePasskeyAddSession(userid: string, req: Request) {
     const curentUser = req.user as Express.User;
 
@@ -461,7 +460,7 @@ export default class PasskeyService {
       );
     }
 
-    if (challengeSession.passkeyChallengeSessionPurpose !== "signup") {
+    if (challengeSession.passkeyChallengeSessionPurpose !== "add-new-key") {
       throw new BadRequestException(
         "Passkey registration session purpose is invalid.",
         ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
@@ -567,5 +566,103 @@ export default class PasskeyService {
       passkeyChallengeSessionPurpose: "delete-key",
     });
     return publicKeyCredentialRequestOptions;
+  }
+  public async verifyPasskeyRemoveSessionAndRemovePasskey(
+    userid: string,
+    credentialid: string,
+    authenticationResponse: AuthenticationResponseJSON,
+    req: Request
+  ) {
+    const currentUser = req.user as Express.User;
+    if (currentUser.id !== userid) {
+      throw new UnauthorizedException(
+        "You are not authorized to remove a passkey for this user."
+      );
+    }
+    const passkey = await PasskeyModel.findOne({
+      credentialID: credentialid,
+    });
+
+    if (!passkey) {
+      throw new NotFoundException("Passkey does not exists.");
+    }
+    if (userid !== passkey.userID.toString()) {
+      throw new UnauthorizedException(
+        "You are not authorized to remove a passkey for this user."
+      );
+    }
+
+    const { challenge } = clientDataJSONSchema.parse(
+      JSON.parse(
+        decodeBase64(authenticationResponse.response.clientDataJSON, "utf8")
+      )
+    );
+    // ! Find Session Challenge
+    const challengeSession = await PasskeyChallengeSessionModel.findOne({
+      challenge: challenge,
+      passkeyChallengeSessionPurpose: "delete-key",
+      userId: userid,
+    });
+
+    if (!challengeSession) {
+      throw new BadRequestException(
+        "Passkey registration session not found.",
+        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      );
+    }
+
+    if (challengeSession.consumed) {
+      throw new ConflictException(
+        "Passkey registration session has already been used.",
+        ErrorCode.PASSKEY_CHALLENGE_ALREADY_CONSUMED
+      );
+    }
+
+    if (challengeSession.passkeyChallengeSessionPurpose !== "add-new-key") {
+      throw new BadRequestException(
+        "Passkey registration session purpose is invalid.",
+        ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
+      );
+    }
+
+    // ! Verify signature
+    const verification = await verifyAuthenticationResponse({
+      response: authenticationResponse,
+      expectedChallenge: challenge,
+      expectedOrigin: "https://www.passkeys-debugger.io",
+      expectedRPID: "passkeys-debugger.io",
+      credential: {
+        id: passkey.credentialID,
+        publicKey: Uint8Array.from(
+          Buffer.from(passkey.credentialPublicKey, "base64")
+        ),
+        counter: passkey.counter,
+        transports: passkey.transports,
+      },
+    });
+
+    if (!verification.verified) {
+      throw new AuthenticationException(
+        "The provided passkey challenge is invalid or could not be verified.",
+        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      );
+    }
+    const mongoSession = await mongoose.startSession();
+    try {
+      const data = await mongoSession.withTransaction(async () => {
+        await PasskeyModel.deleteOne(
+          { _id: passkey._id },
+          { session: mongoSession }
+        );
+        await UserModel.updateOne(
+          { _id: currentUser._id },
+          { $pull: { passkeys: passkey._id } },
+          { session: mongoSession }
+        );
+      });
+    } catch (error) {
+    } finally {
+      await mongoSession.endSession();
+    }
   }
 }
