@@ -42,4 +42,9 @@ passkeyRoutes.delete(
   passkeyController.verifyPasskeyRemoveSession
 );
 
+passkeyRoutes.get(
+  "/all/:userid",
+  authenticateJWT,
+  passkeyController.getAllUserPasskeys
+);
 export default passkeyRoutes;

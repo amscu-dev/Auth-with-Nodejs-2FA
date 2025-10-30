@@ -3,6 +3,7 @@ import PasskeyService from "./passkey.service";
 import { Request, Response } from "express";
 import {
   addPasskeyRequestSchema,
+  getAllPaskeySchema,
   passkeyAuthenticationResponseJSONSchema,
   passkeyRegisterSchema,
   passkeyRegistrationResponseJSONSchema,
@@ -230,14 +231,42 @@ export class PasskeyController {
         req
       );
 
-      return res.status(HTTPSTATUS.CREATED).json(
+      return res.status(HTTPSTATUS.NO_CONTENT).json(
         new ApiResponse({
           success: true,
-          statusCode: HTTPSTATUS.CREATED,
+          statusCode: HTTPSTATUS.NO_CONTENT,
           message: "Passkey  has been successfully removed.",
           data: {},
           metadata: {
             requestId: req.requestId,
+          },
+        })
+      );
+    }
+  );
+  public getAllUserPasskeys = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      // ! 1. Validation
+      const { userid } = getAllPaskeySchema.parse(req.params);
+
+      // ! 2. Call service
+      const mappedPasskeys = await this.passkeyService.getAllPaskeyByUserId(
+        userid,
+        req
+      );
+
+      // ! 3. Return response to user
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.OK,
+          message: "All passkeys was successfully retreived.",
+          data: {
+            passkeys: mappedPasskeys,
+          },
+          metadata: {
+            requestId: req.requestId,
+            count: mappedPasskeys.length,
           },
         })
       );

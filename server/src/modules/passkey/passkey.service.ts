@@ -30,7 +30,10 @@ import type { RegistrationResponseJSON } from "@simplewebauthn/server";
 import { clientDataJSONSchema } from "@/common/validators/passkey.validator";
 import decodeBase64 from "@/common/utils/decodeBase64";
 import { uint8ArrayToBase64 } from "@/common/utils/uint8ArrayToBase64";
-import { getPasskeyProvider } from "@/common/utils/getPasskeyProvider";
+import {
+  getPasskeyProvider,
+  getPasskeyProviderWithIcons,
+} from "@/common/utils/getPasskeyProvider";
 import { PasskeyModel } from "@/database/models/passkey.model";
 import VerificationCodeModel from "@/database/models/verification.model";
 import { VerificationEnum } from "@/common/enums/verification-code.enum";
@@ -618,7 +621,7 @@ export default class PasskeyService {
       );
     }
 
-    if (challengeSession.passkeyChallengeSessionPurpose !== "add-new-key") {
+    if (challengeSession.passkeyChallengeSessionPurpose !== "delete-key") {
       throw new BadRequestException(
         "Passkey registration session purpose is invalid.",
         ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
@@ -649,7 +652,7 @@ export default class PasskeyService {
     }
     const mongoSession = await mongoose.startSession();
     try {
-      const data = await mongoSession.withTransaction(async () => {
+      await mongoSession.withTransaction(async () => {
         await PasskeyModel.deleteOne(
           { _id: passkey._id },
           { session: mongoSession }
@@ -659,10 +662,42 @@ export default class PasskeyService {
           { $pull: { passkeys: passkey._id } },
           { session: mongoSession }
         );
+        challengeSession.consumed = true;
+        await challengeSession.save({ session: mongoSession });
       });
     } catch (error) {
     } finally {
       await mongoSession.endSession();
     }
+  }
+  public async getAllPaskeyByUserId(userid: string, req: Request) {
+    // ! 1. Get verify currentUser
+    const currentUser = req.user as Express.User;
+    if (currentUser.id !== userid) {
+      throw new UnauthorizedException(
+        "You are not authorized to remove a passkey for this user."
+      );
+    }
+
+    // ! 2. Get all passkey by userid
+    const passkeys = await PasskeyModel.find(
+      {
+        userID: userid,
+      },
+      "credentialID aaguid createdAt lastUsed"
+    );
+    // ! 3. Mapping aaguid providers icons
+    const mappedPasskeys = passkeys.map((p) => {
+      const icons = getPasskeyProviderWithIcons(p.aaguid.aaguid);
+      return {
+        aaguid: icons,
+        credentialId: p.credentialID,
+        createdAt: p.createdAt,
+        lastUsed: p.lastUsed,
+      };
+    });
+
+    // ! 4. Return passkeys info
+    return mappedPasskeys;
   }
 }

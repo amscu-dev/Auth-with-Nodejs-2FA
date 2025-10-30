@@ -3,6 +3,13 @@ import type {
   RegistrationResponseJSON,
   AuthenticationResponseJSON,
 } from "@simplewebauthn/server";
+
+export const getAllPaskeySchema = z.object({
+  userid: z.string().refine((val) => /^[0-9a-fA-F]{24}$/.test(val), {
+    message: "Invalid user ID format",
+  }),
+});
+
 export const passkeyRegisterSchema = z.object({
   name: z.string().trim().min(1).max(255),
   email: z.email().trim().min(1).max(255),
