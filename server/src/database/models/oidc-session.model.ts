@@ -1,5 +1,6 @@
-import mongoose, { Document, Schema, model } from "mongoose";
-
+import { Document, Schema, model } from "mongoose";
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 export interface OIDCSessionDocument extends Document {
   _id: mongoose.Types.ObjectId;
   state: string;
@@ -45,6 +46,7 @@ const OIDCSessionSchema = new Schema<OIDCSessionDocument>({
 });
 
 OIDCSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+OIDCSessionSchema.plugin(executionTimePlugin);
 
 export const OIDCSessionModel = model<OIDCSessionDocument>(
   "OIDCSession",

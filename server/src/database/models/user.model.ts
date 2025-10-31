@@ -1,8 +1,9 @@
-import mongoose, { Document, Schema } from "mongoose";
+import { Document, Schema } from "mongoose";
 import { compareValue, hashValue } from "@/common/utils/bcrypt";
 import { BackupCodeType } from "@/common/validators/backup.validator";
 import { PasswordType } from "@/common/interface/auth.interface";
-
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 // ! User Types
 interface UserPreferences {
   enable2FA: boolean;
@@ -32,30 +33,6 @@ export interface UserDocument extends Document {
   ): Promise<{ isValidBackupCode: boolean; matchedCode: string }>;
 }
 
-// ! User Schemas
-const userPreferencesSchema = new Schema<UserPreferences>({
-  enable2FA: { type: Boolean, default: false },
-  emailNotification: { type: Boolean, default: true },
-  twoFactorSecret: { type: String },
-  backupCodes: { type: [String], required: false, default: [] },
-  registerMethod: {
-    type: String,
-    enum: ["oidc", "regular", "magic-link", "passkey"],
-    required: true,
-    default: "regular",
-  },
-  supportedAuthMethods: {
-    type: [String],
-    required: true,
-    default: ["regular"],
-  },
-  passkeys: {
-    type: [{ type: Schema.Types.ObjectId, ref: "Paskkey" }],
-    default: [],
-    required: true,
-  },
-});
-
 const userSchema = new Schema<UserDocument>(
   {
     name: { type: String, required: true },
@@ -63,14 +40,36 @@ const userSchema = new Schema<UserDocument>(
     password: { type: String, required: true },
     oldPassword: { type: [String], required: false, default: [] },
     isEmailVerified: { type: Boolean, default: false },
-    userPreferences: { type: userPreferencesSchema, _id: false, default: {} },
+    userPreferences: {
+      enable2FA: { type: Boolean, default: false },
+      emailNotification: { type: Boolean, default: true },
+      twoFactorSecret: { type: String },
+      backupCodes: { type: [String], default: [] },
+      registerMethod: {
+        type: String,
+        enum: ["oidc", "regular", "magic-link", "passkey"],
+        default: "regular",
+        required: true,
+      },
+      supportedAuthMethods: {
+        type: [String],
+        default: ["regular"],
+        required: true,
+      },
+      passkeys: {
+        type: [{ type: Schema.Types.ObjectId, ref: "Passkey" }],
+        default: [],
+        required: true,
+      },
+    },
   },
   {
     timestamps: true,
     toJSON: {},
   }
 );
-
+// ! SHOULD BE FIRST MIDDLEWARE
+userSchema.plugin(executionTimePlugin);
 // ! User Document Middleware ~ Runs on Doc before .save()
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
@@ -113,6 +112,7 @@ userSchema.methods.validateBackupCode = async function (
 userSchema.set("toJSON", {
   transform: function (doc, ret: Record<string, any>) {
     delete ret.userPreferences.registerMethod;
+    delete ret.userPreferences.passkeys;
     delete ret.userPreferences.supportedAuthMethods;
     delete ret.userPreferences.twoFactorSecret;
     delete ret.userPreferences.backupCodes;

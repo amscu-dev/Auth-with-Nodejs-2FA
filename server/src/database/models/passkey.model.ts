@@ -5,9 +5,10 @@ import {
   ProviderName,
 } from "@/common/utils/getPasskeyProvider";
 import { AuthenticatorTransportFuture } from "@simplewebauthn/server";
-import mongoose, { Schema } from "mongoose";
+import { Schema } from "mongoose";
 import { Document } from "mongoose";
-
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 export interface PasskeyDocument extends Document {
   _id: mongoose.Types.ObjectId;
   userID: mongoose.Types.ObjectId;
@@ -98,6 +99,8 @@ const PasskeySchema = new Schema<PasskeyDocument>({
     default: new Date(),
   },
 });
+
+PasskeySchema.plugin(executionTimePlugin);
 
 export const PasskeyModel = mongoose.model<PasskeyDocument>(
   "Passkey",

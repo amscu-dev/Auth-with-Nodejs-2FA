@@ -1,6 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose";
+import { Document, Schema } from "mongoose";
 import { UserAgent } from "./session.model";
-
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 export interface Location {
   city?: string | undefined;
   region?: string | undefined;
@@ -19,7 +20,7 @@ export interface PasswordResetLogDocument extends Document {
   location?: Location;
 }
 
-const passwordResetLogSchema = new Schema<PasswordResetLogDocument>({
+const PasswordResetLogSchema = new Schema<PasswordResetLogDocument>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   timestamp: { type: Date, default: Date.now },
   ip: { type: String },
@@ -43,9 +44,11 @@ const passwordResetLogSchema = new Schema<PasswordResetLogDocument>({
   },
 });
 
+PasswordResetLogSchema.plugin(executionTimePlugin);
+
 const PasswordResetLogModel = mongoose.model<PasswordResetLogDocument>(
   "PasswordResetLogDocument",
-  passwordResetLogSchema
+  PasswordResetLogSchema
 );
 
 export default PasswordResetLogModel;

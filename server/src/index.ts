@@ -33,32 +33,40 @@ import magicLinkRoutes from "./modules/magic-link/magic-link.routes";
 import { NotFoundException } from "./common/utils/catch-errors";
 import { ErrorCode } from "./common/enums/error-code.enum";
 import passkeyRoutes from "./modules/passkey/passkey.routes";
+import addRequestHeaders from "./middlewares/addHeaders";
+import addInfoAsyncLocalStorage from "./middlewares/addInfoAsyncLocalStorage";
 
+// ! Initialize app
 const app = express();
-const BASE_PATH = config.BASE_PATH;
 
+// ! Library Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ credentials: true, origin: config.APP_ORIGIN }));
-app.use(addRequestId);
 app.use(cookieParser());
 app.use(passport.initialize());
 
+// ! Custom General Middlewares
+app.use(addRequestId);
+app.use(addRequestHeaders);
+app.use(addInfoAsyncLocalStorage);
+
+// ! Health endpoint
 app.get("/health", (req: Request, res: Response) => {
   res.status(HTTPSTATUS.OK).json({
     message: "OK",
   });
 });
 
-// ! Auth
-app.use(`${BASE_PATH}/auth`, authRoutes);
-app.use(`${BASE_PATH}/session`, authenticateJWT, sessionRoutes);
-app.use(`${BASE_PATH}/mfa`, mfaRoutes);
-app.use(`${BASE_PATH}/oidc`, oidcSessionRoutes);
-app.use(`${BASE_PATH}/magic-link`, magicLinkRoutes);
-app.use(`${BASE_PATH}/passkey`, passkeyRoutes);
+// ! Routes
+app.use(`${config.BASE_PATH}/auth`, authRoutes);
+app.use(`${config.BASE_PATH}/session`, authenticateJWT, sessionRoutes);
+app.use(`${config.BASE_PATH}/mfa`, mfaRoutes);
+app.use(`${config.BASE_PATH}/oidc`, oidcSessionRoutes);
+app.use(`${config.BASE_PATH}/magic-link`, magicLinkRoutes);
+app.use(`${config.BASE_PATH}/passkey`, passkeyRoutes);
 
-// Catch-all routes
+// ! Catch-all routes
 app.all("{*splat}", (req, res, next) => {
   console.log(req.originalUrl);
   next(
@@ -68,9 +76,11 @@ app.all("{*splat}", (req, res, next) => {
     )
   );
 });
-// Global error handler
+
+// ! Global error handler
 app.use(GlobalErrorHandler);
 
+// ! Start Server
 const server = app.listen(config.PORT, async () => {
   console.log(`Server listening on port ${config.PORT} in ${config.NODE_ENV}`);
   await connectDatabase();

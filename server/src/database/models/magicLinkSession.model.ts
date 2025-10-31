@@ -1,6 +1,7 @@
 import { fiveMinutesFromNow } from "@/common/utils/date-time";
-import mongoose, { Document, Schema } from "mongoose";
-
+import { Document, Schema } from "mongoose";
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 export interface MagicLinkSessionDocument extends Document {
   _id: mongoose.Types.ObjectId;
   tokenJTI: string;
@@ -43,6 +44,8 @@ const MagicLinkSessionSchema = new Schema<MagicLinkSessionDocument>({
 });
 
 MagicLinkSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+MagicLinkSessionSchema.plugin(executionTimePlugin);
 
 export const MagicLinkModel = mongoose.model<MagicLinkSessionDocument>(
   "MagicLinkSession",

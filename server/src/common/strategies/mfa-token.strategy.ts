@@ -12,6 +12,7 @@ import passport, { PassportStatic } from "passport";
 import { NextFunction, Request, Response } from "express";
 import { MFAPurpose, MFATokenPayload } from "../utils/jwt";
 import { MFASessionModel } from "@/database/models/mfaSession.model";
+import { asyncLocalStorage } from "../context/asyncLocalStorage";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
@@ -139,6 +140,7 @@ export const authenticateMFA = (
       }
       if (user && !err) {
         req.user = user;
+        asyncLocalStorage.getStore()?.set("userId", user.id);
       }
       if (err) {
         next(err);

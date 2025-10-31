@@ -11,7 +11,7 @@ export function hmacWithPepper(password: string) {
 
 export const hashValue = async (
   value: string,
-  saltRounds: number = 12
+  saltRounds: number = 10
 ): Promise<string> => {
   const hmac = hmacWithPepper(value);
   return await bcrypt.hash(hmac, saltRounds);

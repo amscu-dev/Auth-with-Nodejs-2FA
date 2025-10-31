@@ -61,29 +61,20 @@ export class AuthService {
     try {
       const { verificationCode, newUser } = await session.withTransaction(
         async () => {
-          const [newUser] = await UserModel.create(
-            [
-              {
-                name,
-                email,
-                password,
-              },
-            ],
-            { session }
-          );
+          const newUser = new UserModel({
+            name,
+            email,
+            password,
+          });
+          const verificationCode = new VerificationCodeModel({
+            userId: newUser._id,
+            type: VerificationEnum.EMAIL_VERIFICATION,
+            expiresAt: fortyFiveMinutesFromNow(),
+          });
 
-          const userId = newUser._id;
+          await newUser.save({ session: session });
+          await verificationCode.save({ session: session });
 
-          const [verificationCode] = await VerificationCodeModel.create(
-            [
-              {
-                userId,
-                type: VerificationEnum.EMAIL_VERIFICATION,
-                expiresAt: fortyFiveMinutesFromNow(),
-              },
-            ],
-            { session }
-          );
           return { verificationCode, newUser };
         }
       );
@@ -103,7 +94,7 @@ export class AuthService {
     } catch (error) {
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
   public async confirmSignUp(email: string) {

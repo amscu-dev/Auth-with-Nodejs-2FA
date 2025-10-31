@@ -1,7 +1,8 @@
 import { fiveMinutesFromNow } from "@/common/utils/date-time";
-import mongoose, { Schema } from "mongoose";
+import { Schema } from "mongoose";
 import { Document } from "mongoose";
-
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 type PasskeyChallengeSessionPurpose =
   | "signup"
   | "signin"
@@ -60,6 +61,7 @@ PasskeyChallengeSessionSchema.index(
   { expiresAt: 1 },
   { expireAfterSeconds: 0 }
 );
+PasskeyChallengeSessionSchema.plugin(executionTimePlugin);
 
 export const PasskeyChallengeSessionModel =
   mongoose.model<PasskeyChallengeSessionDocument>(

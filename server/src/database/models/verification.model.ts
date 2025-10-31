@@ -1,7 +1,8 @@
-import mongoose, { Document, Schema } from "mongoose";
+import { Document, Schema } from "mongoose";
 import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { generateUniqueCode } from "@/common/utils/uuid";
-
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 export interface VerificationCodeDocument extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -12,7 +13,7 @@ export interface VerificationCodeDocument extends Document {
   createdAt: Date;
 }
 
-const verificationCodeSchema = new Schema<VerificationCodeDocument>({
+const VerificationCodeSchema = new Schema<VerificationCodeDocument>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -44,9 +45,11 @@ const verificationCodeSchema = new Schema<VerificationCodeDocument>({
   },
 });
 
+VerificationCodeSchema.plugin(executionTimePlugin);
+
 const VerificationCodeModel = mongoose.model<VerificationCodeDocument>(
   "VerificationCode",
-  verificationCodeSchema
+  VerificationCodeSchema
 );
 
 export default VerificationCodeModel;

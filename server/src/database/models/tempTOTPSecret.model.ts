@@ -1,7 +1,8 @@
 import { tenMinutesFromNow } from "@/common/utils/date-time";
-import mongoose, { Schema } from "mongoose";
+import { Schema } from "mongoose";
 import { Document } from "mongoose";
-
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 export interface TempTOTPSecretDocument extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -10,7 +11,7 @@ export interface TempTOTPSecretDocument extends Document {
   createdAt: Date;
 }
 
-const tempTOTPSecretSchema = new Schema<TempTOTPSecretDocument>({
+const TempTOTPSecretSchema = new Schema<TempTOTPSecretDocument>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -33,11 +34,12 @@ const tempTOTPSecretSchema = new Schema<TempTOTPSecretDocument>({
   },
 });
 
-tempTOTPSecretSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 });
+TempTOTPSecretSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 });
+TempTOTPSecretSchema.plugin(executionTimePlugin);
 
 const TempTOTPSecretModel = mongoose.model<TempTOTPSecretDocument>(
   "TempTOTPSecret",
-  tempTOTPSecretSchema
+  TempTOTPSecretSchema
 );
 
 export default TempTOTPSecretModel;

@@ -1,6 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose";
+import { Document, Schema } from "mongoose";
 import { thirtyDaysFromNow } from "@/common/utils/date-time";
-
+import mongoose from "../mongoose/mongoose";
+import executionTimePlugin from "../plugins/dbLogger";
 export interface UserAgent {
   browser: string;
   version: string;
@@ -16,7 +17,7 @@ export interface SessionDocument extends Document {
   createdAt: Date;
 }
 
-const sessionSchema = new Schema<SessionDocument>({
+const SessionSchema = new Schema<SessionDocument>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -44,7 +45,8 @@ const sessionSchema = new Schema<SessionDocument>({
     default: thirtyDaysFromNow,
   },
 });
+SessionSchema.plugin(executionTimePlugin);
 
-const SessionModel = mongoose.model<SessionDocument>("Session", sessionSchema);
+const SessionModel = mongoose.model<SessionDocument>("Session", SessionSchema);
 
 export default SessionModel;

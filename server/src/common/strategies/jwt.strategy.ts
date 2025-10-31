@@ -14,6 +14,7 @@ import { userService } from "@/modules/user/user.module";
 import decodeBase64 from "../utils/decodeBase64";
 import { sessionService } from "@/modules/session/session.module";
 import { AccessTokenPayload } from "../utils/jwt";
+import { asyncLocalStorage } from "../context/asyncLocalStorage";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
@@ -125,6 +126,7 @@ export const authenticateJWT = (
       }
       if (user && !err) {
         req.user = user;
+        asyncLocalStorage.getStore()?.set("userId", user.id);
       }
       if (err) {
         next(err);
