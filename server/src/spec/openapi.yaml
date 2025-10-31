@@ -1,0 +1,14 @@
+openapi: 3.1.0
+info:
+  title: API for Password, Passkey, Magic Link, and OIDC Authentication
+  version: 1.0.0
+  summary: >
+    API for user registration and authentication using multiple methods:
+    username/password, passkey (WebAuthn), magic link, and OIDC providers (Google, GitHub, etc.).
+  contact:
+    name: Marinescu Alexandru
+    email: amarinescu.dev@gmail.com
+  license:
+    name: Apache License 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+paths: {}

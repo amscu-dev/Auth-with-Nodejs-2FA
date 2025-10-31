@@ -1,5 +1,4 @@
 import { asyncLocalStorage } from "@/common/context/asyncLocalStorage";
-import logger from "@/common/logger/logger";
 import { logWithMetadata } from "@/common/utils/logWithMetadata";
 import mongoose from "mongoose";
 
@@ -25,38 +24,24 @@ const mongooseMiddlewareOperations = [
 
   // Model / Static middleware
   "insertMany",
-  "createCollection",
-  "bulkWrite",
-
-  // Other / Initialization
-  "init",
 ];
 
 const executionTimePlugin = (schema: mongoose.Schema) => {
   mongooseMiddlewareOperations.forEach((hook) => {
     const regex = new RegExp(`^${hook}$`);
-    schema.pre(regex, async function (next) {
+    schema.pre(regex, function (next) {
       if (!(this as any)._startTime) {
         (this as any)._startTime = Date.now();
       }
       next();
     });
-    schema.post(regex, function (res, next) {
-      // ! Collect data from storage & query/document
-      const reqMethod = asyncLocalStorage.getStore()?.get("reqMethod");
-      const reqEndpoint = asyncLocalStorage.getStore()?.get("reqEndpoint");
-      const reqId = asyncLocalStorage.getStore()?.get("reqId");
-      const reqUserId =
-        asyncLocalStorage.getStore()?.get("reqUserId") || "ANONYM";
+    schema.post(regex, function () {
       const dbDuration = Date.now() - (this as any)._startTime;
       const dbOperation = (this as any).op || hook;
       const dbCollection =
         (this as any)?.mongooseCollection?.modelName ||
         (this as any)?.constructor?.modelName ||
         "unknown";
-
-      // ! Construct logg metadata
-      const loggerMetaInfo = {};
 
       // ! Log different based on db op duration
       if (dbDuration > 200) {
@@ -82,8 +67,6 @@ const executionTimePlugin = (schema: mongoose.Schema) => {
           },
         });
       }
-
-      next();
     });
   });
 };

@@ -9,6 +9,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     status: "STARTED",
     message: "Processing request...",
   });
+
   res.on("finish", () => {
     const startTime = asyncLocalStorage.getStore()?.get("reqStartTime");
     const reqDuration = Date.now() - startTime;

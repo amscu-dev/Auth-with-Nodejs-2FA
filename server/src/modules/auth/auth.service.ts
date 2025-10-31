@@ -253,19 +253,17 @@ export class AuthService {
     const validCode = await VerificationCodeModel.findOne({
       code: code,
       type: VerificationEnum.EMAIL_VERIFICATION,
-      expiresAt: { $gt: new Date() },
     });
     if (!validCode) {
       throw new BadRequestException(
-        "Invalid verification code.",
+        "Expired verification code. Please request a new one.",
         ErrorCode.VERIFICATION_ERROR
       );
     }
     // ! Code its expired throw error and delete code
     if (validCode.expiresAt < new Date()) {
-      await validCode.deleteOne();
       throw new BadRequestException(
-        "Expired verification code.Please request a new one.",
+        "Expired verification code. Please request a new one.",
         ErrorCode.VERIFICATION_ERROR
       );
     }

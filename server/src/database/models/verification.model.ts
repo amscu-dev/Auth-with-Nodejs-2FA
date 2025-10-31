@@ -45,6 +45,8 @@ const VerificationCodeSchema = new Schema<VerificationCodeDocument>({
   },
 });
 
+VerificationCodeSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 600 });
+
 VerificationCodeSchema.plugin(executionTimePlugin);
 
 const VerificationCodeModel = mongoose.model<VerificationCodeDocument>(
