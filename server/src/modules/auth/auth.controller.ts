@@ -22,7 +22,7 @@ import {
 } from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
-import logger from "@/common/logger/logger";
+import { logWithMetadata } from "@/common/utils/logWithMetadata";
 
 export class AuthController {
   private authService: AuthService;
@@ -31,16 +31,31 @@ export class AuthController {
   }
   public register = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      // Validate Input
+      // ! 1. Validate Input
       const body = registerSchema.parse({
         ...req.body,
       });
-      // Talk with DB
+
+      // ! 2. Call Service
       const { user, isVerificationEmailSend } = await this.authService.register(
         body
       );
+      // ! 3. User register successfully
+      logWithMetadata({
+        level: "info",
+        scope: "CONTROLLER",
+        status: "FINISHED_WITH_SUCCESS",
+        message: "User successfully registered(regular)!",
+        metadata: {
+          resPayload: {
+            user,
+            isVerificationEmailSend,
+            nextStep: LOGIN.CONFIRM_SIGN_UP,
+          },
+        },
+      });
 
-      // Return response to USER
+      // ! 3. Return response
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,

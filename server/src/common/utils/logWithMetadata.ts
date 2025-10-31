@@ -3,7 +3,7 @@ import logger from "../logger/logger";
 
 type LogScope = "CONTROLLER" | "DB" | "ERROR" | "EXTERNAL_SERVICE_ERROR";
 type LogLevel = "info" | "warn" | "error";
-type LogStatus = "STARTED" | "FINISHED_WITH_SUCCES" | "FINISHED_WITH_ERROR";
+type LogStatus = "STARTED" | "FINISHED_WITH_SUCCESS" | "FINISHED_WITH_ERROR";
 
 export function logWithMetadata({
   level,

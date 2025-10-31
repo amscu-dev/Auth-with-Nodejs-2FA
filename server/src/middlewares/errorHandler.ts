@@ -12,7 +12,6 @@ import { AuthenticationException } from "@/common/utils/catch-errors";
 import { logWithMetadata } from "@/common/utils/logWithMetadata";
 
 const formatZodError = (res: Response, req: Request, error: z.ZodError) => {
-  console.log("stack", error.stack);
   const errors = error.issues.map((error) => ({
     field: error.path.join("."),
     message: error.message,
@@ -32,6 +31,7 @@ export const errorHandler: ErrorRequestHandler = (
   res,
   next
 ): any => {
+  // ! Centralized log error
   logWithMetadata({
     level: "error",
     scope: "ERROR",
