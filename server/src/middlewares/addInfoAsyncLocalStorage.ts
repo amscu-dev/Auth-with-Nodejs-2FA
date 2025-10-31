@@ -7,12 +7,12 @@ export default function addInfoAsyncLocalStorage(
   next: NextFunction
 ) {
   asyncLocalStorage.run(new Map(), () => {
-    asyncLocalStorage.getStore()?.set("requestId", req.requestId);
-    asyncLocalStorage.getStore()?.set("api", req.url);
-    asyncLocalStorage.getStore()?.set("payload", req.body);
-    asyncLocalStorage.getStore()?.set("headers", req.headers);
-    asyncLocalStorage.getStore()?.set("method", req.method);
-    asyncLocalStorage.getStore()?.set("query", req.query);
+    asyncLocalStorage.getStore()?.set("reqId", req.requestId);
+    asyncLocalStorage.getStore()?.set("reqEndpoint", req.path);
+    asyncLocalStorage.getStore()?.set("reqMethod", req.method);
+    asyncLocalStorage.getStore()?.set("reqHeaders", req.headers);
+    asyncLocalStorage.getStore()?.set("reqPayload", req.body);
+    asyncLocalStorage.getStore()?.set("reqQueryStrings", req.query);
     next();
   });
 }

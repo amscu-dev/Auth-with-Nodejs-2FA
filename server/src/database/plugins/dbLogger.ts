@@ -1,4 +1,6 @@
 import { asyncLocalStorage } from "@/common/context/asyncLocalStorage";
+import logger from "@/common/logger/logger";
+import { logWithMetadata } from "@/common/utils/logWithMetadata";
 import mongoose from "mongoose";
 
 const mongooseMiddlewareOperations = [
@@ -40,36 +42,46 @@ const executionTimePlugin = (schema: mongoose.Schema) => {
       next();
     });
     schema.post(regex, function (res, next) {
-      const duration = Date.now() - (this as any)._startTime;
-      const op = (this as any).op || hook;
-      const collection =
+      // ! Collect data from storage & query/document
+      const reqMethod = asyncLocalStorage.getStore()?.get("reqMethod");
+      const reqEndpoint = asyncLocalStorage.getStore()?.get("reqEndpoint");
+      const reqId = asyncLocalStorage.getStore()?.get("reqId");
+      const reqUserId =
+        asyncLocalStorage.getStore()?.get("reqUserId") || "ANONYM";
+      const dbDuration = Date.now() - (this as any)._startTime;
+      const dbOperation = (this as any).op || hook;
+      const dbCollection =
         (this as any)?.mongooseCollection?.modelName ||
         (this as any)?.constructor?.modelName ||
         "unknown";
-      const time = new Date();
-      const requestId = asyncLocalStorage.getStore()?.get("requestId");
-      const userId = asyncLocalStorage.getStore()?.get("userId") || "ANONYM";
-      const api = asyncLocalStorage.getStore()?.get("api");
-      // logger.info({
-      //   msg: `[DB] ${op} on ${collection}`,
-      //   duration,
-      // });
-      const logEntry = {
-        timestamp: time.toISOString(),
-        level: "INFO",
-        type: "DB",
-        operation: op,
-        collection: collection,
-        requestId: requestId,
-        userId: userId,
-        api: api,
-        durationMs: duration,
-      };
 
-      console.log(JSON.stringify(logEntry));
-      // if (duration > 200) {
-      //   logger.warn(`[DB] Slow query detected (${duration}ms) on ${collection}`);
-      // }
+      // ! Construct logg metadata
+      const loggerMetaInfo = {};
+
+      // ! Log different based on db op duration
+      if (dbDuration > 200) {
+        logWithMetadata({
+          level: "warn",
+          scope: "DB",
+          message: "too long db operation",
+          metadata: {
+            dbDuration,
+            dbOperation,
+            dbCollection,
+          },
+        });
+      } else {
+        logWithMetadata({
+          level: "info",
+          scope: "DB",
+          message: "db operation performed within good parameters",
+          metadata: {
+            dbDuration,
+            dbOperation,
+            dbCollection,
+          },
+        });
+      }
 
       next();
     });

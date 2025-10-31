@@ -9,8 +9,10 @@ import {
 import mongoose from "mongoose";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import { AuthenticationException } from "@/common/utils/catch-errors";
+import { logWithMetadata } from "@/common/utils/logWithMetadata";
 
 const formatZodError = (res: Response, req: Request, error: z.ZodError) => {
+  console.log("stack", error.stack);
   const errors = error.issues.map((error) => ({
     field: error.path.join("."),
     message: error.message,
@@ -30,12 +32,17 @@ export const errorHandler: ErrorRequestHandler = (
   res,
   next
 ): any => {
-  console.error(`Error occured on: PATH : ${req.path}`, error);
-
+  logWithMetadata({
+    level: "error",
+    scope: "ERROR",
+    status: "FINISHED_WITH_ERROR",
+    message: error.message,
+    error: error,
+    metadata: {},
+  });
   // ! IF ERROR IS ON REFRESH API, WE DELETE BOTH EXISTENT ACCESS AND REFRESH TOKENS
   if (req.path === REFRESH_PATH) {
     clearAuthenticationCookies(res);
-    console.log("STERG COOKIER URILE DACA PICA REFRESH :", res);
   }
 
   // ! Syntax Errors (JS or JSON errors)

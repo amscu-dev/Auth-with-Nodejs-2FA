@@ -22,6 +22,7 @@ import {
 } from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
+import logger from "@/common/logger/logger";
 
 export class AuthController {
   private authService: AuthService;

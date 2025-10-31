@@ -126,7 +126,7 @@ export const authenticateJWT = (
       }
       if (user && !err) {
         req.user = user;
-        asyncLocalStorage.getStore()?.set("userId", user.id);
+        asyncLocalStorage.getStore()?.set("reqUserId", user.id);
       }
       if (err) {
         next(err);
