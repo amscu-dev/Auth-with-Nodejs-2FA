@@ -8,6 +8,7 @@ export default function addInfoAsyncLocalStorage(
 ) {
   asyncLocalStorage.run(new Map(), () => {
     asyncLocalStorage.getStore()?.set("reqId", req.requestId);
+    asyncLocalStorage.getStore()?.set("reqStartTime", Date.now());
     asyncLocalStorage.getStore()?.set("reqEndpoint", req.path);
     asyncLocalStorage.getStore()?.set("reqMethod", req.method);
     asyncLocalStorage

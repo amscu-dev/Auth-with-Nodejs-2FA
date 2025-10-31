@@ -35,7 +35,7 @@ import { ErrorCode } from "./common/enums/error-code.enum";
 import passkeyRoutes from "./modules/passkey/passkey.routes";
 import addRequestHeaders from "./middlewares/addHeaders";
 import addInfoAsyncLocalStorage from "./middlewares/addInfoAsyncLocalStorage";
-import { logRequestEntry } from "./middlewares/loggMiddleware";
+import { requestLogger } from "./middlewares/loggMiddleware";
 
 // ! Initialize app
 const app = express();
@@ -51,7 +51,7 @@ app.use(passport.initialize());
 app.use(addRequestId);
 app.use(addRequestHeaders);
 app.use(addInfoAsyncLocalStorage);
-app.use(logRequestEntry);
+app.use(requestLogger);
 
 // ! Health endpoint
 app.get("/health", (req: Request, res: Response) => {

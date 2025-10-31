@@ -40,20 +40,6 @@ export class AuthController {
       const { user, isVerificationEmailSend } = await this.authService.register(
         body
       );
-      // ! 3. User register successfully
-      logWithMetadata({
-        level: "info",
-        scope: "CONTROLLER",
-        status: "FINISHED_WITH_SUCCESS",
-        message: "User successfully registered(regular)!",
-        metadata: {
-          resPayload: {
-            user,
-            isVerificationEmailSend,
-            nextStep: LOGIN.CONFIRM_SIGN_UP,
-          },
-        },
-      });
 
       // ! 3. Return response
       return res.status(HTTPSTATUS.CREATED).json(
