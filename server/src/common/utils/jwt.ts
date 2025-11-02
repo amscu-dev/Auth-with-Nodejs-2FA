@@ -1,30 +1,28 @@
 import { config } from "@/config/app.config";
-import { SessionDocument } from "@/database/models/session.model";
-import { UserDocument } from "@/database/models/user.model";
 import jwt from "jsonwebtoken";
 import decodeBase64 from "./decodeBase64";
-
-// ! These are added by default by jwt library based on options provided
 
 export interface AccessTokenPayload extends jwt.JwtPayload {
   sub: string;
   userId: string;
   sessionId: string;
+  type: "access";
+  role: "user" | "admin";
 }
 
 export interface RefreshTokenPayload extends jwt.JwtPayload {
+  sub: string;
+  userId: string;
   sessionId: string;
+  type: "refresh";
 }
-
-export type MFAPurpose = "login" | "forgot_password";
-export type MagicLinkPurpose = "signin" | "signup";
 export interface MFATokenPayload extends jwt.JwtPayload {
   jti: string;
   sub: string;
   userId: string;
   mfaSessionId: string;
   type: "mfa";
-  purpose: MFAPurpose;
+  purpose: "login" | "forgot_password";
 }
 
 export interface MagicLinkTokenPayload extends jwt.JwtPayload {
@@ -33,7 +31,7 @@ export interface MagicLinkTokenPayload extends jwt.JwtPayload {
   userId: string;
   magicLinkSessionId: string;
   type: "magic-link";
-  purpose: MagicLinkPurpose;
+  purpose: "signin" | "signup";
 }
 
 export type SignOptsAndSecret = jwt.SignOptions & {

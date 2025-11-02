@@ -296,15 +296,21 @@ export class MfaService {
     // ! CREATE TOKENS
     const accessToken = signJwtToken(
       {
+        sub: currentUser.id,
         userId: currentUser.id,
         sessionId: session.id,
+        type: "access",
+        role: "user",
       },
       { ...accessTokenSignOptions }
     );
 
     const refreshToken = signJwtToken(
       {
+        sub: currentUser.id,
+        userId: currentUser.id,
         sessionId: session.id,
+        type: "refresh",
       },
       { ...refreshTokenSignOptions }
     );

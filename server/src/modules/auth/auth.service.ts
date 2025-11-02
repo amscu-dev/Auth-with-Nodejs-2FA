@@ -186,14 +186,20 @@ export class AuthService {
     });
     const accessToken = signJwtToken(
       {
+        sub: user.id,
         userId: user.id,
         sessionId: session.id,
+        type: "access",
+        role: "user",
       },
       { ...accessTokenSignOptions }
     );
     const refreshToken = signJwtToken(
       {
+        sub: user.id,
+        userId: user.id,
         sessionId: session.id,
+        type: "refresh",
       },
       { ...refreshTokenSignOptions }
     );
