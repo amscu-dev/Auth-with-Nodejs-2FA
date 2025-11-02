@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { magicLinkController } from "./magic-link.module";
-import { authenticateMagicLinkToken } from "@/common/strategies/magic-link.strategy";
+import { authenticateMagicLinkToken } from "@/common/strategies/magic-link-token-jwt.strategy";
 
 const magicLinkRoutes = Router();
 

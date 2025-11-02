@@ -4,81 +4,55 @@ import {
   StrategyOptionsWithRequest,
   Strategy as JwtStrategy,
 } from "passport-jwt";
+import { UnauthorizedException } from "../utils/catch-errors";
 import { config } from "@/config/app.config";
 import { ErrorCode } from "../enums/error-code.enum";
-import { userService } from "@/modules/user/user.module";
 import passport, { PassportStatic } from "passport";
 import { NextFunction, Request, Response } from "express";
-import { MFAPurpose, MFATokenPayload } from "../utils/jwt";
-import { MFASessionModel } from "@/database/models/mfaSession.model";
+import { MagicLinkTokenPayload } from "../utils/jwt";
+import { MagicLinkModel } from "@/database/models/magicLinkSession.model";
+import { userService } from "@/modules/user/user.module";
 import { asyncLocalStorage } from "../context/asyncLocalStorage";
-import { UnauthorizedException } from "../utils/catch-errors";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
     (req) => {
-      const mfaToken = req.cookies?.mfaToken;
-      if (!mfaToken) {
-        // goes directly into global error middleware without catchAsync
+      // ! 0. Evaluate the existence of token
+      const magicLinkToken = req.params?.token;
+      if (!magicLinkToken) {
         throw new UnauthorizedException(
-          "Authentication failed, no authentication token provided.",
+          "Authentication failed: no authentication token provided.",
           ErrorCode.AUTH_TOKEN_NOT_FOUND
         );
       }
-      return mfaToken;
+      return magicLinkToken;
     },
   ]),
   issuer: config.AUTHENTICATION.TOKEN_ISSUER,
   audience: [config.AUTHENTICATION.TOKEN_AUDIENCE],
   algorithms: ["HS256"],
-  secretOrKey: config.MFA_TOKEN.SECRET_KEY, // sau cheia ta HS256
+  secretOrKey: config.MAGIC_LINK_TOKEN.SECRET_KEY, // sau cheia ta HS256
   passReqToCallback: true,
 };
 
 const verifyCallback: VerifyCallbackWithRequest = async (
   req,
-  payload: MFATokenPayload,
+  payload: MagicLinkTokenPayload,
   done
 ) => {
   try {
-    if (payload.type !== "mfa") {
+    // ! 01. Evaluate token type
+    if (payload.type !== "magic-link") {
       return done(
         new UnauthorizedException(
-          "Authentication failed, expected an MFA token, but received a token of a different type.",
-          ErrorCode.AUTH_MFA_TOKEN_TYPE_INVALID
+          "Authentication failed, expected an MAGIC-LINK token, but received a token of a different type.",
+          ErrorCode.AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID
         ),
         false
       );
     }
 
-    // ! Check purpose of the token and request path
-    const requestPath = req.originalUrl || req.url;
-    const pathPurposeMap: Record<string, MFAPurpose> = {
-      [`${config.BASE_PATH}/mfa/verify-login`]: "login",
-      [`${config.BASE_PATH}/mfa/verify-forgot-password`]: "forgot_password",
-    };
-    const expectedPurpose = pathPurposeMap[requestPath];
-
-    if (!expectedPurpose) {
-      return done(
-        new UnauthorizedException(
-          "Authentication failed, MFA token was sent to an invalid or unsupported endpoint.",
-          ErrorCode.AUTH_MFA_INVALID_ENDPOINT
-        ),
-        false
-      );
-    }
-
-    if (payload.purpose !== expectedPurpose) {
-      return done(
-        new UnauthorizedException(
-          `Authentication failed, MFA token purpose mismatch. Expected '${expectedPurpose}', got '${payload.purpose}'.`,
-          ErrorCode.AUTH_INVALID_TOKEN_PURPOSE
-        ),
-        false
-      );
-    }
-
+    // ! 02. Evaluate if user exists
     const user = await userService.findUserById(payload.userId);
     if (!user) {
       return done(
@@ -90,13 +64,13 @@ const verifyCallback: VerifyCallbackWithRequest = async (
       );
     }
 
-    const mfaSession = await MFASessionModel.findOne({
+    // ! 03. Evaluate validity of session asociated with token
+    const magicLinkSession = await MagicLinkModel.findOne({
+      _id: payload.magicLinkSessionId,
       tokenJTI: payload.jti,
-      userId: payload.userId,
       consumed: false,
-      _id: payload.mfaSessionId,
     });
-    if (!mfaSession) {
+    if (!magicLinkSession) {
       return done(
         new UnauthorizedException(
           "Authentication failed, the token session is invalid, expired, or has already been consumed.",
@@ -106,38 +80,39 @@ const verifyCallback: VerifyCallbackWithRequest = async (
       );
     }
 
-    const isNotUserSession = mfaSession.userId.toString() !== payload.userId;
+    // ! 04. Check if session user = token user
+    const isNotUserSession = magicLinkSession.userId !== payload.userId;
     if (isNotUserSession) {
       return done(
         new UnauthorizedException(
-          "Authentication failed, the user ID in the MFA token does not match the user ID of the session.",
+          "Authentication failed, the access token does not match the current session.",
           ErrorCode.AUTH_TOKEN_SESSION_MISMATCH
         )
       );
     }
-    mfaSession.consumed = true;
-    await mfaSession.save();
-    req.user = user;
-    req.loginAttemptId = payload.loginAttemptId;
+    // ! 05. Mark magic-link session as consumed
+    magicLinkSession.consumed = true;
+    await magicLinkSession.save();
+
     done(null, user);
   } catch (err) {
     done(err, false);
   }
 };
 
-const mfaStrategy = new JwtStrategy(options, verifyCallback);
+const magicLinkStrategy = new JwtStrategy(options, verifyCallback);
 
-export const setupMfaStrategy = (passport: PassportStatic) => {
-  passport.use("mfa-token", mfaStrategy);
+export const setupMagicLinkTokenStrategy = (passport: PassportStatic) => {
+  passport.use("magic-link-token", magicLinkStrategy);
 };
 
-export const authenticateMFA = (
+export const AuthenticateMagicLinkJWTToken = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   passport.authenticate(
-    "mfa-token",
+    "magic-link-token",
     { session: false },
     (
       err: any,

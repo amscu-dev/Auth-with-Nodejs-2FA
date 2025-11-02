@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { passkeyController } from "./passkey.module";
-import { authenticateJWT } from "@/common/strategies/jwt.strategy";
+import { authenticateJWT } from "@/common/strategies/access-token-jwt.strategy";
 
 const passkeyRoutes = Router();
 

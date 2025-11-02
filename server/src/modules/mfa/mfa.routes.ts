@@ -1,7 +1,7 @@
-import { authenticateJWT } from "@/common/strategies/jwt.strategy";
+import { authenticateJWT } from "@/common/strategies/access-token-jwt.strategy";
 import { Router } from "express";
 import { mfaController } from "./mfa.module";
-import { authenticateMFA } from "@/common/strategies/mfa-token.strategy";
+import { authenticateMFA } from "@/common/strategies/mfa-token-jwt.strategy";
 import { requireRegularAuthMethod } from "@/middlewares/requireRegularAuthMethod ";
 
 const mfaRoutes = Router();

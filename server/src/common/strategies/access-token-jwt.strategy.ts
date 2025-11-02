@@ -41,7 +41,17 @@ const verifyCallback: VerifyCallbackWithRequest = async (
   done
 ) => {
   try {
-    // ! 01. Evaluate if user exists
+    // ! 01. Evaluate token type
+    if (payload.type !== "access") {
+      return done(
+        new UnauthorizedException(
+          "Authentication failed, expected an ACCESS token, but received a token of a different type.",
+          ErrorCode.AUTH_ACCESS_TOKEN_TYPE_INVALID
+        ),
+        false
+      );
+    }
+    // ! 02. Evaluate if user exists
     const user = await userService.findUserById(payload.userId);
     if (!user) {
       return done(
@@ -82,13 +92,13 @@ const verifyCallback: VerifyCallbackWithRequest = async (
   }
 };
 
-const strategy = new JwtStrategy(options, verifyCallback);
+const accessTokenStrategy = new JwtStrategy(options, verifyCallback);
 
-export const setupJwtStrategy = (passport: PassportStatic) => {
-  passport.use("access-token", strategy);
+export const setupAccessTokenStrategy = (passport: PassportStatic) => {
+  passport.use("access-token", accessTokenStrategy);
 };
 
-export const authenticateJWT = (
+export const AuthenticateAccessJWTToken = (
   req: Request,
   res: Response,
   next: NextFunction
