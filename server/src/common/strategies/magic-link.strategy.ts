@@ -28,8 +28,8 @@ const options: StrategyOptionsWithRequest = {
       return magicLinkToken;
     },
   ]),
-  issuer: config.APP_NAME,
-  audience: ["user"],
+  issuer: config.AUTHENTICATION.TOKEN_ISSUER,
+  audience: [config.AUTHENTICATION.TOKEN_AUDIENCE],
   algorithms: ["HS256"],
   secretOrKey: config.MAGIC_LINK_TOKEN.SECRET_KEY, // sau cheia ta HS256
   passReqToCallback: true,

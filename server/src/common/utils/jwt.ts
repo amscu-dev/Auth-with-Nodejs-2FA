@@ -41,9 +41,9 @@ export type SignOptsAndSecret = jwt.SignOptions & {
 };
 
 const defaults: jwt.SignOptions = {
-  audience: ["user"],
+  audience: [config.AUTHENTICATION.TOKEN_AUDIENCE],
+  issuer: config.AUTHENTICATION.TOKEN_ISSUER,
   algorithm: "RS256",
-  issuer: config.APP_NAME,
 };
 
 export const accessTokenSignOptions: SignOptsAndSecret = {
@@ -81,9 +81,9 @@ export const signJwtToken = (
 };
 
 const verifyDefaults: jwt.VerifyOptions = {
-  audience: ["user"],
+  audience: [config.AUTHENTICATION.TOKEN_AUDIENCE],
   algorithms: ["RS256"],
-  issuer: config.APP_NAME,
+  issuer: config.AUTHENTICATION.TOKEN_ISSUER,
 };
 
 // ! FUNCTION OVERLOAD

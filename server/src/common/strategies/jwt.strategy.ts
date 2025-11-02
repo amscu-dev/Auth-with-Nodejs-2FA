@@ -29,8 +29,8 @@ const options: StrategyOptionsWithRequest = {
       return accessToken;
     },
   ]),
-  issuer: config.APP_NAME,
-  audience: ["user"],
+  issuer: config.AUTHENTICATION.TOKEN_ISSUER,
+  audience: [config.AUTHENTICATION.TOKEN_AUDIENCE],
   algorithms: ["RS256"],
   secretOrKey: decodeBase64(config.JWT.PUBLIC_KEY),
   passReqToCallback: true,

@@ -8,6 +8,10 @@ const appConfig = () => ({
   PORT: getEnv("PORT", "5000"),
   BASE_PATH: getEnv("BASE_PATH", "/api/v1"),
   LOG_LEVEL: getEnv("LOG_LEVEL", "info"),
+  AUTHENTICATION: {
+    TOKEN_ISSUER: getEnv("AUTHENTICATION_TOKEN_ISSUER"),
+    TOKEN_AUDIENCE: getEnv("AUTHENTICATION_TOKEN_AUDIENCE"),
+  },
   JWT: {
     PRIVATE_KEY: getEnv("JWT_PRIVATE_KEY"),
     PUBLIC_KEY: getEnv("JWT_PUBLIC_KEY"),
