@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: API for Password, Passkey, Magic Link, and OIDC Authentication
-  summary: >
+  description: >
     API for user registration and authentication using multiple methods:
     username/password with capability of 2fa, passkey (WebAuthn), magic link, and OIDC providers (Google, GitHub, etc.).
   contact:
@@ -14,4 +14,161 @@ info:
 servers:
   - url: https://accounts.authportal.com/api/v1
     description: Production Server
-paths: {}
+paths:
+  /auth/register:
+    post:
+      tags: [Email & Password Auth]
+      summary: Register a new user
+      description: This endpoint allows a new user to create an account using their email and password. After registration, the user must verify their email to complete the registration process successfully.
+      requestBody:
+        required: true
+        description: Request body for user registration.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - confirmPassword
+              properties:
+                name:
+                  type: string
+                  description: The user's full name
+                  minLength: 1
+                  maxLength: 255
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  minLength: 1
+                  maxLength: 255
+                  example: john.doe@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  pattern: "^(?=.*[A-Z])(?=.*[\\W_]).*$"
+                  description: Must start with a capital letter and contain at least one special character
+                  example: Password@123
+                confirmPassword:
+                  type: string
+                  minLength: 8
+                  pattern: "^(?=.*[A-Z])(?=.*[\\W_]).*$"
+                  description: Must match the password field
+                  example: Password@123
+      responses:
+        "201":
+          description: Registration successful. A verification email has been sent, the user must confirm their email to complete the signup process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  statusCode:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Registration successful. A verification email has been sent to your email address.
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 6904fb216bdaf225b3726294
+                          name:
+                            type: string
+                            example: user
+                          email:
+                            type: string
+                            example: marinescua914@gmail.com
+                          isEmailVerified:
+                            type: boolean
+                            example: false
+                          userPreferences:
+                            type: object
+                            properties:
+                              enable2FA:
+                                type: boolean
+                                example: false
+                              emailNotification:
+                                type: boolean
+                                example: true
+                          createdAt:
+                            type: string
+                            format: date-time
+                            example: 2025-10-31T18:08:33.919Z
+                          updatedAt:
+                            type: string
+                            format: date-time
+                            example: 2025-10-31T18:08:33.919Z
+                      isVerificationEmailSend:
+                        type: boolean
+                        example: true
+                      nextStep:
+                        type: string
+                        example: CONFIRM_SIGN_UP
+                  metadata:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                        example: 2025-10-31T18:08:35.135Z
+                      requestId:
+                        type: string
+                        example: 627c83c6ac314a94bd9348d78
+        "400":
+          description: Bad Request — validation failed or user already exists.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    description: User already exists with this email
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: User already exists with this email.
+                      errorCode:
+                        type: string
+                        example: AUTH_EMAIL_ALREADY_EXISTS
+                      requestId:
+                        type: string
+                        example: 627c83c6ac314a94bd9348d78
+                  - type: object
+                    description: Input validation failed
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: Validation failed
+                      errorCode:
+                        type: string
+                        example: VALIDATION_ERROR
+                      requestId:
+                        type: string
+                        example: 627c83c6ac314a94bd9348d78
+                      errors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            field:
+                              type: string
+                              example: password
+                            message:
+                              type: string
+                              example: Password must start with a capital letter

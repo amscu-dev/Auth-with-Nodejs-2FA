@@ -17,20 +17,23 @@ export interface RefreshTokenPayload extends jwt.JwtPayload {
 }
 
 export type MFAPurpose = "login" | "forgot_password";
+export type MagicLinkPurpose = "signin" | "signup";
 export interface MFATokenPayload extends jwt.JwtPayload {
+  jti: string;
   sub: string;
   userId: string;
   mfaSessionId: string;
-  jti: string;
   type: "mfa";
   purpose: MFAPurpose;
 }
 
 export interface MagicLinkTokenPayload extends jwt.JwtPayload {
   jti: string;
-  userEmail: string;
-  magicLinkSession: string;
+  sub: string;
+  userId: string;
+  magicLinkSessionId: string;
   type: "magic-link";
+  purpose: MagicLinkPurpose;
 }
 
 export type SignOptsAndSecret = jwt.SignOptions & {

@@ -49,7 +49,7 @@ export class AuthController {
           message:
             "Registration successful. A verification email has been sent to your email address.",
           data: {
-            ...user,
+            user,
             isVerificationEmailSend,
             nextStep: LOGIN.CONFIRM_SIGN_UP,
           },
@@ -132,6 +132,7 @@ export class AuthController {
   );
   public refresh = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // TODO muta autentificarea refresh altundeva, fa strategie pentru asta.
       const refreshToken = req.cookies.refreshToken as string | undefined;
 
       if (!refreshToken) {

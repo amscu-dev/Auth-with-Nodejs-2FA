@@ -4,8 +4,8 @@ import { authenticateMagicLinkToken } from "@/common/strategies/magic-link.strat
 
 const magicLinkRoutes = Router();
 
-magicLinkRoutes.post("/signin", magicLinkController.signInWithMagicLink);
 magicLinkRoutes.post("/signup", magicLinkController.signUpWithMagicLink);
+magicLinkRoutes.post("/signin", magicLinkController.signInWithMagicLink);
 magicLinkRoutes.post("/resend-token", magicLinkController.resendMagicLink);
 magicLinkRoutes.get(
   "/verify/:token",

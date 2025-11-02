@@ -4,7 +4,6 @@ import {
   StrategyOptionsWithRequest,
   Strategy as JwtStrategy,
 } from "passport-jwt";
-import { AuthenticationException } from "../utils/catch-errors";
 import { config } from "@/config/app.config";
 import { ErrorCode } from "../enums/error-code.enum";
 import { userService } from "@/modules/user/user.module";
@@ -13,10 +12,21 @@ import { NextFunction, Request, Response } from "express";
 import { MFAPurpose, MFATokenPayload } from "../utils/jwt";
 import { MFASessionModel } from "@/database/models/mfaSession.model";
 import { asyncLocalStorage } from "../context/asyncLocalStorage";
+import { UnauthorizedException } from "../utils/catch-errors";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
-    (req) => req.cookies?.mfaToken || null,
+    (req) => {
+      const mfaToken = req.cookies?.mfaToken;
+      if (!mfaToken) {
+        // goes directly into global error middleware without catchAsync
+        throw new UnauthorizedException(
+          "Authentication failed, no authentication token provided.",
+          ErrorCode.AUTH_TOKEN_NOT_FOUND
+        );
+      }
+      return mfaToken;
+    },
   ]),
   issuer: config.APP_NAME,
   audience: ["user"],
@@ -33,9 +43,9 @@ const verifyCallback: VerifyCallbackWithRequest = async (
   try {
     if (payload.type !== "mfa") {
       return done(
-        new AuthenticationException(
-          "Invalid MFA token type.",
-          ErrorCode.AUTH_INVALID_TOKEN
+        new UnauthorizedException(
+          "Authentication failed, expected an MFA token, but received a token of a different type.",
+          ErrorCode.AUTH_MFA_TOKEN_TYPE_INVALID
         ),
         false
       );
@@ -51,9 +61,9 @@ const verifyCallback: VerifyCallbackWithRequest = async (
 
     if (!expectedPurpose) {
       return done(
-        new AuthenticationException(
-          "Invalid MFA endpoint.",
-          ErrorCode.AUTH_INVALID_PATH
+        new UnauthorizedException(
+          "Authentication failed, MFA token was sent to an invalid or unsupported endpoint.",
+          ErrorCode.AUTH_MFA_INVALID_ENDPOINT
         ),
         false
       );
@@ -61,8 +71,8 @@ const verifyCallback: VerifyCallbackWithRequest = async (
 
     if (payload.purpose !== expectedPurpose) {
       return done(
-        new AuthenticationException(
-          `MFA token purpose mismatch. Expected '${expectedPurpose}', got '${payload.purpose}'.`,
+        new UnauthorizedException(
+          `Authentication failed, MFA token purpose mismatch. Expected '${expectedPurpose}', got '${payload.purpose}'.`,
           ErrorCode.AUTH_INVALID_TOKEN_PURPOSE
         ),
         false
@@ -72,9 +82,9 @@ const verifyCallback: VerifyCallbackWithRequest = async (
     const user = await userService.findUserById(payload.userId);
     if (!user) {
       return done(
-        new AuthenticationException(
-          "MFA authentication failed: user not found.",
-          ErrorCode.AUTH_USER_NOT_FOUND
+        new UnauthorizedException(
+          "Authentication failed, the user associated with this token does not exist.",
+          ErrorCode.AUTH_TOKEN_USER_NOT_FOUND
         ),
         false
       );
@@ -88,11 +98,21 @@ const verifyCallback: VerifyCallbackWithRequest = async (
     });
     if (!mfaSession) {
       return done(
-        new AuthenticationException(
-          "MFA authentication failed: session consumed, expired or invalid.",
-          ErrorCode.MFA_INVALID_SESSION
+        new UnauthorizedException(
+          "Authentication failed, the token session is invalid, expired, or has already been consumed.",
+          ErrorCode.AUTH_TOKEN_SESSION_INVALID
         ),
         false
+      );
+    }
+
+    const isNotUserSession = mfaSession.userId.toString() !== payload.userId;
+    if (isNotUserSession) {
+      return done(
+        new UnauthorizedException(
+          "Authentication failed, the user ID in the MFA token does not match the user ID of the session.",
+          ErrorCode.AUTH_TOKEN_SESSION_MISMATCH
+        )
       );
     }
     mfaSession.consumed = true;
@@ -125,15 +145,15 @@ export const authenticateMFA = (
       info: { name: string; message: string } | undefined
     ) => {
       if (info) {
-        if (info.name === "JsonWebTokenError") {
-          throw new AuthenticationException(
-            `Invalid MFA token.`,
-            ErrorCode.AUTH_INVALID_TOKEN
+        if (!user && info.name === "JsonWebTokenError") {
+          throw new UnauthorizedException(
+            `Authentication failed: ${info.message}`,
+            ErrorCode.AUTH_TOKEN_INVALID
           );
         }
-        if (info.name === "TokenExpiredError") {
-          throw new AuthenticationException(
-            `MFA token expired.`,
+        if (!user && info.name === "TokenExpiredError") {
+          throw new UnauthorizedException(
+            `Authentication failed: ${info.message}`,
             ErrorCode.AUTH_TOKEN_EXPIRED
           );
         }

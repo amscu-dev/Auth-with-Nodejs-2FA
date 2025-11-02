@@ -8,7 +8,7 @@ import {
 } from "@/common/utils/cookie";
 import mongoose from "mongoose";
 import { ErrorCode } from "@/common/enums/error-code.enum";
-import { AuthenticationException } from "@/common/utils/catch-errors";
+import { UnauthorizedException } from "@/common/utils/catch-errors";
 import { logWithMetadata } from "@/common/utils/logWithMetadata";
 
 const formatZodError = (res: Response, req: Request, error: z.ZodError) => {
@@ -18,8 +18,9 @@ const formatZodError = (res: Response, req: Request, error: z.ZodError) => {
   }));
   return res.status(HTTPSTATUS.BAD_REQUEST).json({
     success: false,
-    message: "Validation failed",
-    errorCode: ErrorCode.VALIDATION_ERROR,
+    message:
+      "Validation failed, some fields in the request body did not meet the expected format or constraints.",
+    errorCode: ErrorCode.VALIDATION_ERROR_INVALID_REQUEST_BODY,
     requestId: req.requestId,
     errors: errors,
   });
@@ -50,7 +51,7 @@ export const errorHandler: ErrorRequestHandler = (
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       success: false,
       messsage: "Invalid JSON format, please check your request body.",
-      errorCode: ErrorCode.INVALID_FORMAT,
+      errorCode: ErrorCode.INVALID_JSON_FORMAT,
       requestId: req.requestId,
     });
   }
@@ -71,7 +72,7 @@ export const errorHandler: ErrorRequestHandler = (
     return res.status(HTTPSTATUS.CONFLICT).json({
       success: false,
       message: `Duplicate value for field "${field}"`,
-      errorCode: ErrorCode.VALIDATION_ERROR,
+      errorCode: ErrorCode.VALIDATION_ERROR_INVALID_REQUEST_BODY,
       requestId: req.requestId,
       field: field,
       value: value,
@@ -81,7 +82,7 @@ export const errorHandler: ErrorRequestHandler = (
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       success: false,
       message: "Validation failed",
-      errorCode: ErrorCode.VALIDATION_ERROR,
+      errorCode: ErrorCode.VALIDATION_ERROR_INVALID_REQUEST_BODY,
       requestId: req.requestId,
     });
   }
@@ -90,7 +91,7 @@ export const errorHandler: ErrorRequestHandler = (
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       success: false,
       message: "Invalid resource ID format",
-      errorCode: ErrorCode.VALIDATION_ERROR,
+      errorCode: ErrorCode.VALIDATION_ERROR_INVALID_REQUEST_BODY,
       requestId: req.requestId,
     });
   }
@@ -105,10 +106,11 @@ export const errorHandler: ErrorRequestHandler = (
   }
 
   // ! check to cancel cookies NOT FOR EXPIRED ONES!
-  if (error instanceof AuthenticationException && error instanceof AppError) {
-    if (error.errorCode !== ErrorCode.AUTH_TOKEN_EXPIRED) {
-      clearAuthenticationCookies(res);
-    }
+  if (error instanceof UnauthorizedException && error instanceof AppError) {
+    // TODO Verifica aici logica din nou
+    // if (error.errorCode !== ErrorCode.AUTH_TOKEN_EXPIRED) {
+    //   clearAuthenticationCookies(res);
+    // }
     return res.status(error.statusCode).json({
       success: false,
       message: error.message,
@@ -131,7 +133,7 @@ export const errorHandler: ErrorRequestHandler = (
   return res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json({
     success: false,
     message: "Internal Server Error",
-    error: error?.message || "Unknown error occurred",
+    errorCode: ErrorCode.INTERNAL_SERVER_ERROR,
     requestId: req.requestId,
   });
 };

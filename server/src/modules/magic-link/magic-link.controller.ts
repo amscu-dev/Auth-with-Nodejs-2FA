@@ -25,8 +25,8 @@ export class MagicLinkController {
           message:
             "We've sent a magic link to your email. Click it to successfully finish your registration process.",
           data: {
-            isMagicLinkEmailSend,
             user,
+            isMagicLinkEmailSend,
             nextStep: LOGIN.CHECK_EMAIL_FOR_MAGIC_LINK,
           },
           metadata: {

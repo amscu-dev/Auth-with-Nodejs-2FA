@@ -46,15 +46,6 @@ export class UnauthorizedException extends AppError {
   }
 }
 
-export class AuthenticationException extends AppError {
-  constructor(message = "Unauthorized Access", errorCode?: ErrorCode) {
-    super(
-      message,
-      HTTPSTATUS.UNAUTHORIZED,
-      errorCode || ErrorCode.ACCESS_UNAUTHORIZED
-    );
-  }
-}
 export class InternalServerException extends AppError {
   constructor(message = "Internal Server Error", errorCode?: ErrorCode) {
     super(
@@ -72,5 +63,27 @@ export class HttpException extends AppError {
     errorCode?: ErrorCode
   ) {
     super(message, statusCode, errorCode);
+  }
+}
+
+export class TooManyRequestsException extends AppError {
+  constructor(
+    message = "Too many requests. Please try again later.",
+    errorCode?: ErrorCode
+  ) {
+    super(
+      message,
+      HTTPSTATUS.TOO_MANY_REQUESTS,
+      errorCode || ErrorCode.TOO_MANY_REQUESTS
+    );
+  }
+}
+
+export class ServiceUnavaibleException extends AppError {
+  constructor(
+    message: string = "Failed to send the email. Please try again later.",
+    errorCode?: ErrorCode
+  ) {
+    super(message, HTTPSTATUS.SERVICE_UNAVAILABLE, errorCode);
   }
 }

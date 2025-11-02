@@ -5,9 +5,9 @@ import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { LoginData, RegisterData } from "@/common/interface/auth.interface";
 import {
   BadRequestException,
-  HttpException,
-  InternalServerException,
   NotFoundException,
+  ServiceUnavaibleException,
+  TooManyRequestsException,
   UnauthorizedException,
 } from "@/common/utils/catch-errors";
 import {
@@ -36,7 +36,6 @@ import {
 } from "@/mailers/templates/template";
 import mongoose from "mongoose";
 import apiRequestWithRetry from "@/common/utils/retry-api";
-import { HTTPSTATUS } from "@/config/http.config";
 import { Location } from "@/database/models/resetPasswordLog.model";
 import logPasswordReset from "@/common/utils/logPasswordReset";
 import { generateUniqueCode } from "@/common/utils/uuid";
@@ -44,19 +43,22 @@ import { MFASessionModel } from "@/database/models/mfaSession.model";
 
 export class AuthService {
   public async register(registerData: RegisterData) {
+    // ! 01. Extract Data
     const { name, email, password } = registerData;
+
+    // ! 02. Check user existence
     const existingUser = await UserModel.exists({
       email,
     });
 
     if (existingUser) {
       throw new BadRequestException(
-        "User already exists with this email.",
+        "Registration failed, this email address is already associated with an existing account.",
         ErrorCode.AUTH_EMAIL_ALREADY_EXISTS
       );
     }
 
-    // ! Create And Execute Transaction
+    // ! 03. Create And Execute Transaction
     const session = await mongoose.startSession();
     try {
       const { verificationCode, newUser } = await session.withTransaction(
@@ -78,7 +80,7 @@ export class AuthService {
           return { verificationCode, newUser };
         }
       );
-      // ! SEND EMAIL
+      // ! 04. Send Verification Code Email
       const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}`;
       const isVerificationEmailSend = await apiRequestWithRetry(() => {
         return sendEmail({
@@ -86,7 +88,9 @@ export class AuthService {
           ...verifyEmailTemplate(verificationURL),
         });
       });
+
       const userJson = newUser.toJSON();
+      // ! 05. Return data
       return {
         user: userJson,
         isVerificationEmailSend,
@@ -98,46 +102,51 @@ export class AuthService {
     }
   }
   public async confirmSignUp(email: string) {
+    // ! 01. Check user existance
     const user = await UserModel.findOne({
       email,
     });
     if (!user) {
-      throw new BadRequestException(
-        "Invalid email or password provided.",
+      throw new NotFoundException(
+        "User with the specified email was not found.",
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
+    // ! 02. Return boolean value
     if (user.isEmailVerified) return true;
     return false;
   }
   public async login(loginData: LoginData, ip: string) {
+    // ! 01. Extract data
     const { email, password, uaSource } = loginData;
-    // ! USER VERIFICATION
+
+    // ! 02. Check user existance
     const user = await UserModel.findOne({
       email,
     });
-
     if (!user) {
-      throw new BadRequestException(
-        "Invalid email or password provided.",
+      throw new NotFoundException(
+        "User with the specified email was not found.",
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
+
+    // ! 03. Check password match
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       throw new BadRequestException(
-        "Invalid email or password provided.",
-        ErrorCode.AUTH_USER_NOT_FOUND
+        "Invalid credentials. Please check your email and password and try again.",
+        ErrorCode.AUTH_INVALID_CREDENTIALS
       );
     }
 
-    // parse UA
+    // ! 04. If password match, start authentication process:
+
     const parsedUA = useragent.parse(uaSource ?? "unknown");
 
-    // ! CHECK IF USER HAS MFA ENABLED
+    // ! 05. Check if user has MFA enabled
     if (user.userPreferences.enable2FA) {
-      // ! Send a temp token for recording an auth session
-
+      // ! 05.1. Generate a MFA session, and send an associated cookie token
       const tokenId = generateUniqueCode();
       const mfaSession = await MFASessionModel.create({
         tokenJTI: tokenId,
@@ -145,7 +154,6 @@ export class AuthService {
         mfaSessionPurpose: "forgot_password",
         requestIP: ip,
       });
-
       const mfaToken = signJwtToken(
         {
           sub: user.id,
@@ -166,7 +174,7 @@ export class AuthService {
       };
     }
 
-    // ! CREATE SESSION
+    // ! 06. If user, does not have MFA enabled, start registration process:
     const session = await SessionModel.create({
       userId: user._id,
       userAgent: {
@@ -176,8 +184,6 @@ export class AuthService {
         platform: parsedUA.platform || "unknown",
       },
     });
-
-    // ! CREATE TOKENS
     const accessToken = signJwtToken(
       {
         userId: user.id,
@@ -185,7 +191,6 @@ export class AuthService {
       },
       { ...accessTokenSignOptions }
     );
-
     const refreshToken = signJwtToken(
       {
         sessionId: session.id,
@@ -193,6 +198,7 @@ export class AuthService {
       { ...refreshTokenSignOptions }
     );
 
+    // ! 07. Return data
     return {
       user,
       accessToken,
@@ -249,26 +255,31 @@ export class AuthService {
     return { newRefreshToken, accessToken };
   }
   public async verifyEmail(code: string) {
-    // ! Divide between invalid and expired and delete expired ones.
+    // ! 01. Check for validation code existance & integrity
     const validCode = await VerificationCodeModel.findOne({
       code: code,
       type: VerificationEnum.EMAIL_VERIFICATION,
     });
     if (!validCode) {
-      throw new BadRequestException(
-        "Expired verification code. Please request a new one.",
-        ErrorCode.VERIFICATION_ERROR
+      throw new NotFoundException(
+        "Invalid or non-existent verification code. Please request a new one.",
+        ErrorCode.VERIFICATION_CODE_ERROR_CODE_NOT_FOUND
       );
     }
-    // ! Code its expired throw error and delete code
     if (validCode.expiresAt < new Date()) {
       throw new BadRequestException(
-        "Expired verification code. Please request a new one.",
-        ErrorCode.VERIFICATION_ERROR
+        "This verification code has expired. Please request a new one to continue.",
+        ErrorCode.VERIFICATION_CODE_ERROR_CODE_EXPIRED
+      );
+    }
+    if (validCode.used) {
+      throw new BadRequestException(
+        "This verification code has already been used. Please request a new one if needed.",
+        ErrorCode.VERIFICATION_CODE_ERROR_CODE_CONSUMED
       );
     }
 
-    // ! If code good: Update User + Delete Verif Code in the same Mongo Session
+    // ! 02. If code verification passed, verify user email
     const mongoSession = await mongoose.startSession();
     try {
       const updatedUser = await mongoSession.withTransaction(async () => {
@@ -281,15 +292,16 @@ export class AuthService {
         );
 
         if (!updatedUser) {
-          throw new BadRequestException(
-            "Unable to verify email address",
-            ErrorCode.VALIDATION_ERROR
+          throw new NotFoundException(
+            "User with the specified email was not found.",
+            ErrorCode.AUTH_USER_NOT_FOUND
           );
         }
-        await validCode.deleteOne({ session: mongoSession });
-
+        validCode.used = true;
+        await validCode.save({ session: mongoSession });
         return updatedUser;
       });
+      // ! 03. Return data
       return { user: updatedUser };
     } catch (error) {
       throw error;
@@ -298,37 +310,30 @@ export class AuthService {
     }
   }
   public async forgotPassword(email: string, ip: string) {
+    // ! 01. Check for user existance
     const user = await UserModel.findOne({ email });
-
     if (!user) {
       throw new NotFoundException(
-        "User not found",
-        ErrorCode.RESOURCE_NOT_FOUND
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
 
-    // ! check mail rate limit is 2 per 3 minutes interval
-
+    // ! 02. Check mail rate limit is 2 per 3 minutes interval
     const timeAgo = threeMinutesAgo();
     const maxAttempts = 2;
-
     const count = await VerificationCodeModel.countDocuments({
       userId: user._id,
       type: VerificationEnum.PASSWORD_RESET,
       createdAt: { $gt: timeAgo },
     });
-
     if (count >= maxAttempts) {
-      throw new HttpException(
-        "Too many request,try again later",
-        HTTPSTATUS.TOO_MANY_REQUESTS,
-        ErrorCode.AUTH_TOO_MANY_ATTEMPTS
-      );
+      throw new TooManyRequestsException();
     }
-    // ! CHECK IF USER HAS MFA ENABLED
-    if (user.userPreferences.enable2FA) {
-      // ! Send a temp token for recording an auth session
 
+    // ! 03. Check if user has MFA enabled
+    if (user.userPreferences.enable2FA) {
+      // ! 03.1. Generate a MFA session, and send an associated cookie token
       const tokenId = generateUniqueCode();
       const mfaSession = await MFASessionModel.create({
         tokenJTI: tokenId,
@@ -354,7 +359,7 @@ export class AuthService {
       };
     }
 
-    // ! Create a new Code
+    // ! 04. If user does not have MFA, create new validation code in db
     const expiresAt = anHourFromNow();
     const validCode = await VerificationCodeModel.create({
       userId: user._id,
@@ -362,22 +367,24 @@ export class AuthService {
       expiresAt,
     });
 
-    // ! Create reset Link
+    // ! 05. Send email with newly verification code created
     const resetLink = `${config.APP_ORIGIN}/reset-password?code=${
       validCode.code
     }&exp=${expiresAt.getTime()}`;
-
     const isResetPasswordEmailSend = await apiRequestWithRetry(() =>
       sendEmail({
         to: user.email,
         ...passwordResetTemplate(resetLink),
       })
     );
-
+    // ! 05.1 In case of an external service error
     if (!isResetPasswordEmailSend) {
-      throw new InternalServerException();
+      throw new ServiceUnavaibleException(
+        "Failed to send the email. Please try again later.",
+        ErrorCode.EMAIL_SERVICE_ERROR
+      );
     }
-
+    // ! 06. Return data
     return {
       url: resetLink,
       mfaRequired: false,
@@ -390,12 +397,13 @@ export class AuthService {
     ip: string | undefined,
     userAgent: string | undefined
   ) {
+    // ! 01. Check verification code existence and integrity
     const validCode = await VerificationCodeModel.findOne({
       code: verificationCode,
       type: VerificationEnum.PASSWORD_RESET,
     });
 
-    // ! Identify IP Adress
+    // ! * Indenity IP Address
     let location: Location = {
       city: "unknown",
       region: "unknown",
@@ -409,9 +417,9 @@ export class AuthService {
     }
 
     if (!validCode) {
-      throw new BadRequestException(
-        "Invalid verification code.",
-        ErrorCode.VERIFICATION_ERROR
+      throw new NotFoundException(
+        "Invalid or non-existent verification code. Please request a new one.",
+        ErrorCode.VERIFICATION_CODE_ERROR_CODE_NOT_FOUND
       );
     }
     if (validCode.used) {
@@ -423,13 +431,13 @@ export class AuthService {
         reason: "This verification code has already been used.",
         location,
       });
-
-      throw new BadRequestException(
-        "This verification code has already been used.",
-        ErrorCode.VERIFICATION_ERROR
-      );
+      if (validCode.used) {
+        throw new BadRequestException(
+          "This verification code has already been used. Please request a new one if needed.",
+          ErrorCode.VERIFICATION_CODE_ERROR_CODE_CONSUMED
+        );
+      }
     }
-    // ! Code its expired throw error and delete code
     if (validCode.expiresAt < new Date()) {
       await logPasswordReset({
         userId: validCode.userId,
@@ -439,62 +447,60 @@ export class AuthService {
         reason: "Expired verification code.",
         location,
       });
-
-      throw new BadRequestException(
-        "Expired verification code.Please request a new one.",
-        ErrorCode.VERIFICATION_ERROR
-      );
+      if (validCode.expiresAt < new Date()) {
+        throw new BadRequestException(
+          "This verification code has expired. Please request a new one to continue.",
+          ErrorCode.VERIFICATION_CODE_ERROR_CODE_EXPIRED
+        );
+      }
     }
 
-    // ! Hash New Password, Compare with old password ,Update the new password
-
+    // ! 02. Check user existance
     const currentUser = await UserModel.findById(validCode.userId);
-
     if (!currentUser) {
       throw new NotFoundException(
-        "User not found",
-        ErrorCode.RESOURCE_NOT_FOUND
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
 
+    // ! 03. Check new password validity
     const isNewPasswordValid = await currentUser.validateNewPassword(password);
-
     if (!isNewPasswordValid) {
       await logPasswordReset({
         userId: validCode.userId,
         ip,
         userAgent,
         status: "failed",
-        reason: "User attempted to reuse an old password.",
+        reason:
+          "You cannot reuse a previous password. Please choose a new one.",
         location,
       });
-
       throw new BadRequestException(
         "You cannot reuse an old password.",
-        ErrorCode.VALIDATION_ERROR
+        ErrorCode.AUTH_PASSWORD_REUSE_NOT_ALLOWED
       );
     }
 
-    // ! Initialize a Mongo Session for mark code as used, register new password created in db, and update the user
+    // ! 04. Initialize a Mongo Session for mark code as used, register new password created in db, and update the user
     const mongoSession = await mongoose.startSession();
     try {
       await mongoSession.withTransaction(async () => {
-        // Save Modified User
+        // ! 04.1. Add current password to old passwords
         currentUser.oldPassword.unshift(currentUser.password);
-        // ! Will be hashed in 'save' middleware
         currentUser.password = password;
+        // ! 04.2 Now we are sure that user set password, so we can add a new authentication method.
         if (
           !currentUser.userPreferences.supportedAuthMethods.includes("regular")
         ) {
           currentUser.userPreferences.supportedAuthMethods.push("regular");
         }
+        // ! 04.3 Save user and mark code as used
         await currentUser.save({ session: mongoSession });
-
-        // Mark curent code as used
         validCode.used = true;
         await validCode.save({ session: mongoSession });
 
-        // Delete all sessions
+        // ! 04.4 Delete all user sessions
         await SessionModel.deleteMany(
           {
             userId: currentUser._id,
@@ -502,7 +508,7 @@ export class AuthService {
           { session: mongoSession }
         );
 
-        // Create a new password log
+        // ! 04.5 Create a new password log
         await logPasswordReset({
           userId: validCode.userId,
           ip,
@@ -513,7 +519,7 @@ export class AuthService {
           session: mongoSession,
         });
       });
-      //  ! sent email for confirmed password change
+      //  ! 04.6 Sent email for confirmed password change
       await apiRequestWithRetry(() => {
         return sendEmail({
           to: currentUser.email,
@@ -527,16 +533,13 @@ export class AuthService {
         });
       });
     } catch (error) {
-      throw new InternalServerException(
-        "Failed to save user",
-        ErrorCode.INTERNAL_SERVER_ERROR
-      );
+      throw error;
     } finally {
       await mongoSession.endSession();
     }
   }
   public async logout(sessionId: string) {
-    // ! Existence of Current Session is already verified in JWT Strategy Middleware
+    // ! 01. Existence of Current Session is already verified in JWT Strategy Middleware
     return await SessionModel.findByIdAndDelete(sessionId);
   }
 }

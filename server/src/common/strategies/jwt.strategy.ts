@@ -1,11 +1,9 @@
-import jwt from "jsonwebtoken";
 import {
   VerifyCallbackWithRequest,
   ExtractJwt,
   StrategyOptionsWithRequest,
   Strategy as JwtStrategy,
 } from "passport-jwt";
-import { AuthenticationException } from "../utils/catch-errors";
 import { ErrorCode } from "../enums/error-code.enum";
 import { config } from "@/config/app.config";
 import passport, { PassportStatic } from "passport";
@@ -15,16 +13,16 @@ import decodeBase64 from "../utils/decodeBase64";
 import { sessionService } from "@/modules/session/session.module";
 import { AccessTokenPayload } from "../utils/jwt";
 import { asyncLocalStorage } from "../context/asyncLocalStorage";
+import { UnauthorizedException } from "../utils/catch-errors";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
     (req) => {
+      // ! 0. Evaluate the existence of token
       const accessToken = req.cookies.accessToken;
-
       if (!accessToken) {
-        // goes directly into global error middleware without catchAsync
-        throw new AuthenticationException(
-          "Authentication failed: no access token provided.",
+        throw new UnauthorizedException(
+          "Authentication failed, no authentication token provided.",
           ErrorCode.AUTH_TOKEN_NOT_FOUND
         );
       }
@@ -43,48 +41,43 @@ const verifyCallback: VerifyCallbackWithRequest = async (
   done
 ) => {
   try {
-    // ! Check if user exists
+    // ! 01. Evaluate if user exists
     const user = await userService.findUserById(payload.userId);
     if (!user) {
       return done(
-        // done functione send error directly into global error middleware
-        new AuthenticationException(
-          "Authentication failed: the user associated with this token does not exist.",
-          ErrorCode.AUTH_USER_NOT_FOUND
+        new UnauthorizedException(
+          "Authentication failed, the user associated with this token does not exist.",
+          ErrorCode.AUTH_TOKEN_USER_NOT_FOUND
         ),
         false
       );
     }
 
-    // ! Check if session exists
-    // it cat throw not found from function
+    // ! 03. Evaluate validity of session asociated with token
     const session = await sessionService.findSessionById(payload.sessionId);
-
     if (!session) {
       return done(
-        new AuthenticationException(
-          "Authentication failed: the session associated with this it`s not a valid session.",
-          ErrorCode.AUTH_SESSION_INVALID
+        new UnauthorizedException(
+          "Authentication failed, the token session is invalid, expired, or has already been consumed.",
+          ErrorCode.AUTH_TOKEN_SESSION_INVALID
         )
       );
     }
 
-    // ! Check if user have this session
+    // ! 04. Check if session user = token user
     const isNotUserSession = session.userId.id !== payload.userId;
     if (isNotUserSession) {
       return done(
-        new AuthenticationException(
-          "Authentication failed: the session associated with this it`s not a valid session.",
-          ErrorCode.AUTH_SESSION_MISMATCH
+        new UnauthorizedException(
+          "Authentication failed, the access token does not match the current session.",
+          ErrorCode.AUTH_TOKEN_SESSION_MISMATCH
         )
       );
     }
-
-    // ! Attach session to request
+    // ! 05. Attach session to request
     req.sessionId = payload.sessionId;
     return done(null, user);
   } catch (error) {
-    console.log("imi prinde cumva eroarea aici?");
     return done(error, false);
   }
 };
@@ -112,13 +105,13 @@ export const authenticateJWT = (
     ) => {
       if (info) {
         if (!user && info.name === "JsonWebTokenError") {
-          throw new AuthenticationException(
+          throw new UnauthorizedException(
             `Authentication failed: ${info.message}`,
-            ErrorCode.AUTH_INVALID_TOKEN
+            ErrorCode.AUTH_TOKEN_INVALID
           );
         }
         if (!user && info.name === "TokenExpiredError") {
-          throw new AuthenticationException(
+          throw new UnauthorizedException(
             `Authentication failed: ${info.message}`,
             ErrorCode.AUTH_TOKEN_EXPIRED
           );

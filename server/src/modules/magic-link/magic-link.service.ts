@@ -24,20 +24,23 @@ import mongoose from "mongoose";
 export class MagicLinkService {
   public async createMagicLinkSession(
     email: string,
+    userId: string,
     sessionPurpose: "signin" | "signup"
   ) {
     const tokenId = generateUniqueCode();
     const magicLinkSession = await MagicLinkModel.create({
       tokenJTI: tokenId,
-      userEmail: email,
+      userId,
       sessionPurpose,
     });
     const magicToken = signJwtToken(
       {
         jti: tokenId,
-        userEmail: email,
-        magicLinkSession: magicLinkSession.id,
+        sub: userId,
+        userId,
+        magicLinkSessionId: magicLinkSession.id,
         type: "magic-link",
+        purpose: sessionPurpose,
       },
       { ...magicLinkTokenOptions, algorithm: "HS256" }
     );
@@ -67,6 +70,7 @@ export class MagicLinkService {
     }
     const isMagicLinkEmailSend = await this.createMagicLinkSession(
       email,
+      user.id,
       "signin"
     );
     return isMagicLinkEmailSend;
@@ -87,22 +91,14 @@ export class MagicLinkService {
     });
     const isMagicLinkEmailSend = await this.createMagicLinkSession(
       email,
+      user.id,
       "signup"
     );
     return { isMagicLinkEmailSend, user };
   }
   public async authenticateUser(req: Request) {
-    const magicLinkSession = req.magicLinkSession as Express.MagicLinkSession;
-    const user = await UserModel.findOne({
-      email: magicLinkSession.userEmail,
-    });
-    if (!user) {
-      throw new NotFoundException(
-        "There is no user registered with this email address.",
-        ErrorCode.AUTH_NOT_FOUND
-      );
-    }
-
+    // ! We already verified user existance in
+    const user = req.user as Express.User;
     const mongoSession = await mongoose.startSession();
     try {
       const { sessionAuth } = await mongoSession.withTransaction(async () => {
@@ -120,15 +116,11 @@ export class MagicLinkService {
             platform: parsedUA.platform || "unknown",
           },
         });
-        magicLinkSession.consumed = true;
         if (!user.isEmailVerified) {
           user.isEmailVerified = true;
           await user.save({ session: mongoSession });
         }
         await sessionAuth.save({ session: mongoSession });
-        await magicLinkSession.save({
-          session: mongoSession,
-        });
         return { sessionAuth };
       });
       // ! CREATE TOKENS
@@ -171,6 +163,7 @@ export class MagicLinkService {
     }
     const isMagicLinkEmailSend = await this.createMagicLinkSession(
       email,
+      user.id,
       "signin"
     );
     return isMagicLinkEmailSend;

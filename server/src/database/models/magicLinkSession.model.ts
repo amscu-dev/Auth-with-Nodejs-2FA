@@ -5,7 +5,7 @@ import executionTimePlugin from "../plugins/dbLogger";
 export interface MagicLinkSessionDocument extends Document {
   _id: mongoose.Types.ObjectId;
   tokenJTI: string;
-  userEmail: string;
+  userId: string;
   consumed: boolean;
   createdAt: Date;
   expiresAt: Date;
@@ -18,7 +18,7 @@ const MagicLinkSessionSchema = new Schema<MagicLinkSessionDocument>({
     required: true,
     unique: true,
   },
-  userEmail: {
+  userId: {
     type: String,
     index: true,
   },
