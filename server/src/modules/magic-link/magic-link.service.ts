@@ -64,6 +64,7 @@ export class MagicLinkService {
     return isMagicLinkEmailSend;
   }
   public async signInWithMagicLink(email: string) {
+    // ! 01. Check user existance
     const user = await UserModel.findOne({
       email,
     });
@@ -73,11 +74,14 @@ export class MagicLinkService {
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
+    // ! 02. Initiate magic link session
     const isMagicLinkEmailSend = await this.createMagicLinkSession(
       email,
       user.id,
       "signin"
     );
+
+    // ! 03. Return confirmation that link is sent
     return isMagicLinkEmailSend;
   }
   public async signUpWithMagicLink(registerData: MagicLinkRegisterData) {
@@ -116,17 +120,40 @@ export class MagicLinkService {
     // ! 05. Return User
     return { isMagicLinkEmailSend, user };
   }
+  public async resendMagicLink(email: string) {
+    // ! 01. Check user existance
+    const user = await UserModel.findOne({
+      email,
+    });
+    if (!user) {
+      throw new NotFoundException(
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
+      );
+    }
+
+    // ! 02. Create magic link session
+    const isMagicLinkEmailSend = await this.createMagicLinkSession(
+      email,
+      user.id,
+      "signin"
+    );
+
+    // ! 03. Return confirmation of email sent
+    return isMagicLinkEmailSend;
+  }
   public async authenticateUser(req: Request) {
-    // ! We already verified user existance in
+    // ! 01. We extract user from req, we already proved existance in passport middleware
     const user = req.user as Express.User;
+
+    // ! 02. Create session & authenticate user
     const mongoSession = await mongoose.startSession();
     try {
       const { sessionAuth } = await mongoSession.withTransaction(async () => {
-        // ! Parse UA Agent
+        // ! 02.1 Parse UA Agent
         const uaSource = req.headers["user-agent"];
         const parsedUA = useragent.parse(uaSource ?? "unknown");
-        // ! CREATE SESSION
-
+        // ! 02.2 Create Session
         const sessionAuth = new SessionModel({
           userId: user._id,
           userAgent: {
@@ -143,7 +170,7 @@ export class MagicLinkService {
         await sessionAuth.save({ session: mongoSession });
         return { sessionAuth };
       });
-      // ! CREATE TOKENS
+      // ! 02.3 Create tokens
       const accessToken = signJwtToken(
         {
           sub: user.id,
@@ -164,7 +191,7 @@ export class MagicLinkService {
         },
         { ...refreshTokenSignOptions }
       );
-
+      // ! 03. Return credentials
       return {
         user,
         accessToken,
@@ -174,24 +201,7 @@ export class MagicLinkService {
     } catch (error) {
       throw error;
     } finally {
-      mongoSession.endSession();
+      await mongoSession.endSession();
     }
-  }
-  public async resendMagicLink(email: string) {
-    const user = await UserModel.findOne({
-      email,
-    });
-    if (!user) {
-      throw new NotFoundException(
-        "User with the specified email was not found.",
-        ErrorCode.AUTH_USER_NOT_FOUND
-      );
-    }
-    const isMagicLinkEmailSend = await this.createMagicLinkSession(
-      email,
-      user.id,
-      "signin"
-    );
-    return isMagicLinkEmailSend;
   }
 }

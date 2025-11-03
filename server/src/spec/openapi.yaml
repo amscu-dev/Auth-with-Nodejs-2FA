@@ -480,8 +480,118 @@ paths:
                 $ref: "#/components/schemas/EmailServiceError"
   /magic-link/signin:
     tags: [✨ Magic-Link Authentication]
-    summary: x
-    description: x
+    summary: Sign in a user using a magic link
+    description: |
+      Initiates a passwordless sign-in flow by sending a magic link to the user's email address. 
+      The user can authenticate by clicking the link received in their inbox. 
+      If the email is not associated with any account, the request will fail with a 404 response. 
+      This endpoint is typically used in passwordless authentication systems.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MagicLinkSignInRequestBody"
+    responses:
+      "200":
+        description: |
+          Magic link successfully sent to the user's email address. 
+          The user must click the link to complete authentication.
+        headers:
+          X-Request-Id:
+            $ref: "#/components/headers/XRequestId"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
+      "404":
+        description: |
+          Not Found. The specified email address does not match any registered user account. 
+          The client should prompt the user to register or verify their email.
+        headers:
+          X-Request-Id:
+            $ref: "#/components/headers/XRequestId"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserNotFoundError"
+      "503":
+        description: |
+          Service Unavailable. The email delivery service is temporarily unavailable 
+          or failed to send the magic link. The client may retry after a short delay.
+        headers:
+          X-Request-Id:
+            $ref: "#/components/headers/XRequestId"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailServiceError"
+  /magic-link/resend:
+    tags: [✨ Magic-Link Authentication]
+    summary: Resend a magic link for email verification or sign-in
+    description: |
+      Resends a new generated magic link to the user's email address. 
+      This endpoint can be used when the user did not receive or accidentally deleted 
+      the original magic link for verification or sign-in. 
+      If the email does not correspond to an existing user, the request will fail with a 404 response. 
+      This operation is commonly used in passwordless authentication systems to handle failed or lost verification emails.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MagicLinkSignInRequestBody"
+    responses:
+      "200":
+        description: |
+          Magic link successfully sent to the user's email address.
+        headers:
+          X-Request-Id:
+            $ref: "#/components/headers/XRequestId"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
+      "404":
+        description: |
+          Not Found. The specified email address does not match any registered user account. 
+          The client should prompt the user to register or verify their email.
+        headers:
+          X-Request-Id:
+            $ref: "#/components/headers/XRequestId"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserNotFoundError"
+      "503":
+        description: |
+          Service Unavailable. The email delivery service is temporarily unavailable 
+          or failed to send the magic link. The client may retry after a short delay.
+        headers:
+          X-Request-Id:
+            $ref: "#/components/headers/XRequestId"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailServiceError"
+  /magic-link/verify/{token}:
+    get:
+      tags: []
+      summary: x
+      description: x
+      responses:
+        "200":
+          description: x
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/AuthenticationCookies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccessResponse"
+
 components:
   # SCHEMAS
   schemas:
@@ -639,6 +749,17 @@ components:
           minLength: 1
           maxLength: 64
           example: john.doe@example.com
+    MagicLinkSignInRequestBody:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 64
+          example: john.doe@example.com
     # RESPONSES
     RegistrationSuccessReponse:
       type: object
@@ -722,7 +843,7 @@ components:
           example: 200
         message:
           type: string
-          example: Authentication successful, You have been signed in successfully.
+          example: Authentication successful, you have been signed in successfully.
         data:
           type: object
           required:
@@ -963,6 +1084,38 @@ components:
           properties:
             user:
               $ref: "#/components/schemas/UserData"
+            isMagicLinkEmailSend:
+              type: boolean
+              example: true
+            nextStep:
+              type: string
+              enum: ["CHECK_EMAIL_FOR_MAGIC_LINK"]
+              example: CHECK_EMAIL_FOR_MAGIC_LINK
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
+    MagicLinkSignInSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: We've sent a magic link to your email. Click it to successfully finish your registration process.
+        data:
+          type: object
+          properties:
             isMagicLinkEmailSend:
               type: boolean
               example: true

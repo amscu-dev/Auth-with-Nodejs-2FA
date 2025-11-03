@@ -43,14 +43,18 @@ export class MagicLinkController {
   );
   public signInWithMagicLink = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const email = emailSchema.parse(req.body.email);
 
+      // ! 02. Call Service
       const isMagicLinkEmailSend =
         await this.magicLinkService.signInWithMagicLink(email);
-      return res.status(HTTPSTATUS.CREATED).json(
+
+      // ! 03. Return data
+      return res.status(HTTPSTATUS.OK).json(
         new ApiResponse({
           success: true,
-          statusCode: HTTPSTATUS.CREATED,
+          statusCode: HTTPSTATUS.OK,
           message:
             "We've sent a magic link to your email. Click it to sign in.",
           data: {
@@ -66,11 +70,15 @@ export class MagicLinkController {
   );
   public resendMagicLink = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const email = emailSchema.parse(req.body.email);
 
+      // ! 02. Call service
       const isMagicLinkEmailSend = await this.magicLinkService.resendMagicLink(
         email
       );
+
+      // ! 03. Return Response
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,
@@ -90,8 +98,11 @@ export class MagicLinkController {
   );
   public authenticateMagicLink = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Call service
       const { user, accessToken, refreshToken, mfaRequired } =
         await this.magicLinkService.authenticateUser(req);
+
+      // ! 02. Return response and authenticate user
       return setAuthenticationCookies({
         res,
         accessToken,
@@ -102,7 +113,8 @@ export class MagicLinkController {
           new ApiResponse({
             success: true,
             statusCode: HTTPSTATUS.OK,
-            message: "Authentication successful: User successfully login.",
+            message:
+              "Authentication successful, you have been signed in successfully.",
             data: { mfaRequired, user, nextStep: LOGIN.OK },
             metadata: {
               requestId: req.requestId,
