@@ -30,7 +30,7 @@ import { passwordResetTemplate } from "@/mailers/templates/template";
 
 export class MfaService {
   public async generateMFASetup(req: Express.Request) {
-    // ! Already verified that user exists in JWT middleware so ex can safetly assert it
+    // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const user = req.user as Express.User;
 
     if (user.userPreferences.enable2FA) {
@@ -40,7 +40,7 @@ export class MfaService {
       );
     }
 
-    // ! For Every Request at this endpoint we will regenerate code.
+    // ! 02. For Every Request at this endpoint we will regenerate code.
     const secret = speakeasy.generateSecret({ name: config.APP_NAME });
     const secretKey = secret.base32;
     const url = speakeasy.otpauthURL({
@@ -50,7 +50,8 @@ export class MfaService {
       encoding: "base32",
     });
     const qrImageUrl = await qrcode.toDataURL(url);
-    // ! Save a temp secret key, which will turn in a permanent secret key after validation
+
+    // ! 03. Save a temp secret key, which will turn in a permanent secret key after validation
     await TempTOTPSecretModel.replaceOne(
       {
         userId: user._id,
@@ -64,11 +65,13 @@ export class MfaService {
       { upsert: true }
     );
 
+    // ! 04. Return secret and qrImageUrl
     return {
       secret: secretKey,
       qrImageUrl,
     };
   }
+
   public async verifyMFASetup(req: Request, code: string) {
     // ! Already verified that user exists in JWT middleware so ex can safetly assert it
     const user = req.user as Express.User;
@@ -130,7 +133,6 @@ export class MfaService {
       },
     };
   }
-
   public async verifyMFAForChangingPassword(code: string, req: Request) {
     const currentUser = req.user as Express.User;
 
@@ -196,7 +198,6 @@ export class MfaService {
       url: resetLink,
     };
   }
-
   public async revokeMFA(code: string, req: Request) {
     const currentUser = req.user as Express.User;
 

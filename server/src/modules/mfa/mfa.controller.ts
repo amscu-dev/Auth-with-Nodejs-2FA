@@ -15,9 +15,11 @@ export class MfaController {
   }
   public generateMFASetup = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Call Service
       const { secret, qrImageUrl } = await this.mfaService.generateMFASetup(
         req
       );
+      // ! 02 Send secret & qr code to user
       return res.status(HTTPSTATUS.OK).json(
         new ApiResponse({
           statusCode: HTTPSTATUS.OK,

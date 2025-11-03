@@ -646,8 +646,93 @@ paths:
                   - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
                   - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
                   - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+  /mfa/setup:
+    get:
+      tags: [🕹️Multi Factor Authentication Endpoints]
+      summary: Retrieve temporary TOTP secret and QR code for MFA setup
+      description: |
+        Initiates the setup process for Multi-Factor Authentication (MFA) using TOTP (Time-Based One-Time Password). 
+        Returns a temporary secret key and a QR code that the user can scan in their authenticator app (e.g., Google Authenticator, Authy). 
+        The temporary secret must be verified by the user to finalize MFA enrollment. 
+        This endpoint requires the user to be authenticated via a valid access token cookie.
+      security:
+        - AccessTokenCokie: []
+      responses:
+        "200":
+          description: >
+            MFA setup initiated successfully. Returns a temporary TOTP secret and a Base64-encoded QR code image. 
+            The client should display the QR code to the user for scanning in their authenticator app.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/MfaSetupResponse"
+        "409":
+          description: >
+            Conflict. MFA is already enabled for this user. No new temporary secret is generated. 
+            The user should proceed to login with MFA or disable MFA before attempting to setup again.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MfaAlreadyEnabledError"
+        "401":
+          $ref: "#/components/responses/InvalidAccessJwtToken"
+  /mfa/verify:
+    post:
+      tags: [🕹️Multi Factor Authentication Endpoints]
+      summary: x
+      description: x
 
 components:
+  # REPONSES
+  responses:
+    # TOKEN UNAUTHORIZED RESPONSES
+    InvalidAccessJwtToken:
+      description: >
+        Unauthorized. The request could not be authenticated because the provided token 
+        is invalid, expired, or cannot be used for the current session. 
+        Possible reasons include:
+        - The token does not exist or was already used (AuthenticationTokenNotFound).
+        - The token type is incorrect or not supported (AccessTokenTypeError).
+        - The token does not belong to a valid user (AuthenticationTokenUserNotFoundError).
+        - The user's session is invalid, expired, or has been terminated (AuthenticationTokenInvalidSessionError).
+        - The token does not match the current session or context (AuthenticationTokenSessionMismatchError).
+        - The token is malformed or otherwise invalid (AuthenticationTokenInvalidTokenError).
+        - The token has expired and is no longer usable (AuthenticationTokenExpiredError).
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
+              - $ref: "#/components/schemas/AccessTokenTypeError"
+              - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
+              - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
+              - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
+              - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
+              - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+          examples:
+            AuthenticationTokenNotFound:
+              $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+            AccessTokenType:
+              $ref: "#/components/examples/AccessTokenTypeErrorExample"
+            AuthenticationTokenUserNotFound:
+              $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+            AuthenticationTokenInvalidSession:
+              $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
+            AuthenticationTokenSessionMismatch:
+              $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+            AuthenticationTokenInvalidToken:
+              $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+            AuthenticationTokenExpired:
+              $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
   # SCHEMAS
   schemas:
     # REUSABLE DATA
@@ -1178,6 +1263,44 @@ components:
               type: string
               enum: ["CHECK_EMAIL_FOR_MAGIC_LINK"]
               example: CHECK_EMAIL_FOR_MAGIC_LINK
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
+    MfaSetupResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: We've sent a magic link to your email. Click it to successfully finish your registration process.
+        data:
+          type: object
+          required:
+            - secret
+            - qrImageUrl
+          properties:
+            secret:
+              type: string
+              description: Base32-encoded TOTP secret for the user. This secret is used to generate OTP codes.
+              pattern: "^[A-Z2-7]+=*$"
+              example: "JBSWY3DPEHPK3PXP"
+            qrImageUrl:
+              type: string
+              description: Base64-encoded PNG image of the QR code for TOTP setup. Can be rendered in clients as an image.
+              format: byte
+              example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
         metadata:
           $ref: "#/components/schemas/ResponseMetadata"
     # ERRORS
