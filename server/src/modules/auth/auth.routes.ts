@@ -12,7 +12,7 @@ authRoutes.post("/login", authController.login);
 authRoutes.post("/email/verify", authController.verifyEmail);
 // authRoutes.post("/email/resend", authController.verifyEmail);
 authRoutes.post("/password/forgot", authController.forgotPassword);
-authRoutes.post("/password/reset", authController.resetPassword);
+authRoutes.patch("/password/reset", authController.resetPassword);
 authRoutes.post("/logout", AuthenticateAccessJWTToken, authController.logout);
 
 authRoutes.get("/refresh", AuthenticateRefreshJWTToken, authController.refresh);

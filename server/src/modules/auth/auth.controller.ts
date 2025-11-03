@@ -196,12 +196,16 @@ export class AuthController {
   );
   public resetPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const { verificationCode, password } = resetPasswordSchema.parse(
         req.body
       );
+
+      // ! 02. Collect ip & userAgent
       const ip = req.ip;
       const userAgent = req.headers["user-agent"];
 
+      // ! 03. Call service
       await this.authService.resetPassword(
         verificationCode,
         password,
@@ -209,6 +213,7 @@ export class AuthController {
         userAgent
       );
 
+      // ! 04. Clear cookies and inform user that action performed well.
       return clearAuthenticationCookies(res)
         .status(HTTPSTATUS.OK)
         .json(
@@ -217,6 +222,9 @@ export class AuthController {
             statusCode: HTTPSTATUS.OK,
             message:
               "Password reset completed. If you didn’t request this change, please contact support immediately",
+            data: {
+              nextStep: LOGIN.OK,
+            },
             metadata: {
               requestId: req.requestId,
             },

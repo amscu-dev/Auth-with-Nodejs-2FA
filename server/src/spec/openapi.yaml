@@ -205,6 +205,69 @@ paths:
             application/json:
               schema:
                 $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/EmailServiceError"
+  /auth/password/reset:
+    patch:
+      tags: [Email & Password Auth]
+      summary: Complete the password reset process
+      description: >
+        Completes the password reset process for a user account using a valid verification code.  
+        The request must include the verification code (typically received via email) and the new password.  
+        Upon successful verification, the user's password is updated, existing authentication cookies are cleared,  
+        and the user is advised to log in again. If the password reset was not initiated by the user, they are encouraged  
+        to contact support immediately. The operation also records contextual information such as IP address and user agent  
+        for security auditing purposes.
+      requestBody:
+        required: true
+        description: x
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequestBody"
+      responses:
+        "200":
+          description: >
+            Password reset completed successfully.  
+            All existing authentication cookies are invalidated to ensure previous sessions are closed.  
+            The user should proceed to log in with the new password.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/InvalidateAuthenticationCookies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetPasswordSuccessResponse"
+        "404":
+          description: >
+            The provided verification code or associated user could not be found.  
+            This may occur if the code is invalid or the user no longer exists in the system.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeNotFoundError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/UserNotFoundError"
+        "400":
+          description: >
+            The password reset request could not be completed due to invalid or expired data.  
+            Possible causes include:
+            - The verification code has expired or was already consumed.  
+            - The new password does not meet security requirements or was previously used.  
+            The client should prompt the user to request a new password reset code and try again.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeExpiredError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeConsumedError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/PasswordReuseNotAllowed"
 
 components:
   schemas:
@@ -267,6 +330,23 @@ components:
           type: string
           format: email
           example: john.doe@gmail.com
+    ResetPasswordRequestBody:
+      type: object
+      required:
+        - verificationCode
+        - password
+      properties:
+        verificationCode:
+          type: string
+          minLength: 1
+          maxLength: 64
+          example: 8ee6af17747140d8951121739
+        password:
+          type: string
+          minLength: 8
+          pattern: ^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{}|\\;:\'",.<>/?]).{8,}$
+          description: Must start with a capital letter and contain at least one special character
+          example: Password@123
     UserData:
       type: object
       required:
@@ -530,6 +610,37 @@ components:
               example: false
           metadata:
             $ref: "#/components/schemas/ResponseMetadata"
+    ResetPasswordSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Password reset completed. If you didn’t request this change, please contact support immediately.
+        data:
+          type: object
+          required:
+            - nextStep
+          properties:
+            nextStep:
+              type: string
+              enum: ["OK"]
+              example: OK
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
   headers:
     XRequestId:
       description: Unique request identifier for tracing and debugging
@@ -556,3 +667,15 @@ components:
         type: string
       example: |
         mfaToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
+    InvalidateAuthenticationCookies:
+      description: |
+        Multiple authentication cookies may be cleared in this response to invalidate any existing sessions.
+        This ensures that previously issued tokens become unusable and the user must log in again.
+        The following cookies are invalidated:
+        1. accessToken — HTTP-only access token
+        2. refreshToken — HTTP-only refresh token
+      schema:
+        type: string
+      example: |
+        accessToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+        refreshToken=; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
