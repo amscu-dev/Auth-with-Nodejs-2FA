@@ -71,6 +71,8 @@ paths:
             2. Two-factor authentication required — user must complete MFA to finalize login.
             3. Authentication successful — user credentials are valid, and access/refresh tokens are provided.
           headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
             Set-Cookie:
               $ref: "#/components/headers/AuthenticationCookies"
           content:
@@ -78,7 +80,7 @@ paths:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/LoginEmailVerificationPendingResponse"
-                  - $ref: "#/components/schemas/LoginMFAPendingResponse"
+                  - $ref: "#/components/schemas/MFAPendingResponse"
                   - $ref: "#/components/schemas/LoginSuccessResponse"
         "404":
           description: >
@@ -87,7 +89,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "../spec/schemas/reusable/errors/openapi.yaml/UserNotFoundError"
+                $ref: ".../spec/schemas/reusable/errors/openapi.yaml/components/schemas/UserNotFoundError"
         "400":
           description: >
             Invalid credentials — the provided email or password is incorrect. 
@@ -95,22 +97,115 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "../spec/schemas/reusable/errors/openapi.yaml/InvalidCredentialsError"
+                $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/InvalidCredentialsError"
   /auth/email/verify:
     post:
       tags: [Email & Password Auth]
       summary: Authenticate a user with email and password
       description: >
-        This endpoint allows an existing user to log in using their email and password.
-        Upon successful authentication, an access token (and optionally a refresh token) is returned.
-        If the user has two-factor authentication enabled, additional steps may be required to complete the login process.
+        Verifies a user's email address using a verification token sent via email.
+        Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
       requestBody:
         required: true
-        description: Credentials for user login
+        description: Verify a user's email address
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserLoginRequestBody"
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  example: n3910310n013912310sa
+      responses:
+        "200":
+          description: >
+            Email verification successful. The user's email address has been confirmed, enabling them to complete the login process and access protected resources.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailConfirmedSuccessResponse"
+        "404":
+          description: >
+            Verification failed, the provided verification code was not found.
+            This may happen if the code is invalid or never issued. The user should request a new verification code.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeNotFoundError"
+        "400":
+          description: >
+            Verification failed due to an invalid verification code state:
+            1. The code has expired — the user must request a new verification code.
+            2. The code has already been consumed — the user must request a new verification code.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeExpiredError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeConsumedError"
+  /auth/password/forgot:
+    post:
+      tags: [Email & Password Auth]
+      summary: Request a password reset for a user account
+      description: >
+        Initiates the password reset process for a user by submitting their email address. 
+        If the user has two-factor authentication (MFA) enabled, an MFA verification step will be required before sending the password reset instructions. Otherwise, a password reset email will be sent directly.
+      requestBody:
+        required: true
+        description: Email address of the user requesting a password reset
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequestBody"
+      responses:
+        "200":
+          description: >
+            Password reset request processed successfully. Depending on the user's account configuration:
+            1. MFA pending — if the user has two-factor authentication enabled, an MFA verification step is required before sending the reset email.
+            2. Reset email sent — if MFA is not enabled, a password reset email has been sent with instructions to reset the password.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/MFATokenCookie"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/MFAPendingResponse"
+                  - $ref: "#/components/schemas/ForgotPasswordSuccessResponse"
+        "404":
+          description: >
+            User not found — no account exists for the provided email address. Ensure the email is correct and try again.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/UserNotFoundError"
+        "503":
+          description: >
+            Email service unavailable — the system could not send the password reset email due to a temporary email service failure. Retry the request later.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/EmailServiceError"
+
 components:
   schemas:
     UserRegistrationRequestBody:
@@ -163,6 +258,15 @@ components:
           pattern: ^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{}|\\;:\'",.<>/?]).{8,}$
           description: Must start with a capital letter and contain at least one special character
           example: Password@123
+    ForgotPasswordRequestBody:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@gmail.com
     UserData:
       type: object
       required:
@@ -284,7 +388,6 @@ components:
               example: CONFIRM_SIGN_UP
           metadata:
             $ref: "#/components/schemas/ResponseMetadata"
-    LoginMFAPendingResponse:
     LoginSuccessResponse:
       type: object
       required:
@@ -310,17 +413,121 @@ components:
           required:
             - mfaRequired
             - nextStep
+            - user
           properties:
             user:
-              $ref: "#/components/schemas/UserData"
-            mfaRequired:
-              type: boolean
-              enum: [false]
-              example: false
+              $ref: "#/components/schema/UserData"
             nextStep:
               type: string
               enum: ["OK"]
               example: OK
+            mfaRequired:
+              type: boolean
+              enum: [false]
+              example: false
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
+    MFAPendingResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Two-factor authentication required. Please enter your verification code to complete this process.
+        data:
+          type: object
+          required:
+            - mfaRequired
+            - nextStep
+          properties:
+            nextStep:
+              type: string
+              enum: ["MFA_REQUIRED"]
+              example: MFA_REQUIRED
+            mfaRequired:
+              type: boolean
+              enum: [true]
+              example: true
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
+    EmailConfirmedSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Email address successfully verified. You can now proceed to login.
+        data:
+          type: object
+          required:
+            - nextStep
+          properties:
+            nextStep:
+              type: string
+              enum: ["CONFIRMED_EMAIL_RETURN_TO_LOGIN"]
+              example: CONFIRMED_EMAIL_RETURN_TO_LOGIN
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
+    ForgotPasswordSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Password reset request successfully processed. Please check your email for further instructions.
+        data:
+          type: object
+          required:
+            - nextStep
+            - mfaRequired
+          properties:
+            nextStep:
+              type: string
+              enum: ["OK"]
+              example: OK
+            mfaRequired:
+              type: boolean
+              enum: [false]
+              example: false
           metadata:
             $ref: "#/components/schemas/ResponseMetadata"
   headers:
@@ -341,3 +548,11 @@ components:
         accessToken=eyJhbGciOi...; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT,
         refreshToken=eyJhbGciOi...; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
         mfaToken=eyJhbGciOi...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
+    MFATokenCookie:
+      description: |
+        HTTP-only MFA token cookie used for two-factor authentication.
+        This cookie must be included in subsequent requests to complete the MFA step.
+      schema:
+        type: string
+      example: |
+        mfaToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT

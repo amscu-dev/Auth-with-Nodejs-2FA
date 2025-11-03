@@ -77,7 +77,7 @@ export class AuthController {
             success: true,
             statusCode: HTTPSTATUS.OK,
             message:
-              "Authentication pending, your email address has not yet been verified. Please confirm your email to proceed.",
+              "Two-factor authentication required. Please enter your verification code to complete this process.",
             data: { nextStep: LOGIN.CONFIRM_SIGN_UP },
             metadata: {
               requestId: req.requestId,
@@ -131,10 +131,13 @@ export class AuthController {
   );
   public verifyEmail = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const { code } = verificationEmailSchema.parse(req.body);
 
+      // ! 02. Procees with code verification logic
       await this.authService.verifyEmail(code);
 
+      // ! 03. Return response
       return res.status(HTTPSTATUS.OK).json(
         new ApiResponse({
           statusCode: HTTPSTATUS.OK,
@@ -151,41 +154,16 @@ export class AuthController {
       );
     }
   );
-  public refresh = asyncHandler(
-    async (req: Request, res: Response): Promise<any> => {
-      const { newRefreshToken, accessToken } =
-        await this.authService.refreshToken(req);
-
-      if (newRefreshToken) {
-        res.cookie(
-          "refreshToken",
-          newRefreshToken,
-          getRefreshTokenCookieOptions()
-        );
-      }
-      return res
-        .status(HTTPSTATUS.OK)
-        .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
-        .json(
-          new ApiResponse({
-            success: true,
-            statusCode: HTTPSTATUS.OK,
-            message:
-              "Access token successfully refreshed. Your session remains active.",
-            metadata: {
-              requestId: req.requestId,
-            },
-          })
-        );
-    }
-  );
   public forgotPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const email = emailSchema.parse(req.body.email);
 
+      // ! 02. Call service
       const { url, mfaRequired, mfaToken } =
         await this.authService.forgotPassword(email, req.ip || "");
 
+      // ! 03. If user has mfa, request mfa, before sending code
       if (mfaRequired && mfaToken) {
         return setMFATokenCookie({ res, mfaToken })
           .status(HTTPSTATUS.OK)
@@ -194,7 +172,7 @@ export class AuthController {
               success: true,
               statusCode: HTTPSTATUS.OK,
               message:
-                "Two-factor authentication required. Please enter your verification code to complete login.",
+                "Two-factor authentication required. Please enter your verification code to complete this process.",
               data: { mfaRequired, nextStep: LOGIN.MFA_REQUIRED },
               metadata: {
                 requestId: req.requestId,
@@ -203,6 +181,7 @@ export class AuthController {
           );
       }
 
+      // ! 04. If user does not have mfa, send email
       return res.status(HTTPSTATUS.OK).json(
         new ApiResponse({
           success: true,
@@ -238,6 +217,34 @@ export class AuthController {
             statusCode: HTTPSTATUS.OK,
             message:
               "Password reset completed. If you didn’t request this change, please contact support immediately",
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
+    }
+  );
+  public refresh = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { newRefreshToken, accessToken } =
+        await this.authService.refreshToken(req);
+
+      if (newRefreshToken) {
+        res.cookie(
+          "refreshToken",
+          newRefreshToken,
+          getRefreshTokenCookieOptions()
+        );
+      }
+      return res
+        .status(HTTPSTATUS.OK)
+        .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
+        .json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message:
+              "Access token successfully refreshed. Your session remains active.",
             metadata: {
               requestId: req.requestId,
             },
