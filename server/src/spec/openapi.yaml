@@ -44,6 +44,11 @@ paths:
               $ref: "#/components/headers/XRequestId"
           content:
             application/json:
+              examples:
+                EmailAlreadyExistsError:
+                  $ref: "#/components/examples/EmailAlreadyExistsErrorExample"
+                InvalidRequestBodyValidationError:
+                  $ref: "#/components/examples/InvalidRequestBodyValidationErrorExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/EmailAlreadyExistsError"
@@ -77,6 +82,13 @@ paths:
               $ref: "#/components/headers/AuthenticationCookies"
           content:
             application/json:
+              examples:
+                LoginEmailVerificationPendingResponse:
+                  $ref: "#/components/examples/LoginEmailVerificationPendingResponseExample"
+                MFAPendingResponse:
+                  $ref: "#/components/examples/MFAPendingResponseExample"
+                LoginSuccessResponse:
+                  $ref: "#/components/examples/LoginSuccessResponseExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/LoginEmailVerificationPendingResponse"
@@ -150,6 +162,11 @@ paths:
               $ref: "#/components/headers/XRequestId"
           content:
             application/json:
+              examples:
+                VerificationCodeExpiredError:
+                  $ref: "#/components/examples/VerificationCodeExpiredErrorExample"
+                VerificationCodeConsumedError:
+                  $ref: "#/components/examples/VerificationCodeConsumedErrorExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/VerificationCodeExpiredError"
@@ -181,6 +198,11 @@ paths:
               $ref: "#/components/headers/MFATokenCookie"
           content:
             application/json:
+              examples:
+                MFAPendingResponse:
+                  $ref: "#/components/examples/MFAPendingResponseExample"
+                ForgotPasswordSuccessResponse:
+                  $ref: "#/components/examples/ForgotPasswordSuccessResponseExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/MFAPendingResponse"
@@ -247,6 +269,11 @@ paths:
               $ref: "#/components/headers/XRequestId"
           content:
             application/json:
+              examples:
+                VerificationCodeNotFoundError:
+                  $ref: "#/components/examples/VerificationCodeNotFoundErrorExample"
+                UserNotFoundError:
+                  $ref: "#/components/examples/UserNotFoundErrorExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/VerificationCodeNotFoundError"
@@ -263,6 +290,13 @@ paths:
               $ref: "#/components/headers/XRequestId"
           content:
             application/json:
+              examples:
+                VerificationCodeExpiredError:
+                  $ref: "#/components/examples/VerificationCodeExpiredErrorExample"
+                VerificationCodeConsumedError:
+                  $ref: "#/components/examples/VerificationCodeConsumedErrorExample"
+                PasswordReuseNotAllowed:
+                  $ref: "#/components/examples/PasswordReuseNotAllowedExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/VerificationCodeExpiredError"
@@ -293,7 +327,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schema/RefreshTokenEndpointSuccessResponse"
+                $ref: "#/components/schemas/RefreshTokenEndpointSuccessResponse"
         "401":
           description: >
             The refresh token is invalid, expired, missing, or does not match the current session.  
@@ -307,6 +341,23 @@ paths:
               $ref: "#/components/headers/InvalidateAuthenticationCookies"
           content:
             application/json:
+              examples:
+                RefreshTokenInvalidSessionError:
+                  $ref: "#/components/examples/RefreshTokenInvalidSessionErrorExample"
+                AuthenticationTokenNotFoundError:
+                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+                RefreshTokenTypeError:
+                  $ref: "#/components/examples/RefreshTokenTypeErrorExample"
+                AuthenticationTokenUserNotFoundError:
+                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+                RefreshTokenExpiredSessionError:
+                  $ref: "#/components/examples/RefreshTokenExpiredSessionErrorExample"
+                AuthenticationTokenSessionMismatchError:
+                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+                AuthenticationTokenInvalidErorr:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
+                AuthenticationTokenExpiredError:
+                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/RefreshTokenInvalidSessionError"
@@ -354,6 +405,21 @@ paths:
               $ref: "#/components/headers/XRequestId"
           content:
             application/json:
+              examples:
+                AuthenticationTokenNotFoundError:
+                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+                AccessTokenTypeError:
+                  $ref: "#/components/examples/AccessTokenTypeErrorExample"
+                AuthenticationTokenUserNotFoundError:
+                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+                AuthenticationTokenInvalidSessionError:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
+                AuthenticationTokenSessionMismatchError:
+                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+                AuthenticationTokenInvalidError:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
+                AuthenticationTokenExpiredError:
+                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
@@ -364,6 +430,7 @@ paths:
                   - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
                   - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
 components:
+  # SCHEMAS
   schemas:
     # REUSABLE DATA
     UserData:
@@ -398,9 +465,9 @@ components:
             enable2FA:
               type: boolean
               example: false
-          emailNotification:
-            type: boolean
-            example: true
+            emailNotification:
+              type: boolean
+              example: true
         createdAt:
           type: string
           format: date-time
@@ -1168,7 +1235,7 @@ components:
           example: false
         message:
           type: string
-          example: Authentication failed, the user ID in the MFA token does not match the user ID of the session.
+          example: Authentication failed, the user ID in the JWT token does not match the user ID of the session.
         errorCode:
           type: string
           enum: ["AUTH_TOKEN_SESSION_MISMATCH"]
@@ -1810,13 +1877,400 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+  # EXAMPLES
+  examples:
+    # SUCCESS RESPONSES
+    LoginEmailVerificationPendingResponseExample:
+      summary: Login pending due to unverified email
+      value:
+        success: true
+        statusCode: 200
+        message: Authentication pending, your email address has not yet been verified. Please confirm your email to proceed.
+        data:
+          nextStep: CONFIRM_SIGN_UP
+        metadata:
+          requestId: 627c83c6ac314a94bd9348d78
+          timestamp: 2025-10-31T18:08:35.135Z
+    LoginSuccessResponseExample:
+      summary: Login successful without MFA
+      value:
+        success: true
+        statusCode: 200
+        message: Authentication successful, You have been signed in successfully.
+        data:
+          user:
+            _id: 6904fb216bdaf225b3726294
+            name: user
+            email: marinescua914@gmail.com
+            isEmailVerified: true
+            userPreferences:
+              enable2FA: false
+              emailNotification: true
+            createdAt: 2025-10-31T18:08:33.919Z
+            updatedAt: 2025-10-31T18:08:33.919Z
+          nextStep: OK
+          mfaRequired: false
+        metadata:
+          requestId: 627c83c6ac314a94bd9348d78
+          timestamp: 2025-10-31T18:08:35.135Z
+    MFAPendingResponseExample:
+      summary: Login pending requiring MFA
+      value:
+        success: true
+        statusCode: 200
+        message: Two-factor authentication required. Please enter your verification code to complete this process.
+        data:
+          nextStep: MFA_REQUIRED
+          mfaRequired: true
+        metadata:
+          requestId: 627c83c6ac314a94bd9348d78
+          timestamp: 2025-10-31T18:08:35.135Z
+    ForgotPasswordSuccessResponseExample:
+      summary: Password reset request successfully processed
+      value:
+        success: true
+        statusCode: 200
+        message: Password reset request successfully processed. Please check your email for further instructions.
+        data:
+          nextStep: OK
+          mfaRequired: false
+        metadata:
+          requestId: 627c83c6ac314a94bd9348d78
+          timestamp: 2025-10-31T18:08:35.135Z
+    # ERRORS
+    # GENERAL ERRORS
+    InternalServerErrorExample:
+      summary: Internal server error
+      value:
+        success: false
+        message: Internal Server Error
+        errorCode: INTERNAL_SERVER_ERROR
+        requestId: cc5065df0c6b4c19970d4e92f
+    ForbiddenErrorExample:
+      summary: Access forbidden
+      value:
+        success: false
+        message: Access denied, you do not have permission to perform this action.
+        errorCode: ACCESS_FORBIDDEN
+        requestId: cc5065df0c6b4c19970d4e92f
+    TooManyRequestsErrorExample:
+      summary: Too many requests
+      value:
+        success: false
+        message: Too many requests. Please try again later.
+        errorCode: TOO_MANY_REQUESTS
+        requestId: cc5065df0c6b4c19970d4e92f
+    EmailServiceErrorExample:
+      summary: Email service failure
+      value:
+        success: false
+        message: Failed to send the email. Please try again later.
+        errorCode: EMAIL_SERVICE_ERROR
+        requestId: cc5065df0c6b4c19970d4e92f
+    InvalidRequestBodyValidationErrorExample:
+      summary: Invalid request body
+      value:
+        success: false
+        message: Validation failed, some fields in the request body did not meet the expected format or constraints.
+        errorCode: VALIDATION_ERROR_INVALID_REQUEST_BODY
+        requestId: cc5065df0c6b4c19970d4e92f
+        errors:
+          - field: email
+            message: Invalid email address
+          - field: password
+            message: Password must be at least 8 characters
+    # EMAIL & PASS ERRORS
+    EmailAlreadyExistsErrorExample:
+      summary: Email already exists
+      value:
+        success: false
+        message: Registration failed, this email address is already associated with an existing account.
+        errorCode: AUTH_EMAIL_ALREADY_EXISTS
+        requestId: cc5065df0c6b4c19970d4e92f
+    UserNotFoundErrorExample:
+      summary: User not found
+      value:
+        success: false
+        message: User with the specified email was not found.
+        errorCode: AUTH_USER_NOT_FOUND
+        requestId: cc5065df0c6b4c19970d4e92f
+    InvalidCredentialsErrorExample:
+      summary: Invalid credentials
+      value:
+        success: false
+        message: Invalid credentials. Please check your email and password and try again.
+        errorCode: AUTH_INVALID_CREDENTIALS
+        requestId: cc5065df0c6b4c19970d4e92f
+    PasswordReuseNotAllowedExample:
+      summary: Password reuse not allowed
+      value:
+        success: false
+        message: You cannot reuse a previous password. Please choose a new one.
+        errorCode: AUTH_PASSWORD_REUSE_NOT_ALLOWED
+        requestId: cc5065df0c6b4c19970d4e92f
+    # VERFICATION CODES
+    VerificationCodeNotFoundErrorExample:
+      summary: Verification code not found
+      value:
+        success: false
+        message: Invalid or non-existent verification code. Please request a new one.
+        errorCode: VERIFICATION_CODE_ERROR_CODE_NOT_FOUND
+        requestId: cc5065df0c6b4c19970d4e92f
+    VerificationCodeExpiredErrorExample:
+      summary: Verification code expired
+      value:
+        success: false
+        message: This verification code has expired. Please request a new one to continue.
+        errorCode: VERIFICATION_CODE_ERROR_CODE_EXPIRED
+        requestId: cc5065df0c6b4c19970d4e92f
+    VerificationCodeConsumedErrorExample:
+      summary: Verification code already consumed
+      value:
+        success: false
+        message: This verification code has already been used. Please request a new one if needed.
+        errorCode: VERIFICATION_CODE_ERROR_CODE_CONSUMED
+        requestId: cc5065df0c6b4c19970d4e92f
+    # TOKEN GENERAL ERRORS
+    AuthenticationTokenNotFoundErrorExample:
+      summary: Authentication token not found
+      value:
+        success: false
+        message: Authentication failed, no authentication token provided.
+        errorCode: AUTH_TOKEN_NOT_FOUND
+        requestId: cc5065df0c6b4c19970d4e92f
+    AuthenticationTokenUserNotFoundErrorExample:
+      summary: User associated with token not found
+      value:
+        success: false
+        message: Authentication failed, the user associated with this token does not exist.
+        errorCode: AUTH_TOKEN_USER_NOT_FOUND
+        requestId: cc5065df0c6b4c19970d4e92f
+    AuthenticationTokenInvalidSessionErrorExample:
+      summary: Invalid token session
+      value:
+        success: false
+        message: Authentication failed, the token session is invalid, expired, or has already been consumed.
+        errorCode: AUTH_TOKEN_SESSION_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    AuthenticationTokenSessionMismatchErrorExample:
+      summary: Token session mismatch
+      value:
+        success: false
+        message: Authentication failed, the user ID in the JWT token does not match the user ID of the session.
+        errorCode: AUTH_TOKEN_SESSION_MISMATCH
+        requestId: cc5065df0c6b4c19970d4e92f
+    AuthenticationTokenExpiredErrorExample:
+      summary: Token expired
+      value:
+        success: false
+        message: Authentication failed, jwt expired at 2025-11-02T18:00:00Z.
+        errorCode: AUTH_TOKEN_EXPIRED
+        requestId: cc5065df0c6b4c19970d4e92f
+    AuthenticationTokenInvalidErrorExample:
+      summary: Invalid token
+      value:
+        success: false
+        message: >
+          Authentication failed. Possible reasons:
+          - jwt malformed
+          - invalid signature
+          - jwt must be provided
+          - invalid audience
+          - invalid issuer
+        errorCode: AUTH_TOKEN_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    # ACCESS
+    AccessTokenTypeErrorExample:
+      summary: Invalid access token type
+      value:
+        success: false
+        message: Authentication failed, expected an ACCESS token, but received a token of a different type.
+        errorCode: AUTH_ACCESS_TOKEN_TYPE_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    # MFA TOKEN
+    MFATokenTypeErrorExample:
+      summary: Invalid MFA token type
+      value:
+        success: false
+        message: Authentication failed, expected an MFA token, but received a token of a different type.
+        errorCode: AUTH_MFA_TOKEN_TYPE_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    MFATokenInvalidEndpointErrorExample:
+      summary: MFA token sent to invalid endpoint
+      value:
+        success: false
+        message: Authentication failed, MFA token was sent to an invalid or unsupported endpoint.
+        errorCode: AUTH_MFA_INVALID_ENDPOINT
+        requestId: cc5065df0c6b4c19970d4e92f
+    MFATokenInvalidTokenPurposeErrorExample:
+      summary: MFA token purpose mismatch
+      value:
+        success: false
+        message: Authentication failed, MFA token purpose mismatch. Expected 'login', got 'forgot_password'.
+        errorCode: AUTH_TOKEN_INVALID_TYPE
+        requestId: cc5065df0c6b4c19970d4e92f
+    # MAGIC LINK TOKEN
+    MagicLinkTokenTypeErrorExample:
+      summary: Invalid magic link token type
+      value:
+        success: false
+        message: Authentication failed, expected an MAGIC-LINK token, but received a token of a different type.
+        errorCode: AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    # REFRESH TOKEN
+    RefreshTokenTypeErrorExample:
+      summary: Invalid refresh token type
+      value:
+        success: false
+        message: Authentication failed, expected an REFRESH token, but received a token of a different type.
+        errorCode: AUTH_REFRESH_TOKEN_TYPE_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    RefreshTokenInvalidSessionErrorExample:
+      summary: Refresh token session invalid
+      value:
+        success: false
+        message: Authentication failed, the refresh token session does not exist or is invalid. Please log in again.
+        errorCode: AUTH_REFRESH_TOKEN_SESSION_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    RefreshTokenExpiredSessionErrorExample:
+      summary: Refresh token session expired
+      value:
+        success: false
+        message: Authentication failed, the refresh token session has expired. Please log in again to obtain a new refresh token.
+        errorCode: AUTH_REFRESH_TOKEN_SESSION_EXPIRED
+        requestId: cc5065df0c6b4c19970d4e92f
+    # MFA
+    MfaAlreadyEnabledErrorExample:
+      summary: MFA already enabled
+      value:
+        success: false
+        message: Two-factor authentication is already enabled. No further action is required.
+        errorCode: MFA_ALREADY_ENABLED
+        requestId: cc5065df0c6b4c19970d4e92f
+    MfaAlreadyDisabledErrorExample:
+      summary: MFA already disabled
+      value:
+        success: false
+        message: Two-factor authentication is already disabled. No further action is required.
+        errorCode: MFA_ALREADY_DISABLED
+        requestId: cc5065df0c6b4c19970d4e92f
+    MfaTemporarySecretExpiredErrorExample:
+      summary: Temporary TOTP secret expired
+      value:
+        success: false
+        message: Temporary TOTP secret expired. Please generate a new QR code to configure 2FA.
+        errorCode: MFA_EXPIRED_TEMP_SECRET
+        requestId: cc5065df0c6b4c19970d4e92f
+    MfaInvalidVerificationCodeErrorExample:
+      summary: Invalid or expired MFA code
+      value:
+        success: false
+        message: The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.
+        errorCode: MFA_INVALID_VERIFICATION_CODE
+        requestId: cc5065df0c6b4c19970d4e92f
+    MfaNotEnabledErrorExample:
+      summary: MFA not enabled
+      value:
+        success: false
+        message: Cannot verify MFA because two-factor authentication is not enabled for this account.
+        errorCode: MFA_NOT_ENABLED
+        requestId: cc5065df0c6b4c19970d4e92f
+    InvalidBackupCodeErrorExample:
+      summary: Invalid or already used backup code
+      value:
+        success: false
+        message: The backup code you entered is invalid or has already been used. Please try a different one.
+        errorCode: BACKUPCODE_INVALID_CODE
+        requestId: cc5065df0c6b4c19970d4e92f
+    # OIDC
+    OIDCSessionNotFoundErrorExample:
+      summary: OIDC session not found
+      value:
+        success: false
+        message: Authentication failed, no valid OIDC session was found for the given state and provider.
+        errorCode: OIDC_SESSION_NOT_FOUND
+        requestId: cc5065df0c6b4c19970d4e92f
+    OIDCSessionExpiredErrorExample:
+      summary: OIDC session expired
+      value:
+        success: false
+        message: Authentication failed, the OIDC session has expired. Please restart the sign-in process.
+        errorCode: OIDC_SESSION_CONSUMED
+        requestId: cc5065df0c6b4c19970d4e92f
+    OIDCSessionConsumedErrorExample:
+      summary: OIDC session already used
+      value:
+        success: false
+        message: Authentication failed, the OIDC session has already been used and cannot be reused.
+        errorCode: OIDC_SESSION_CONSUMED
+        requestId: cc5065df0c6b4c19970d4e92f
+    OIDCFailedAuthenticationErrorExample:
+      summary: OIDC failed authentication
+      value:
+        success: false
+        message: Authentication failed while communicating with the external identity provider. Please try again or use a different sign-in method.
+        errorCode: OIDC_FAILED_AUTHENTIFICATION
+        requestId: cc5065df0c6b4c19970d4e92f
+    # PASSKEY
+    PasskeyChallengeSessionNotFoundErrorExample:
+      summary: Passkey challenge session not found
+      value:
+        success: false
+        message: Authentication failed, the passkey registration session was not found or is invalid. Please restart the passkey process.
+        errorCode: PASSKEY_CHALLENGE_SESSION_INVALID
+        requestId: cc5065df0c6b4c19970d4e92f
+    PasskeyChallengeSessionConsumedErrorExample:
+      summary: Passkey challenge session already used
+      value:
+        success: false
+        message: Authentication failed, the passkey session has already been used. Please restart the passkey process.
+        errorCode: PASSKEY_CHALLENGE_SESSION_CONSUMED
+        requestId: cc5065df0c6b4c19970d4e92f
+    PasskeyChallengeSessionInvalidPurposeErrorExample:
+      summary: Passkey challenge session purpose invalid
+      value:
+        success: false
+        message: Authentication failed, the passkey session purpose does not match the expected type. Please restart the passkey process.
+        errorCode: PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE
+        requestId: cc5065df0c6b4c19970d4e92f
+    PasskeyChallengeSessionExpiredErrorExample:
+      summary: Passkey challenge session expired
+      value:
+        success: false
+        message: Authentication failed, the passkey session has expired. Please restart the passkey process.
+        errorCode: PASSKEY_CHALLENGE_SESSION__EXPIRED
+        requestId: cc5065df0c6b4c19970d4e92f
+    PasskeyChallengeVerificationErrorExample:
+      summary: Passkey verification failed
+      value:
+        success: false
+        message: Authentication failed, the passkey verification could not be completed successfully. Please ensure you are using the correct passkey and try again.
+        errorCode: PASSKEY_CHALENGE_VERIFICATION_ERROR
+        requestId: cc5065df0c6b4c19970d4e92f
+    PasskeyNotFoundErrorExample:
+      summary: Passkey not found
+      value:
+        success: false
+        message: Authentication failed, the provided passkey could not be found or is invalid. Please remove this passkey from your device and register a new one.
+        errorCode: PASSKEY_NOT_FOUND
+        requestId: cc5065df0c6b4c19970d4e92f
+    #SESSIONS
+    UserSessionNotFoundErrorExample:
+      summary: User session not found
+      value:
+        success: false
+        message: The session associated with this operation could not be found.
+        errorCode: AUTH_SESSION_NOT_FOUND
+        requestId: cc5065df0c6b4c19970d4e92f
   # HEADERS
   headers:
     XRequestId:
       description: Unique request identifier for tracing and debugging
       schema:
         type: string
-        example: 627c83c6ac314a94bd9348d78
+      examples:
+        default:
+          value: "627c83c6ac314a94bd9348d78"
     AuthenticationCookies:
       description: |
         Multiple cookies may be set in this response:
@@ -1825,18 +2279,22 @@ components:
         3. mfaToken — HTTP-only MFA token (if required)
       schema:
         type: string
-      example: |
-        accessToken=eyJhbGciOi...; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT,
-        refreshToken=eyJhbGciOi...; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
-        mfaToken=eyJhbGciOi...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
+      examples:
+        default:
+          value: |
+            accessToken=eyJhbGciOi...; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT,
+            refreshToken=eyJhbGciOi...; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
+            mfaToken=eyJhbGciOi...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
     MFATokenCookie:
       description: |
         HTTP-only MFA token cookie used for two-factor authentication.
         This cookie must be included in subsequent requests to complete the MFA step.
       schema:
         type: string
-      example: |
-        mfaToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
+      examples:
+        default:
+          value: |
+            mfaToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
     InvalidateAuthenticationCookies:
       description: |
         Multiple authentication cookies may be cleared in this response to invalidate any existing sessions.
@@ -1846,9 +2304,11 @@ components:
         2. refreshToken — HTTP-only refresh token
       schema:
         type: string
-      example: |
-        accessToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
-        refreshToken=; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+      examples:
+        default:
+          value: |
+            accessToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+            refreshToken=; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
   # SECURITY
   securitySchemes:
     AccessTokenCokie:
