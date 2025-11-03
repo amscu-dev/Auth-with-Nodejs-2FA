@@ -326,8 +326,8 @@ components:
           example: Authentication failed, the user associated with this token does not exist.
         errorCode:
           type: string
-          enum: ["AUTH_ACCESS_TOKEN_USER_NOT_FOUND"]
-          example: AUTH_ACCESS_TOKEN_USER_NOT_FOUND
+          enum: ["AUTH_TOKEN_USER_NOT_FOUND"]
+          example: AUTH_TOKEN_USER_NOT_FOUND
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
@@ -348,8 +348,8 @@ components:
           example: Authentication failed, the token session is invalid, expired, or has already been consumed.
         errorCode:
           type: string
-          enum: ["AUTH_ACCESS_TOKEN_SESSION_INVALID"]
-          example: AUTH_ACCESS_TOKEN_SESSION_INVALID
+          enum: ["AUTH_TOKEN_SESSION_INVALID"]
+          example: AUTH_TOKEN_SESSION_INVALID
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
@@ -370,8 +370,8 @@ components:
           example: Authentication failed, the user ID in the MFA token does not match the user ID of the session.
         errorCode:
           type: string
-          enum: ["AUTH_ACCESS_TOKEN_SESSION_MISMATCH"]
-          example: AUTH_ACCESS_TOKEN_SESSION_MISMATCH
+          enum: ["AUTH_TOKEN_SESSION_MISMATCH"]
+          example: AUTH_TOKEN_SESSION_MISMATCH
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
@@ -390,7 +390,7 @@ components:
           type: string
         errorCode:
           type: string
-          enum: ["AUTH_ACCESS_TOKEN_INVALID"]
+          enum: ["AUTH_TOKEN_INVALID"]
         requestId:
           type: string
       examples:
@@ -399,35 +399,35 @@ components:
           value:
             success: false
             message: "Authentication failed: jwt malformed"
-            errorCode: AUTH_ACCESS_TOKEN_INVALID
+            errorCode: AUTH_TOKEN_INVALID
             requestId: cc5065df0c6b4c19970d4e92f
         invalidSignature:
           summary: Token signature is invalid
           value:
             success: false
             message: "Authentication failed: invalid signature"
-            errorCode: AUTH_ACCESS_TOKEN_INVALID
+            errorCode: AUTH_TOKEN_INVALID
             requestId: cc5065df0c6b4c19970d4e92f
         tokenMissing:
           summary: Token is missing
           value:
             success: false
             message: "Authentication failed: jwt must be provided"
-            errorCode: AUTH_ACCESS_TOKEN_INVALID
+            errorCode: AUTH_TOKEN_INVALID
             requestId: cc5065df0c6b4c19970d4e92f
         invalidAudience:
           summary: Token audience does not match
           value:
             success: false
             message: "Authentication failed: invalid audience"
-            errorCode: AUTH_ACCESS_TOKEN_INVALID
+            errorCode: AUTH_TOKEN_INVALID
             requestId: cc5065df0c6b4c19970d4e92f
         invalidIssuer:
           summary: Token issuer is invalid
           value:
             success: false
             message: "Authentication failed: invalid issuer"
-            errorCode: AUTH_ACCESS_TOKEN_INVALID
+            errorCode: AUTH_TOKEN_INVALID
             requestId: cc5065df0c6b4c19970d4e92f
     AuthenticationTokenExpiredError:
       type: object
@@ -446,8 +446,30 @@ components:
           example: Authentication failed, jwt expired at 2025-11-02T18:00:00Z.
         errorCode:
           type: string
-          enum: ["AUTH_ACCESS_TOKEN_EXPIRED"]
-          example: AUTH_ACCESS_TOKEN_EXPIRED
+          enum: ["AUTH_TOKEN_EXPIRED"]
+          example: AUTH_TOKEN_EXPIRED
+        requestId:
+          type: string
+          example: cc5065df0c6b4c19970d4e92f
+    AccessTokenTypeError:
+      type: object
+      required:
+        - success
+        - message
+        - errorCode
+        - requestId
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          example: false
+        message:
+          type: string
+          example: Authentication failed, expected an ACCESS token, but received a token of a different type.
+        errorCode:
+          type: string
+          enum: ["AUTH_ACCESS_TOKEN_TYPE_INVALID"]
+          example: AUTH_ACCESS_TOKEN_TYPE_INVALID
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
@@ -512,8 +534,8 @@ components:
           example: Authentication failed, MFA token purpose mismatch. Expected 'login', got 'forgot_password'.
         errorCode:
           type: string
-          enum: ["AUTH_INVALID_TOKEN_PURPOSE"]
-          example: AUTH_INVALID_TOKEN_PURPOSE
+          enum: ["AUTH_TOKEN_INVALID_TYPE"]
+          example: AUTH_TOKEN_INVALID_TYPE
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
@@ -556,8 +578,8 @@ components:
           example: Authentication failed, expected an REFRESH token, but received a token of a different type.
         errorCode:
           type: string
-          enum: ["AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID"]
-          example: AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID
+          enum: ["AUTH_REFRESH_TOKEN_TYPE_INVALID"]
+          example: AUTH_REFRESH_TOKEN_TYPE_INVALID
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f

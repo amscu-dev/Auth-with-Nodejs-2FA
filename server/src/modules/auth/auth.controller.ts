@@ -234,9 +234,11 @@ export class AuthController {
   );
   public refresh = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Call Service
       const { newRefreshToken, accessToken } =
         await this.authService.refreshToken(req);
 
+      // ! 02. If new refresh token provided sent to user
       if (newRefreshToken) {
         res.cookie(
           "refreshToken",
@@ -244,6 +246,8 @@ export class AuthController {
           getRefreshTokenCookieOptions()
         );
       }
+
+      // ! 03. Send data to user
       return res
         .status(HTTPSTATUS.OK)
         .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
@@ -253,6 +257,9 @@ export class AuthController {
             statusCode: HTTPSTATUS.OK,
             message:
               "Access token successfully refreshed. Your session remains active.",
+            data: {
+              nextStep: LOGIN.OK,
+            },
             metadata: {
               requestId: req.requestId,
             },

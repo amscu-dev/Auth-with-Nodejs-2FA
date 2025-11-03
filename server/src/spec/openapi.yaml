@@ -268,7 +268,55 @@ paths:
                   - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeExpiredError"
                   - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/VerificationCodeConsumedError"
                   - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/PasswordReuseNotAllowed"
-
+  /auth/refresh:
+    get:
+      security:
+        - RefreshTokenCokie: []
+      tags: [Email & Password Auth]
+      summary: Refresh the user's access token using a valid refresh token
+      description: >
+        Issues a new access token (and optionally a new refresh token) for an authenticated session.  
+        The request must include a valid **refresh token** stored in the user's HTTP-only cookie. If the refresh token is valid and the session is still active, a new access token will be returned and authentication cookies will be updated.  
+        If the refresh token is expired, invalid, or mismatched, the session will be invalidated and all authentication cookies will be cleared to enforce re-authentication.  
+        This endpoint ensures seamless session continuity while maintaining security best practices.
+      responses:
+        "200":
+          description: >
+            Access token successfully refreshed.  
+            The user's session remains active, and new authentication cookies are set.  
+            If a new refresh token was issued, it replaces the previous one automatically.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/AuthenticationCookies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schema/RefreshTokenEndpointSuccessResponse"
+        "401":
+          description: >
+            The refresh token is invalid, expired, missing, or does not match the current session.  
+            All authentication cookies are invalidated to prevent unauthorized access,  
+            and the user must log in again to obtain a new session.  
+            This response covers multiple possible authentication-related errors such as invalid token type, missing cookie, or user/session mismatch.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/InvalidateAuthenticationCookies"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/RefreshTokenInvalidSessionError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenNotFoundError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/RefreshTokenTypeError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenUserNotFoundError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/RefreshTokenExpiredSessionError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenSessionMismatchError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenInvalidTokenErorr"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenExpiredError"
 components:
   schemas:
     UserRegistrationRequestBody:
@@ -641,6 +689,38 @@ components:
               example: OK
           metadata:
             $ref: "#/components/schemas/ResponseMetadata"
+    RefreshTokenEndpointSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Access token successfully refreshed. Your session remains active.
+        data:
+          type: object
+          required:
+            - nextStep
+          properties:
+            nextStep:
+              type: string
+              enum: ["OK"]
+              example: OK
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
+
   headers:
     XRequestId:
       description: Unique request identifier for tracing and debugging
@@ -679,3 +759,12 @@ components:
       example: |
         accessToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
         refreshToken=; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+  securitySchemes:
+    AccessTokenCokie:
+      type: apiKey
+      in: cookie
+      name: accessToken
+    RefreshTokenCokie:
+      type: apiKey
+      in: cookie
+      name: accessToken
