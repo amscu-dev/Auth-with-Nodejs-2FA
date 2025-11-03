@@ -4,6 +4,7 @@ info:
   version: 1.0.0
 components:
   schemas:
+    # GENERAL ERRORS
     InternalServerError:
       type: object
       required:
@@ -133,6 +134,7 @@ components:
               message: Invalid email address
             - field: password
               message: Password must be at least 8 characters
+    # EMAIL & PASS ERRORS
     EmailAlreadyExistsError:
       type: object
       required:
@@ -221,6 +223,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # VERFICATION CODES
     VerificationCodeNotFoundError:
       type: object
       required:
@@ -287,6 +290,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # TOKEN GENERAL ERRORS
     AuthenticationTokenNotFoundError:
       type: object
       required:
@@ -304,8 +308,8 @@ components:
           example: Authentication failed, no authentication token provided.
         errorCode:
           type: string
-          enum: ["AUTH_ACCESS_TOKEN_NOT_FOUND"]
-          example: AUTH_ACCESS_TOKEN_NOT_FOUND
+          enum: ["AUTH_TOKEN_NOT_FOUND"]
+          example: AUTH_TOKEN_NOT_FOUND
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
@@ -451,6 +455,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # ACCESS TOKEN
     AccessTokenTypeError:
       type: object
       required:
@@ -473,6 +478,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # MFA TOKEN
     MFATokenTypeError:
       type: object
       required:
@@ -539,6 +545,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # MAGIC LINK TOKEN
     MagicLinkTokenTypeError:
       type: object
       required:
@@ -561,6 +568,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # REFRESH TOKEN
     RefreshTokenTypeError:
       type: object
       required:
@@ -627,28 +635,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
-    AccessTokenTypeError:
-      type: object
-      required:
-        - success
-        - message
-        - errorCode
-        - requestId
-      properties:
-        success:
-          type: boolean
-          enum: [false]
-          example: false
-        message:
-          type: string
-          example: Authentication failed, expected an ACCESS token, but received a token of a different type.
-        errorCode:
-          type: string
-          enum: ["AUTH_ACCESS_TOKEN_TYPE_INVALID"]
-          example: AUTH_ACCESS_TOKEN_TYPE_INVALID
-        requestId:
-          type: string
-          example: cc5065df0c6b4c19970d4e92f
+    # MFA
     MfaAlreadyEnabledError:
       type: object
       required:
@@ -781,6 +768,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # OIDC
     OIDCSessionNotFoundError:
       type: object
       required:
@@ -869,6 +857,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # PASSKEY
     PasskeyChallengeSessionNotFoundError:
       type: object
       required:
@@ -1001,6 +990,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
+    # SESSIONS
     UserSessionNotFoundError:
       type: object
       required:

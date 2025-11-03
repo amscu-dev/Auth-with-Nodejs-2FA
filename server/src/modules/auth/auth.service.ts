@@ -499,6 +499,7 @@ export class AuthService {
     }
   }
   public async refreshToken(req: Request) {
+    // ! 01. Get session & user from request (attached in passport middleware)
     const sessionId = req.sessionId;
     const user = req.user as Express.User;
     const session = await SessionModel.findById(sessionId);
@@ -509,6 +510,7 @@ export class AuthService {
       );
     }
 
+    // ! 02. Check if session & refresh token need refresh of period
     const now = Date.now();
     const sessionRequireRefresh =
       session.expiredAt.getTime() - now <= ONE_DAY_IN_MS;
@@ -531,6 +533,7 @@ export class AuthService {
         )
       : undefined;
 
+    // ! 03. Sign new access token
     const accessToken = signJwtToken(
       {
         sub: user.id,
@@ -541,6 +544,8 @@ export class AuthService {
       },
       { ...accessTokenSignOptions }
     );
+
+    // ! 04. Return tokens
     return { newRefreshToken, accessToken };
   }
   public async logout(sessionId: string) {

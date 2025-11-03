@@ -317,6 +317,52 @@ paths:
                   - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenSessionMismatchError"
                   - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenInvalidTokenErorr"
                   - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenExpiredError"
+  /auth/logout:
+    post:
+      security:
+        - AccessTokenCokie: []
+      tags: [Email & Password Auth]
+      summary: Log out the authenticated user and invalidate the current session
+      description: >
+        Terminates the current authenticated session by invalidating all active authentication tokens and clearing related cookies (`accessToken`, `refreshToken`).  
+        This ensures that both the access token and any linked refresh token can no longer be used.  
+        The endpoint is typically called when a user explicitly logs out or when a session needs to be forcefully closed for security reasons.  
+        Requires a valid access token cookie for authentication and session validation.  
+        After a successful logout, the client should remove any cached session state and redirect the user to a login page.
+      responses:
+        "200":
+          description: >
+            User successfully logged out.  
+            All authentication cookies have been invalidated and removed to ensure session termination.  
+            The client should prompt the user to log in again if further access is required.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/InvalidateAuthenticationCookies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutSuccessResponse"
+        "401":
+          description: >
+            The logout request could not be completed because the provided access token is missing, expired, invalid, or does not correspond to an active user session.  
+            In this case, the server cannot confirm the logout and does not modify authentication cookies.  
+            The client should treat the user as unauthenticated and clear any local session data.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenNotFoundError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AccessTokenTypeError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenUserNotFoundError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenInvalidSessionError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenSessionMismatchError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenInvalidTokenErorr"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/AuthenticationTokenExpiredError"
 components:
   schemas:
     UserRegistrationRequestBody:
@@ -718,6 +764,37 @@ components:
               type: string
               enum: ["OK"]
               example: OK
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
+    LogoutSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Logout successful, you have been securely signed out.
+        data:
+          type: object
+          required:
+            - nextStep
+          properties:
+            nextStep:
+              type: string
+              enum: ["LOGOUT"]
+              example: LOGOUT
           metadata:
             $ref: "#/components/schemas/ResponseMetadata"
 

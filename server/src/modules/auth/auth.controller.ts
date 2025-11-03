@@ -269,21 +269,26 @@ export class AuthController {
   );
   public logout = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Get session from req
       const sessionId = req.sessionId;
+
       if (!sessionId) {
         throw new NotFoundException(
           "Logout failed: no active session found or the session has already expireds."
         );
       }
+
+      // ! 02. Call service
       await this.authService.logout(sessionId);
 
+      // ! 03. Return data and clear cookies
       return clearAuthenticationCookies(res)
         .status(HTTPSTATUS.OK)
         .json(
           new ApiResponse({
             statusCode: HTTPSTATUS.OK,
             success: true,
-            message: "Logout successful: you have been securely signed out.",
+            message: "Logout successful, you have been securely signed out.",
             data: {
               nextStep: LOGIN.LOGOUT,
             },
