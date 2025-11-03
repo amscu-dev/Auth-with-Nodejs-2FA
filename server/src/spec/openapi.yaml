@@ -26,149 +26,318 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - name
-                - email
-                - password
-                - confirmPassword
-              properties:
-                name:
-                  type: string
-                  description: The user's full name
-                  minLength: 1
-                  maxLength: 255
-                  example: John Doe
-                email:
-                  type: string
-                  format: email
-                  minLength: 1
-                  maxLength: 255
-                  example: john.doe@example.com
-                password:
-                  type: string
-                  minLength: 8
-                  pattern: "^(?=.*[A-Z])(?=.*[\\W_]).*$"
-                  description: Must start with a capital letter and contain at least one special character
-                  example: Password@123
-                confirmPassword:
-                  type: string
-                  minLength: 8
-                  pattern: "^(?=.*[A-Z])(?=.*[\\W_]).*$"
-                  description: Must match the password field
-                  example: Password@123
+              $ref: "#/components/schemas/UserRegistrationRequestBody"
       responses:
         "201":
           description: Registration successful. A verification email has been sent, the user must confirm their email to complete the signup process.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  statusCode:
-                    type: integer
-                    example: 201
-                  message:
-                    type: string
-                    example: Registration successful. A verification email has been sent to your email address.
-                  data:
-                    type: object
-                    properties:
-                      user:
-                        type: object
-                        properties:
-                          _id:
-                            type: string
-                            example: 6904fb216bdaf225b3726294
-                          name:
-                            type: string
-                            example: user
-                          email:
-                            type: string
-                            example: marinescua914@gmail.com
-                          isEmailVerified:
-                            type: boolean
-                            example: false
-                          userPreferences:
-                            type: object
-                            properties:
-                              enable2FA:
-                                type: boolean
-                                example: false
-                              emailNotification:
-                                type: boolean
-                                example: true
-                          createdAt:
-                            type: string
-                            format: date-time
-                            example: 2025-10-31T18:08:33.919Z
-                          updatedAt:
-                            type: string
-                            format: date-time
-                            example: 2025-10-31T18:08:33.919Z
-                      isVerificationEmailSend:
-                        type: boolean
-                        example: true
-                      nextStep:
-                        type: string
-                        example: CONFIRM_SIGN_UP
-                  metadata:
-                    type: object
-                    properties:
-                      timestamp:
-                        type: string
-                        format: date-time
-                        example: 2025-10-31T18:08:35.135Z
-                      requestId:
-                        type: string
-                        example: 627c83c6ac314a94bd9348d78
+                $ref: "#/components/schemas/RegistrationSuccessReponse"
         "400":
           description: Bad Request — validation failed or user already exists.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
                 oneOf:
-                  - type: object
-                    description: User already exists with this email
-                    properties:
-                      success:
-                        type: boolean
-                        example: false
-                      message:
-                        type: string
-                        example: User already exists with this email.
-                      errorCode:
-                        type: string
-                        example: AUTH_EMAIL_ALREADY_EXISTS
-                      requestId:
-                        type: string
-                        example: 627c83c6ac314a94bd9348d78
-                  - type: object
-                    description: Input validation failed
-                    properties:
-                      success:
-                        type: boolean
-                        example: false
-                      message:
-                        type: string
-                        example: Validation failed
-                      errorCode:
-                        type: string
-                        example: VALIDATION_ERROR
-                      requestId:
-                        type: string
-                        example: 627c83c6ac314a94bd9348d78
-                      errors:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            field:
-                              type: string
-                              example: password
-                            message:
-                              type: string
-                              example: Password must start with a capital letter
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/EmailAlreadyExistsError"
+                  - $ref: "../spec/schemas/reusable/errors/openapi.yaml/components/schemas/InvalidRequestBodyValidationError"
+  /auth/login:
+    post:
+      tags: [Email & Password Auth]
+      summary: Authenticate a user with email and password
+      description: >
+        This endpoint allows an existing user to log in using their email and password.
+        Upon successful authentication, an access token (and optionally a refresh token) is returned.
+        If the user has two-factor authentication enabled, additional steps may be required to complete the login process.
+      requestBody:
+        required: true
+        description: Credentials for user login
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginRequestBody"
+      responses:
+        "200":
+          description: >
+            Authentication response. Depending on the user's status, one of the following outcomes is returned:
+            1. Email not verified — user must confirm their email to proceed.
+            2. Two-factor authentication required — user must complete MFA to finalize login.
+            3. Authentication successful — user credentials are valid, and access/refresh tokens are provided.
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/AuthenticationCookies"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/LoginEmailVerificationPendingResponse"
+                  - $ref: "#/components/schemas/LoginMFAPendingResponse"
+                  - $ref: "#/components/schemas/LoginSuccessResponse"
+        "404":
+          description: >
+            User not found — no account exists with the provided email address. 
+            The client should prompt the user to register before attempting login.
+          content:
+            application/json:
+              schema:
+                $ref: "../spec/schemas/reusable/errors/openapi.yaml/UserNotFoundError"
+        "400":
+          description: >
+            Invalid credentials — the provided email or password is incorrect. 
+            The client should notify the user and allow them to retry authentication.
+          content:
+            application/json:
+              schema:
+                $ref: "../spec/schemas/reusable/errors/openapi.yaml/InvalidCredentialsError"
+  /auth/email/verify:
+    post:
+      tags: [Email & Password Auth]
+      summary: Authenticate a user with email and password
+      description: >
+        This endpoint allows an existing user to log in using their email and password.
+        Upon successful authentication, an access token (and optionally a refresh token) is returned.
+        If the user has two-factor authentication enabled, additional steps may be required to complete the login process.
+      requestBody:
+        required: true
+        description: Credentials for user login
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginRequestBody"
+components:
+  schemas:
+    UserRegistrationRequestBody:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - confirmPassword
+      properties:
+        name:
+          type: string
+          description: The user's full name
+          minLength: 1
+          maxLength: 64
+          example: John Doe
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 64
+          example: john.doe@example.com
+        password:
+          type: string
+          minLength: 8
+          pattern: ^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{}|\\;:\'",.<>/?]).{8,}$
+          description: Must start with a capital letter and contain at least one special character
+          example: Password@123
+        confirmPassword:
+          type: string
+          minLength: 8
+          pattern: ^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{}|\\;:\'",.<>/?]).{8,}$
+          description: Must match the password field
+          example: Password@123
+    UserLoginRequestBody:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 64
+          example: john.doe@example.com
+        password:
+          type: string
+          minLength: 8
+          pattern: ^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{}|\\;:\'",.<>/?]).{8,}$
+          description: Must start with a capital letter and contain at least one special character
+          example: Password@123
+    UserData:
+      type: object
+      required:
+        - _id
+        - name
+        - email
+        - isEmailVerified
+        - userPreferences
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+          example: 6904fb216bdaf225b3726294
+        name:
+          type: string
+          example: user
+        email:
+          type: string
+          example: marinescua914@gmail.com
+        isEmailVerified:
+          type: boolean
+          example: false
+        userPreferences:
+          type: object
+          required:
+            - enable2FA
+            - emailNotification
+          properties:
+            enable2FA:
+              type: boolean
+              example: false
+          emailNotification:
+            type: boolean
+            example: true
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-10-31T18:08:33.919Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2025-10-31T18:08:33.919Z
+    ResponseMetadata:
+      type: object
+      required:
+        - timestamp
+        - requestId
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-10-31T18:08:35.135Z
+        requestId:
+          type: string
+          example: 627c83c6ac314a94bd9348d78
+        count:
+          type: number
+    RegistrationSuccessReponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [201]
+          example: 201
+        message:
+          type: string
+          example: Registration successful. A verification email has been sent to your email address.
+        data:
+          type: object
+          properties:
+            user:
+              $ref: "#/components/schemas/UserData"
+            isVerificationEmailSend:
+              type: boolean
+              example: true
+            nextStep:
+              type: string
+              enum: ["CONFIRM_SIGN_UP"]
+              example: CONFIRM_SIGN_UP
+            metadata:
+              $ref: "#/components/schemas/ResponseMetadata"
+    LoginEmailVerificationPendingResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Authentication pending, your email address has not yet been verified. Please confirm your email to proceed.
+        data:
+          type: object
+          properties:
+            nextStep:
+              type: string
+              enum: ["CONFIRM_SIGN_UP"]
+              example: CONFIRM_SIGN_UP
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
+    LoginMFAPendingResponse:
+    LoginSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Authentication successful, You have been signed in successfully.
+        data:
+          type: object
+          required:
+            - mfaRequired
+            - nextStep
+          properties:
+            user:
+              $ref: "#/components/schemas/UserData"
+            mfaRequired:
+              type: boolean
+              enum: [false]
+              example: false
+            nextStep:
+              type: string
+              enum: ["OK"]
+              example: OK
+          metadata:
+            $ref: "#/components/schemas/ResponseMetadata"
+  headers:
+    XRequestId:
+      description: Unique request identifier for tracing and debugging
+      schema:
+        type: string
+        example: 627c83c6ac314a94bd9348d78
+    AuthenticationCookies:
+      description: |
+        Multiple cookies may be set in this response:
+        1. accessToken — HTTP-only access token
+        2. refreshToken — HTTP-only refresh token
+        3. mfaToken — HTTP-only MFA token (if required)
+      schema:
+        type: string
+      example: |
+        accessToken=eyJhbGciOi...; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT,
+        refreshToken=eyJhbGciOi...; Path=/auth/refresh; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT
+        mfaToken=eyJhbGciOi...; Path=/mfa; HttpOnly; Secure; SameSite=Strict; Expires=Wed, 03 Nov 2025 20:00:00 GMT

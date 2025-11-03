@@ -16,13 +16,9 @@ import {
   setAuthenticationCookies,
   setMFATokenCookie,
 } from "@/common/utils/cookie";
-import {
-  NotFoundException,
-  UnauthorizedException,
-} from "@/common/utils/catch-errors";
+import { NotFoundException } from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
-import { logWithMetadata } from "@/common/utils/logWithMetadata";
 
 export class AuthController {
   private authService: AuthService;
@@ -31,12 +27,12 @@ export class AuthController {
   }
   public register = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      // ! 1. Validate Input
+      // ! 1. Validate input
       const body = registerSchema.parse({
         ...req.body,
       });
 
-      // ! 2. Call Service
+      // ! 2. Call service
       const { user, isVerificationEmailSend } = await this.authService.register(
         body
       );
@@ -62,25 +58,26 @@ export class AuthController {
   );
   public login = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      // Validate Input
+      // ! 01. Validate input
       const uaSource = req.headers["user-agent"];
       const body = loginSchema.parse({
         ...req.body,
         uaSource,
       });
 
-      // ! SIGN-UP CONFIRMATION
+      // ! 02. Check if user verified his email
       const isCompletedSignUP = await this.authService.confirmSignUp(
         body.email
       );
-      // ! REDIRECT USER TO EMAIL VERIFICATION
+
+      // ! 03. Send data with nextStep: CONFIRM_SIGN_UP
       if (!isCompletedSignUP) {
         return res.status(HTTPSTATUS.OK).json(
           new ApiResponse({
             success: true,
             statusCode: HTTPSTATUS.OK,
             message:
-              "Authentication pending: your email address has not yet been verified. Please confirm your email to proceed.",
+              "Authentication pending, your email address has not yet been verified. Please confirm your email to proceed.",
             data: { nextStep: LOGIN.CONFIRM_SIGN_UP },
             metadata: {
               requestId: req.requestId,
@@ -89,10 +86,11 @@ export class AuthController {
         );
       }
 
-      // ! LOGIN LOGIC
+      // ! 04. Verify user credentials
       const { user, accessToken, refreshToken, mfaRequired, mfaToken } =
         await this.authService.login(body, req.ip || "");
 
+      // ! 05. If Mfa Required send data with nextStep: MFA_REQUIRED
       if (mfaRequired && !accessToken && mfaToken) {
         return setMFATokenCookie({ res, mfaToken })
           .status(HTTPSTATUS.OK)
@@ -101,8 +99,8 @@ export class AuthController {
               success: true,
               statusCode: HTTPSTATUS.OK,
               message:
-                "Login successful! Two-factor authentication is required to complete the sign-in process.",
-              data: { mfaRequired, user, nextStep: LOGIN.MFA_REQUIRED },
+                "Authentication pending, two-factor verification required to complete login.",
+              data: { mfaRequired, nextStep: LOGIN.MFA_REQUIRED },
               metadata: {
                 requestId: req.requestId,
               },
@@ -110,7 +108,7 @@ export class AuthController {
           );
       }
 
-      // ! Return response to USER
+      // ! 06. If none of the conditions above is true, send authentication credentials to user
       return setAuthenticationCookies({
         res,
         accessToken,
@@ -121,13 +119,36 @@ export class AuthController {
           new ApiResponse({
             success: true,
             statusCode: HTTPSTATUS.OK,
-            message: "Authentication successful: User successfully login.",
+            message:
+              "Authentication successful, You have been signed in successfully.",
             data: { mfaRequired, user, nextStep: LOGIN.OK },
             metadata: {
               requestId: req.requestId,
             },
           })
         );
+    }
+  );
+  public verifyEmail = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      const { code } = verificationEmailSchema.parse(req.body);
+
+      await this.authService.verifyEmail(code);
+
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          statusCode: HTTPSTATUS.OK,
+          success: true,
+          message:
+            "Email address successfully verified. You can now proceed to login.",
+          data: {
+            nextStep: LOGIN.CONFIRMED_EMAIL_RETURN_TO_LOGIN,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
     }
   );
   public refresh = asyncHandler(
@@ -156,29 +177,6 @@ export class AuthController {
             },
           })
         );
-    }
-  );
-  public verifyEmail = asyncHandler(
-    async (req: Request, res: Response): Promise<any> => {
-      // * TODO POTI ADAUGA SI EMAIL AICI SI LE ENCODEZI IN URL
-      const { code } = verificationEmailSchema.parse(req.body);
-
-      await this.authService.verifyEmail(code);
-
-      return res.status(HTTPSTATUS.OK).json(
-        new ApiResponse({
-          statusCode: HTTPSTATUS.OK,
-          success: true,
-          message:
-            "Email address successfully verified. You can now proceed to login.",
-          data: {
-            nextStep: LOGIN.CONFIRMED_EMAIL_RETURN_TO_LOGIN,
-          },
-          metadata: {
-            requestId: req.requestId,
-          },
-        })
-      );
     }
   );
   public forgotPassword = asyncHandler(

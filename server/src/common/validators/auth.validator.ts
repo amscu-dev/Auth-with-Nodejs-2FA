@@ -1,20 +1,23 @@
 import { z } from "zod";
 
-export const emailSchema = z.email().trim().min(1).max(255);
+export const emailSchema = z.email().trim().min(1).max(64);
 export const passwordSchema = z
   .string()
   .nonempty({ message: "Password is required" })
   .min(8, { message: "Password must be at least 8 characters long" })
-  .regex(/[A-Z]/, { message: "Password must start with a capital letter" })
-  .regex(/[\W_]/, {
+  .regex(/[A-Z]/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  .regex(/\d/, { message: "Password must contain at least one digit" })
+  .regex(/[!@#$%^&*()_\-+=\[\]{}|\\;:'",.<>/?]/, {
     message: "Password must contain at least one special character",
   });
 
-export const verficationCodeSchema = z.string().trim().min(1).max(255);
+export const verficationCodeSchema = z.string().trim().min(1).max(64);
 
 export const registerSchema = z
   .object({
-    name: z.string().trim().min(1).max(255),
+    name: z.string().trim().min(1).max(64),
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: passwordSchema,

@@ -82,7 +82,7 @@ export class AuthService {
       );
 
       // ! 04. Send Verification Code Email
-      const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}`;
+      const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}&email=${email}`;
       const isVerificationEmailSend = await apiRequestWithRetry(() => {
         return sendEmail({
           to: newUser.email,
@@ -214,51 +214,6 @@ export class AuthService {
       mfaToken: "",
     };
   }
-  public async refreshToken(req: Request) {
-    const sessionId = req.sessionId;
-    const user = req.user as Express.User;
-    const session = await SessionModel.findById(sessionId);
-    if (!session) {
-      throw new UnauthorizedException(
-        "Authentication failed, the refresh token session does not exist or is invalid. Please log in again.",
-        ErrorCode.AUTH_REFRESH_TOKEN_SESSION_INVALID
-      );
-    }
-
-    const now = Date.now();
-    const sessionRequireRefresh =
-      session.expiredAt.getTime() - now <= ONE_DAY_IN_MS;
-    if (sessionRequireRefresh) {
-      session.expiredAt = calculateExpirationDate(
-        config.JWT.REFRESH_EXPIRES_IN
-      );
-      await session.save();
-    }
-
-    const newRefreshToken = sessionRequireRefresh
-      ? signJwtToken(
-          {
-            sub: user.id,
-            userId: user.id,
-            sessionId: session.id,
-            type: "refresh",
-          },
-          { ...refreshTokenSignOptions }
-        )
-      : undefined;
-
-    const accessToken = signJwtToken(
-      {
-        sub: user.id,
-        userId: session.userId.toString(),
-        sessionId: session.id,
-        type: "access",
-        role: "user",
-      },
-      { ...accessTokenSignOptions }
-    );
-    return { newRefreshToken, accessToken };
-  }
   public async verifyEmail(code: string) {
     // ! 01. Check for validation code existance & integrity
     const validCode = await VerificationCodeModel.findOne({
@@ -314,6 +269,52 @@ export class AuthService {
       await mongoSession.endSession();
     }
   }
+  public async refreshToken(req: Request) {
+    const sessionId = req.sessionId;
+    const user = req.user as Express.User;
+    const session = await SessionModel.findById(sessionId);
+    if (!session) {
+      throw new UnauthorizedException(
+        "Authentication failed, the refresh token session does not exist or is invalid. Please log in again.",
+        ErrorCode.AUTH_REFRESH_TOKEN_SESSION_INVALID
+      );
+    }
+
+    const now = Date.now();
+    const sessionRequireRefresh =
+      session.expiredAt.getTime() - now <= ONE_DAY_IN_MS;
+    if (sessionRequireRefresh) {
+      session.expiredAt = calculateExpirationDate(
+        config.JWT.REFRESH_EXPIRES_IN
+      );
+      await session.save();
+    }
+
+    const newRefreshToken = sessionRequireRefresh
+      ? signJwtToken(
+          {
+            sub: user.id,
+            userId: user.id,
+            sessionId: session.id,
+            type: "refresh",
+          },
+          { ...refreshTokenSignOptions }
+        )
+      : undefined;
+
+    const accessToken = signJwtToken(
+      {
+        sub: user.id,
+        userId: session.userId.toString(),
+        sessionId: session.id,
+        type: "access",
+        role: "user",
+      },
+      { ...accessTokenSignOptions }
+    );
+    return { newRefreshToken, accessToken };
+  }
+
   public async forgotPassword(email: string, ip: string) {
     // ! 01. Check for user existance
     const user = await UserModel.findOne({ email });
