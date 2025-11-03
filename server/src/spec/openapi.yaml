@@ -576,12 +576,27 @@ paths:
               $ref: "#/components/schemas/EmailServiceError"
   /magic-link/verify/{token}:
     get:
-      tags: []
-      summary: x
-      description: x
+      tags: [✨ Magic-Link Authentication]
+      summary: Verify a user's email using a magic link token
+      description: |
+        Verifies a user's email or signs them in by validating the provided magic link token. 
+        This endpoint is typically triggered when the user clicks on the magic link sent to their email. 
+        Upon successful verification, authentication cookies or tokens are issued to establish the session.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: >
+            A unique, single-use token included in the magic link sent to the user's email. 
+            It is used to verify the user's email ownership and complete the sign-in process.
+          schema:
+            type: string
       responses:
         "200":
-          description: x
+          description: |
+            Magic link verified successfully. The user's email has been confirmed (for signup verification) 
+            or the user has been signed in (for passwordless authentication). 
+            Authentication cookies or tokens are issued in the response headers to establish the session.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -591,6 +606,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LoginSuccessResponse"
+        "401":
+          description: |
+            Unauthorized. The provided magic link token is invalid, expired, or cannot be used to authenticate the user. 
+            Possible reasons include:
+            - The token was not found in the system (AuthenticationTokenNotFound).
+            - The token type is incorrect (MagicLinkTokenTypeError).
+            - The token does not belong to a valid user (AuthenticationTokenUserNotFoundError).
+            - The user's session is invalid or expired (AuthenticationTokenInvalidSessionError).
+            - The token does not match the current session (AuthenticationTokenSessionMismatchError).
+            - The token is malformed or otherwise invalid (AuthenticationTokenInvalidTokenError).
+            - The token has already expired (AuthenticationTokenExpiredError).
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                AuthenticationTokenNotFound:
+                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+                MagicLinkTokenType:
+                  $ref: "#/components/examples/MagicLinkTokenTypeErrorExample"
+                AuthenticationTokenUserNotFound:
+                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+                AuthenticationTokenInvalidSession:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
+                AuthenticationTokenSessionMismatch:
+                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+                AuthenticationTokenInvalidToken:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+                AuthenticationTokenExpired:
+                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
+                  - $ref: "#/components/schemas/MagicLinkTokenTypeError"
+                  - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
+                  - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
+                  - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
+                  - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
+                  - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
 
 components:
   # SCHEMAS
