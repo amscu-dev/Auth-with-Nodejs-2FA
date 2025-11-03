@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { passkeyController } from "./passkey.module";
-import { authenticateJWT } from "@/common/strategies/access-token-jwt.strategy";
+import { AuthenticateAccessJWTToken } from "@/common/strategies/access-token-jwt.strategy";
 
 const passkeyRoutes = Router();
 
@@ -23,28 +23,28 @@ passkeyRoutes.post(
 
 passkeyRoutes.post(
   "/add-passkey/init/:userid",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   passkeyController.generatePasskeyAddSession
 );
 passkeyRoutes.post(
   "/add-passkey/verify/:userid",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   passkeyController.verifyPasskeyAddSession
 );
 passkeyRoutes.post(
   "/remove-key/init/:userid/:credentialid",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   passkeyController.generatePasskeyRemoveSession
 );
 passkeyRoutes.delete(
   "/remove-key/verify/:userid/:credentialid",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   passkeyController.verifyPasskeyRemoveSession
 );
 
 passkeyRoutes.get(
   "/all/:userid",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   passkeyController.getAllUserPasskeys
 );
 export default passkeyRoutes;

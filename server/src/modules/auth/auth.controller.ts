@@ -132,17 +132,8 @@ export class AuthController {
   );
   public refresh = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      // TODO muta autentificarea refresh altundeva, fa strategie pentru asta.
-      const refreshToken = req.cookies.refreshToken as string | undefined;
-
-      if (!refreshToken) {
-        throw new UnauthorizedException(
-          "User is not authorized to perform this action.Missing refresh token."
-        );
-      }
-
       const { newRefreshToken, accessToken } =
-        await this.authService.refreshToken(refreshToken);
+        await this.authService.refreshToken(req);
 
       if (newRefreshToken) {
         res.cookie(

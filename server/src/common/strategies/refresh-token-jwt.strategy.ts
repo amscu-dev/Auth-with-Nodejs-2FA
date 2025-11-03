@@ -11,7 +11,7 @@ import { NextFunction, Request, Response } from "express";
 import { userService } from "@/modules/user/user.module";
 import decodeBase64 from "../utils/decodeBase64";
 import { sessionService } from "@/modules/session/session.module";
-import { AccessTokenPayload, RefreshTokenPayload } from "../utils/jwt";
+import { RefreshTokenPayload } from "../utils/jwt";
 import { asyncLocalStorage } from "../context/asyncLocalStorage";
 import { UnauthorizedException } from "../utils/catch-errors";
 
@@ -32,7 +32,7 @@ const options: StrategyOptionsWithRequest = {
   issuer: config.AUTHENTICATION.TOKEN_ISSUER,
   audience: [config.AUTHENTICATION.TOKEN_AUDIENCE],
   algorithms: ["RS256"],
-  secretOrKey: decodeBase64(config.JWT.PUBLIC_KEY),
+  secretOrKey: decodeBase64(config.JWT.REFRESH_PUBLIC_KEY),
   passReqToCallback: true,
 };
 const verifyCallback: VerifyCallbackWithRequest = async (
@@ -68,12 +68,19 @@ const verifyCallback: VerifyCallbackWithRequest = async (
     if (!session) {
       return done(
         new UnauthorizedException(
-          "Authentication failed, the token session is invalid, expired, or has already been consumed.",
-          ErrorCode.AUTH_TOKEN_SESSION_INVALID
+          "Authentication failed, the refresh token session does not exist or is invalid. Please log in again.",
+          ErrorCode.AUTH_REFRESH_TOKEN_SESSION_INVALID
         )
       );
     }
-
+    if (session.expiredAt < new Date()) {
+      return done(
+        new UnauthorizedException(
+          "Authentication failed, the refresh token session has expired. Please log in again to obtain a new refresh token.",
+          ErrorCode.AUTH_REFRESH_TOKEN_SESSION_EXPIRED
+        )
+      );
+    }
     // ! 04. Check if session user = token user
     const isNotUserSession = session.userId.id !== payload.userId;
     if (isNotUserSession) {
@@ -104,7 +111,7 @@ export const AuthenticateRefreshJWTToken = (
   next: NextFunction
 ) => {
   passport.authenticate(
-    "access-token",
+    "refresh-token",
     {
       session: false,
     },

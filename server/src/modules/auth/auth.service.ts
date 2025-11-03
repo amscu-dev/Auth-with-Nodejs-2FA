@@ -26,7 +26,6 @@ import {
   mfaTokenOptions,
   refreshTokenSignOptions,
   signJwtToken,
-  verifyJwt,
 } from "@/common/utils/jwt";
 import { sendEmail } from "@/mailers/mailer";
 import {
@@ -40,6 +39,7 @@ import { Location } from "@/database/models/resetPasswordLog.model";
 import logPasswordReset from "@/common/utils/logPasswordReset";
 import { generateUniqueCode } from "@/common/utils/uuid";
 import { MFASessionModel } from "@/database/models/mfaSession.model";
+import { Request } from "express";
 
 export class AuthService {
   public async register(registerData: RegisterData) {
@@ -213,28 +213,20 @@ export class AuthService {
       mfaToken: "",
     };
   }
-  public async refreshToken(refreshToken: string) {
-    // ! VALIDATE INTEGRITY OF TOKEN
-    const payload = verifyJwt(refreshToken, "REFRESH_TOKEN");
-    if (!payload) {
-      throw new UnauthorizedException("Invalid refresh token.");
-    }
-
-    // ! VERIFY INTEGRITY OF SESSION
-    const session = await SessionModel.findById(payload.sessionId);
-    const now = Date.now();
-
+  public async refreshToken(req: Request) {
+    const sessionId = req.sessionId;
+    const user = req.user as Express.User;
+    const session = await SessionModel.findById(sessionId);
     if (!session) {
-      throw new UnauthorizedException("Session does not exists.");
-    }
-    if (session.expiredAt.getTime() <= now) {
-      // ** TODO DELETE EX SESSION - Maybe we want to keep history of sessions?
-      throw new UnauthorizedException("Session expired.");
+      throw new UnauthorizedException(
+        "Authentication failed, the refresh token session does not exist or is invalid. Please log in again.",
+        ErrorCode.AUTH_REFRESH_TOKEN_SESSION_INVALID
+      );
     }
 
+    const now = Date.now();
     const sessionRequireRefresh =
       session.expiredAt.getTime() - now <= ONE_DAY_IN_MS;
-
     if (sessionRequireRefresh) {
       session.expiredAt = calculateExpirationDate(
         config.JWT.REFRESH_EXPIRES_IN
@@ -245,7 +237,10 @@ export class AuthService {
     const newRefreshToken = sessionRequireRefresh
       ? signJwtToken(
           {
+            sub: user.id,
+            userId: user.id,
             sessionId: session.id,
+            type: "refresh",
           },
           { ...refreshTokenSignOptions }
         )
@@ -253,8 +248,11 @@ export class AuthService {
 
     const accessToken = signJwtToken(
       {
+        sub: user.id,
         userId: session.userId.toString(),
         sessionId: session.id,
+        type: "access",
+        role: "user",
       },
       { ...accessTokenSignOptions }
     );

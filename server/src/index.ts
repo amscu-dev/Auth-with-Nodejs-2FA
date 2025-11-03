@@ -24,7 +24,7 @@ import { errorHandler as GlobalErrorHandler } from "./middlewares/errorHandler";
 import { HTTPSTATUS } from "./config/http.config";
 import authRoutes from "./modules/auth/auth.routes";
 import passport from "./middlewares/passport";
-import { authenticateJWT } from "./common/strategies/access-token-jwt.strategy";
+import { AuthenticateAccessJWTToken } from "./common/strategies/access-token-jwt.strategy";
 import sessionRoutes from "./modules/session/session.routes";
 import addRequestId from "./middlewares/requestId";
 import mfaRoutes from "./modules/mfa/mfa.routes";
@@ -62,7 +62,11 @@ app.get("/health", (req: Request, res: Response) => {
 
 // ! Routes
 app.use(`${config.BASE_PATH}/auth`, authRoutes);
-app.use(`${config.BASE_PATH}/session`, authenticateJWT, sessionRoutes);
+app.use(
+  `${config.BASE_PATH}/session`,
+  AuthenticateAccessJWTToken,
+  sessionRoutes
+);
 app.use(`${config.BASE_PATH}/mfa`, mfaRoutes);
 app.use(`${config.BASE_PATH}/oidc`, oidcSessionRoutes);
 app.use(`${config.BASE_PATH}/magic-link`, magicLinkRoutes);

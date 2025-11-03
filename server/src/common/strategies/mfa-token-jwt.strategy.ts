@@ -19,7 +19,6 @@ const options: StrategyOptionsWithRequest = {
     (req) => {
       const mfaToken = req.cookies?.mfaToken;
       if (!mfaToken) {
-        // goes directly into global error middleware without catchAsync
         throw new UnauthorizedException(
           "Authentication failed, no authentication token provided.",
           ErrorCode.AUTH_TOKEN_NOT_FOUND
@@ -31,7 +30,7 @@ const options: StrategyOptionsWithRequest = {
   issuer: config.AUTHENTICATION.TOKEN_ISSUER,
   audience: [config.AUTHENTICATION.TOKEN_AUDIENCE],
   algorithms: ["HS256"],
-  secretOrKey: config.MFA_TOKEN.SECRET_KEY, // sau cheia ta HS256
+  secretOrKey: config.MFA_TOKEN.SECRET_KEY,
   passReqToCallback: true,
 };
 
@@ -125,10 +124,10 @@ const verifyCallback: VerifyCallbackWithRequest = async (
   }
 };
 
-const mfaStrategy = new JwtStrategy(options, verifyCallback);
+const mfaTokenStrategy = new JwtStrategy(options, verifyCallback);
 
 export const setupMfaTokenStrategy = (passport: PassportStatic) => {
-  passport.use("mfa-token", mfaStrategy);
+  passport.use("mfa-token", mfaTokenStrategy);
 };
 
 export const AuthenticateMfaJWTToken = (

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { magicLinkController } from "./magic-link.module";
-import { authenticateMagicLinkToken } from "@/common/strategies/magic-link-token-jwt.strategy";
+import { AuthenticateMagicLinkJWTToken } from "@/common/strategies/magic-link-token-jwt.strategy";
 
 const magicLinkRoutes = Router();
 
@@ -9,7 +9,7 @@ magicLinkRoutes.post("/signin", magicLinkController.signInWithMagicLink);
 magicLinkRoutes.post("/resend-token", magicLinkController.resendMagicLink);
 magicLinkRoutes.get(
   "/verify/:token",
-  authenticateMagicLinkToken,
+  AuthenticateMagicLinkJWTToken,
   magicLinkController.authenticateMagicLink
 );
 

@@ -1,52 +1,52 @@
-import { authenticateJWT } from "@/common/strategies/access-token-jwt.strategy";
+import { AuthenticateAccessJWTToken } from "@/common/strategies/access-token-jwt.strategy";
 import { Router } from "express";
 import { mfaController } from "./mfa.module";
-import { authenticateMFA } from "@/common/strategies/mfa-token-jwt.strategy";
+import { AuthenticateMfaJWTToken } from "@/common/strategies/mfa-token-jwt.strategy";
 import { requireRegularAuthMethod } from "@/middlewares/requireRegularAuthMethod ";
 
 const mfaRoutes = Router();
 
 mfaRoutes.get(
   "/setup",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   requireRegularAuthMethod,
   mfaController.generateMFASetup
 );
 mfaRoutes.post(
   "/verify",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   requireRegularAuthMethod,
   mfaController.verifyMFASetup
 );
 mfaRoutes.patch(
   "/revoke",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   requireRegularAuthMethod,
   mfaController.revokeMFA
 );
 
 mfaRoutes.post(
   "/backup-codes/consume",
-  authenticateJWT,
+  AuthenticateAccessJWTToken,
   requireRegularAuthMethod,
   mfaController.disableMFAWithBackupCode
 );
 mfaRoutes.post(
   "/login-backup-code",
-  authenticateMFA,
+  AuthenticateMfaJWTToken,
   requireRegularAuthMethod,
   mfaController.loginWithBackupCode
 );
 
 mfaRoutes.post(
   "/verify-login",
-  authenticateMFA,
+  AuthenticateMfaJWTToken,
   requireRegularAuthMethod,
   mfaController.verifyMFAForLogin
 );
 mfaRoutes.post(
   "/verify-forgot-password",
-  authenticateMFA,
+  AuthenticateMfaJWTToken,
   requireRegularAuthMethod,
   mfaController.verifyMFAForChangingPassword
 );
