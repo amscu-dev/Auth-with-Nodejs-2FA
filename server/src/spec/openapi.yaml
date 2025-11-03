@@ -479,101 +479,103 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmailServiceError"
   /magic-link/signin:
-    tags: [✨ Magic-Link Authentication]
-    summary: Sign in a user using a magic link
-    description: |
-      Initiates a passwordless sign-in flow by sending a magic link to the user's email address. 
-      The user can authenticate by clicking the link received in their inbox. 
-      If the email is not associated with any account, the request will fail with a 404 response. 
-      This endpoint is typically used in passwordless authentication systems.
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/MagicLinkSignInRequestBody"
-    responses:
-      "200":
-        description: |
-          Magic link successfully sent to the user's email address. 
-          The user must click the link to complete authentication.
-        headers:
-          X-Request-Id:
-            $ref: "#/components/headers/XRequestId"
+    post:
+      tags: [✨ Magic-Link Authentication]
+      summary: Sign in a user using a magic link
+      description: |
+        Initiates a passwordless sign-in flow by sending a magic link to the user email address. 
+        The user can authenticate by clicking the link received in their inbox. 
+        If the email is not associated with any account, the request will fail with a 404 response. 
+        This endpoint is typically used in passwordless authentication systems.
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
-      "404":
-        description: |
-          Not Found. The specified email address does not match any registered user account. 
-          The client should prompt the user to register or verify their email.
-        headers:
-          X-Request-Id:
-            $ref: "#/components/headers/XRequestId"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserNotFoundError"
-      "503":
-        description: |
-          Service Unavailable. The email delivery service is temporarily unavailable 
-          or failed to send the magic link. The client may retry after a short delay.
-        headers:
-          X-Request-Id:
-            $ref: "#/components/headers/XRequestId"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EmailServiceError"
+              $ref: "#/components/schemas/MagicLinkSignInRequestBody"
+      responses:
+        "200":
+          description: |
+            Magic link successfully sent to the user's email address. 
+            The user must click the link to complete authentication.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
+        "404":
+          description: |
+            Not Found. The specified email address does not match any registered user account. 
+            The client should prompt the user to register or verify their email.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserNotFoundError"
+        "503":
+          description: |
+            Service Unavailable. The email delivery service is temporarily unavailable 
+            or failed to send the magic link. The client may retry after a short delay.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailServiceError"
   /magic-link/resend:
-    tags: [✨ Magic-Link Authentication]
-    summary: Resend a magic link for email verification or sign-in
-    description: |
-      Resends a new generated magic link to the user's email address. 
-      This endpoint can be used when the user did not receive or accidentally deleted 
-      the original magic link for verification or sign-in. 
-      If the email does not correspond to an existing user, the request will fail with a 404 response. 
-      This operation is commonly used in passwordless authentication systems to handle failed or lost verification emails.
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/MagicLinkSignInRequestBody"
-    responses:
-      "200":
-        description: |
-          Magic link successfully sent to the user's email address.
-        headers:
-          X-Request-Id:
-            $ref: "#/components/headers/XRequestId"
+    post:
+      tags: [✨ Magic-Link Authentication]
+      summary: Resend a magic link for email verification or sign-in
+      description: |
+        Resends a new generated magic link to the user's email address. 
+        This endpoint can be used when the user did not receive or accidentally deleted 
+        the original magic link for verification or sign-in. 
+        If the email does not correspond to an existing user, the request will fail with a 404 response. 
+        This operation is commonly used in passwordless authentication systems to handle failed or lost verification emails.
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
-      "404":
-        description: |
-          Not Found. The specified email address does not match any registered user account. 
-          The client should prompt the user to register or verify their email.
-        headers:
-          X-Request-Id:
-            $ref: "#/components/headers/XRequestId"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserNotFoundError"
-      "503":
-        description: |
-          Service Unavailable. The email delivery service is temporarily unavailable 
-          or failed to send the magic link. The client may retry after a short delay.
-        headers:
-          X-Request-Id:
-            $ref: "#/components/headers/XRequestId"
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EmailServiceError"
+              $ref: "#/components/schemas/MagicLinkSignInRequestBody"
+      responses:
+        "200":
+          description: |
+            Magic link successfully sent to the user's email address.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
+        "404":
+          description: |
+            Not Found. The specified email address does not match any registered user account. 
+            The client should prompt the user to register or verify their email.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserNotFoundError"
+        "503":
+          description: |
+            Service Unavailable. The email delivery service is temporarily unavailable 
+            or failed to send the magic link. The client may retry after a short delay.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailServiceError"
   /magic-link/verify/{token}:
     get:
       tags: [✨ Magic-Link Authentication]
@@ -668,7 +670,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#components/schemas/MfaSetupResponse"
+                $ref: "#/components/schemas/MfaSetupResponse"
         "409":
           description: >
             Conflict. MFA is already enabled for this user. No new temporary secret is generated. 
@@ -682,12 +684,107 @@ paths:
                 $ref: "#/components/schemas/MfaAlreadyEnabledError"
         "401":
           $ref: "#/components/responses/InvalidAccessJwtToken"
+        "403":
+          description: >
+            Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
+            This typically occurs when the user does not have a password-based login method configured, 
+            which is required to enable Multi-Factor Authentication (2FA). 
+            The client should prompt the user to add a password-based login (e.g., via "Forgot Password") 
+            before attempting MFA setup.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MFAForbiddenError"
   /mfa/verify:
     post:
       tags: [🕹️Multi Factor Authentication Endpoints]
-      summary: x
-      description: x
-
+      summary: Verify the MFA code for a user
+      description: >
+        Verifies the multi-factor authentication (MFA) code provided by the user.
+        This step is required after MFA setup or during a login flow to validate
+        the one-time code generated by the authenticator app or sent via email/SMS.
+        Upon successful verification, the MFA setup is confirmed or the login session is allowed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required:
+                      - code
+                    properties:
+                      code:
+                        type: string
+      responses:
+        "200":
+          summary: MFA verification successful
+          description: >
+            The provided MFA code was valid. The user's MFA setup is confirmed
+            or the login session is authenticated. No further action is required.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MFAVerifySetupSuccessResponse"
+        "409":
+          summary: MFA already enabled
+          description: >
+            The user has already enabled MFA for their account. A new MFA setup cannot be created until the existing one is disabled.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MfaAlreadyEnabledError"
+        "400":
+          summary: Invalid MFA code or temporary secret expired
+          description: >
+            The MFA verification failed due to an invalid or expired code, or because the temporary secret generated during setup has expired. The user should request a new code or restart the MFA setup process.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                MfaTemporarySecretExpired:
+                  $ref: "#/components/examples/MfaTemporarySecretExpiredErrorExample"
+                MfaInvalidverificationCode:
+                  $ref: "#/components/examples/MfaInvalidverificationCodeErrorExample"
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/MfaTemporarySecretExpiredError"
+                  - $ref: "#/components/schemas/MfaInvalidverificationCodeError"
+        "401":
+          $ref: "#/components/responses/InvalidAccessJwtToken"
+        "403":
+          description: >
+            Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
+            This typically occurs when the user does not have a password-based login method configured, 
+            which is required to enable Multi-Factor Authentication (2FA). 
+            The client should prompt the user to add a password-based login (e.g., via "Forgot Password") 
+            before attempting MFA setup.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MFAForbiddenError"
+  /mfa/revoke:
+    post:
+      tags: [🕹️Multi Factor Authentication Endpoints]
 components:
   # REPONSES
   responses:
@@ -1303,6 +1400,56 @@ components:
               example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
         metadata:
           $ref: "#/components/schemas/ResponseMetadata"
+    MFAVerifySetupSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: MFA setup completed successfully.
+        data:
+          type: object
+          required:
+            - userPreferences
+          properties:
+            userPreferences:
+              type: object
+              required:
+                - enabled2FA
+                - backupCodes
+              properties:
+                enable2FA:
+                  type: boolean
+                  enum: [true]
+                  example: true
+                backupCodes:
+                  type: array
+                  items:
+                    type: string
+                    example:
+                    - "4F9K2M8Q1"
+                    - "A7B3C1D9E"
+                    - "X2Y5Z8W1Q"
+                    - "9G1H3J7K2"
+                    - "L4M6N8O2P"
+                    - "Q7R2S9T3V"
+                    - "3B8F1D6H2"
+                    - "Z5X9C2V7L"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     # ERRORS
     # GENERAL ERRORS
     InternalServerError:
@@ -1842,6 +1989,28 @@ components:
           type: string
           enum: ["AUTH_TOKEN_INVALID_TYPE"]
           example: AUTH_TOKEN_INVALID_TYPE
+        requestId:
+          type: string
+          example: cc5065df0c6b4c19970d4e92f
+    MFAForbiddenError:
+      type: object
+      required:
+        - success
+        - message
+        - errorCode
+        - requestId
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          example: false
+        message:
+          type: string
+          example: You do not have permission to perform this action. To benefit of 2FA, please add a password-based login method in your account settings first. (choose forgot password).
+        errorCode:
+          type: string
+          enum: ["ACCESS_FORBIDDEN"]
+          example: ACCESS_FORBIDDEN
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
@@ -2617,6 +2786,13 @@ components:
         success: false
         message: The backup code you entered is invalid or has already been used. Please try a different one.
         errorCode: BACKUPCODE_INVALID_CODE
+        requestId: cc5065df0c6b4c19970d4e92f
+    MFAForbiddenErrorExample:
+      summary: User cannot perform MFA action due to missing password-based login
+      value:
+        success: false
+        message: "You do not have permission to perform this action. To benefit of 2FA, please add a password-based login method in your account settings first. (choose forgot password)."
+        errorCode: ACCESS_FORBIDDEN
         requestId: cc5065df0c6b4c19970d4e92f
     # OIDC
     OIDCSessionNotFoundErrorExample:

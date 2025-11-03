@@ -13,6 +13,7 @@ export class MfaController {
   constructor(mfaService: MfaService) {
     this.mfaService = mfaService;
   }
+  //  ok
   public generateMFASetup = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Call Service
@@ -36,20 +37,24 @@ export class MfaController {
       );
     }
   );
+  // ok
   public verifyMFASetup = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const { code } = verifyMfaSchema.parse({ ...req.body });
 
+      // ! 02. Call Service
       const { userPreferences } = await this.mfaService.verifyMFASetup(
         req,
         code
       );
 
+      // ! 03. Return response
       return res.status(HTTPSTATUS.OK).json(
         new ApiResponse({
           statusCode: HTTPSTATUS.OK,
           success: true,
-          message: "MFA setup completed successfully",
+          message: "MFA setup completed successfully.",
           data: { userPreferences: userPreferences },
           metadata: {
             requestId: req.requestId,

@@ -24,8 +24,8 @@ export const requireRegularAuthMethod = (
 
   if (!supportsRegular) {
     throw new ForbiddenException(
-      "You do not have permission to perform this action. Your account was created using a third-party provider (e.g. Google). To benefit of 2FA, please add a password-based login method in your account settings first. (choose forgot password)",
-      ErrorCode.VERIFICATION_ERROR
+      "You do not have permission to perform this action. To benefit of 2FA, please add a password-based login method in your account settings first. (choose forgot password)",
+      ErrorCode.ACCESS_FORBIDDEN
     );
   }
 

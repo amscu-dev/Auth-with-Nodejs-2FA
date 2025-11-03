@@ -29,6 +29,7 @@ import { sendEmail } from "@/mailers/mailer";
 import { passwordResetTemplate } from "@/mailers/templates/template";
 
 export class MfaService {
+  // ok
   public async generateMFASetup(req: Express.Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const user = req.user as Express.User;
@@ -71,9 +72,10 @@ export class MfaService {
       qrImageUrl,
     };
   }
-
+  // ok
   public async verifyMFASetup(req: Request, code: string) {
-    // ! Already verified that user exists in JWT middleware so ex can safetly assert it
+    // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
+
     const user = req.user as Express.User;
     if (user.userPreferences.enable2FA) {
       throw new ConflictException(
@@ -82,7 +84,7 @@ export class MfaService {
       );
     }
 
-    // ! Find Active TempTOTPSecret stored
+    // ! 02. Find Active TempTOTPSecret stored
     const tempSecretDocument = await TempTOTPSecretModel.findOne({
       userId: user._id,
       expiredAt: {
@@ -98,6 +100,7 @@ export class MfaService {
       );
     }
 
+    // ! 03. Check validity of code
     const isValid = speakeasy.totp.verify({
       secret: tempSecretDocument.secret,
       encoding: "base32",
@@ -112,7 +115,9 @@ export class MfaService {
       );
     }
 
-    // ! Encrypt 2fa key
+    // ! 04. If all okey save, secret
+
+    // ! 04.1 Encrypt 2fa key
     const encryptedTwoFactorSecret = encrypt(
       tempSecretDocument.secret,
       user.id,
@@ -121,7 +126,7 @@ export class MfaService {
 
     const { backupCodes, hashedBackupCodes } = await generateBackupCodes(8);
     user.userPreferences.enable2FA = true;
-    // ! we store encrypted version of the key
+    // ! 04.2 we store encrypted version of the key
     user.userPreferences.twoFactorSecret = encryptedTwoFactorSecret;
     user.userPreferences.backupCodes = hashedBackupCodes;
     await user.save();
@@ -132,6 +137,55 @@ export class MfaService {
         backupCodes,
       },
     };
+  }
+  public async revokeMFA(code: string, req: Request) {
+    const currentUser = req.user as Express.User;
+
+    if (!currentUser) {
+      throw new NotFoundException(
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
+      );
+    }
+    if (
+      !currentUser.userPreferences.twoFactorSecret ||
+      !currentUser.userPreferences.enable2FA
+    ) {
+      throw new ConflictException(
+        "Two-factor authentication is already disabled. No further action is required.",
+        ErrorCode.MFA_ALREADY_DISABLED
+      );
+    }
+
+    // ! First we decrypt the 2fa key
+
+    const decryptedKey = decrypt(
+      currentUser.userPreferences.twoFactorSecret,
+      currentUser.id,
+      config.CRYPTO_SYMMETRIC_KEY
+    );
+    // ! Verify 2FA Before revoke
+    const isValid = speakeasy.totp.verify({
+      // ! we verify with decrypted key
+      secret: decryptedKey,
+      encoding: "base32",
+      token: code,
+      window: 1,
+    });
+
+    if (!isValid) {
+      throw new BadRequestException(
+        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
+        ErrorCode.MFA_INVALID_VERIFICATION_CODE
+      );
+    }
+
+    currentUser.userPreferences.enable2FA = false;
+    currentUser.userPreferences.twoFactorSecret = undefined;
+    currentUser.userPreferences.backupCodes = undefined;
+    const updatedUser = await currentUser.save();
+
+    return { updatedUser };
   }
   public async verifyMFAForChangingPassword(code: string, req: Request) {
     const currentUser = req.user as Express.User;
@@ -197,55 +251,6 @@ export class MfaService {
     return {
       url: resetLink,
     };
-  }
-  public async revokeMFA(code: string, req: Request) {
-    const currentUser = req.user as Express.User;
-
-    if (!currentUser) {
-      throw new NotFoundException(
-        "User with the specified email was not found.",
-        ErrorCode.AUTH_USER_NOT_FOUND
-      );
-    }
-    if (
-      !currentUser.userPreferences.twoFactorSecret ||
-      !currentUser.userPreferences.enable2FA
-    ) {
-      throw new ConflictException(
-        "Two-factor authentication is already disabled. No further action is required.",
-        ErrorCode.MFA_ALREADY_DISABLED
-      );
-    }
-
-    // ! First we decrypt the 2fa key
-
-    const decryptedKey = decrypt(
-      currentUser.userPreferences.twoFactorSecret,
-      currentUser.id,
-      config.CRYPTO_SYMMETRIC_KEY
-    );
-    // ! Verify 2FA Before revoke
-    const isValid = speakeasy.totp.verify({
-      // ! we verify with decrypted key
-      secret: decryptedKey,
-      encoding: "base32",
-      token: code,
-      window: 1,
-    });
-
-    if (!isValid) {
-      throw new BadRequestException(
-        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
-        ErrorCode.MFA_INVALID_VERIFICATION_CODE
-      );
-    }
-
-    currentUser.userPreferences.enable2FA = false;
-    currentUser.userPreferences.twoFactorSecret = undefined;
-    currentUser.userPreferences.backupCodes = undefined;
-    const updatedUser = await currentUser.save();
-
-    return { updatedUser };
   }
   public async verifyMFAForLogin(code: string, req: Request) {
     const currentUser = req.user as Express.User;
