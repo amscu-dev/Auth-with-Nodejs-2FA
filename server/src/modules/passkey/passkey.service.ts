@@ -1,12 +1,10 @@
 import useragent from "express-useragent";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import { PasskeyRegisterData } from "@/common/interface/passkey.interface";
-import cbor from "cbor";
-
 import {
-  AuthenticationException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from "@/common/utils/catch-errors";
@@ -21,7 +19,7 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import type {
   AuthenticationResponseJSON,
   PublicKeyCredentialCreationOptionsJSON,
@@ -53,8 +51,8 @@ export default class PasskeyService {
   public async confirmSignUp(userid: string) {
     const user = await UserModel.findById(userid);
     if (!user) {
-      throw new BadRequestException(
-        "User not found",
+      throw new NotFoundException(
+        "User with the specified email was not found.",
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
@@ -70,7 +68,8 @@ export default class PasskeyService {
     const user = await UserModel.findOne({ email });
     if (user) {
       throw new BadRequestException(
-        "There is already an user registered with this email adress"
+        "Registration failed, this email address is already associated with an existing account.",
+        ErrorCode.AUTH_EMAIL_ALREADY_EXISTS
       );
     }
 
@@ -127,23 +126,29 @@ export default class PasskeyService {
     });
 
     if (!challengeSession) {
-      throw new BadRequestException(
-        "Passkey registration session not found.",
-        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey registration session was not found or is invalid. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_INVALID
       );
     }
 
     if (challengeSession.consumed) {
       throw new ConflictException(
-        "Passkey registration session has already been used.",
-        ErrorCode.PASSKEY_CHALLENGE_ALREADY_CONSUMED
+        "Authentication failed, the passkey session has already been used. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_CONSUMED
       );
     }
 
     if (challengeSession.passkeyChallengeSessionPurpose !== "signup") {
       throw new BadRequestException(
-        "Passkey registration session purpose is invalid.",
-        ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
+        "Authentication failed, the passkey session purpose does not match the expected type. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE
+      );
+    }
+    if (challengeSession.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey session has expired. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__EXPIRED
       );
     }
 
@@ -161,9 +166,9 @@ export default class PasskeyService {
       !verification.registrationInfo ||
       !verification.registrationInfo.userVerified
     ) {
-      throw new BadRequestException(
-        "Passkey registration verification failed",
-        ErrorCode.VERIFICATION_ERROR
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey verification could not be completed successfully. Please ensure you are using the correct passkey and try again.",
+        ErrorCode.PASSKEY_CHALENGE_VERIFICATION_ERROR
       );
     }
     // ! start a mongoose session
@@ -271,23 +276,29 @@ export default class PasskeyService {
     });
 
     if (!challengeSession) {
-      throw new BadRequestException(
-        "Passkey registration session not found.",
-        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey registration session was not found or is invalid. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_INVALID
       );
     }
 
     if (challengeSession.consumed) {
       throw new ConflictException(
-        "Passkey registration session has already been used.",
-        ErrorCode.PASSKEY_CHALLENGE_ALREADY_CONSUMED
+        "Authentication failed, the passkey session has already been used. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_CONSUMED
       );
     }
 
     if (challengeSession.passkeyChallengeSessionPurpose !== "signin") {
       throw new BadRequestException(
-        "Passkey registration session purpose is invalid.",
-        ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
+        "Authentication failed, the passkey session purpose does not match the expected type. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE
+      );
+    }
+    if (challengeSession.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey session has expired. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__EXPIRED
       );
     }
     // ! Find User in DB
@@ -295,7 +306,10 @@ export default class PasskeyService {
       authenticationResponse.response.userHandle
     );
     if (!user) {
-      throw new NotFoundException("User not found please register!");
+      throw new NotFoundException(
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
+      );
     }
 
     // ! Parse credential ID
@@ -303,8 +317,9 @@ export default class PasskeyService {
       credentialID: authenticationResponse.id,
     });
     if (!passkey) {
-      throw new NotFoundException(
-        "Passkey not found! Please delete this key from your device and register a new one!"
+      throw new UnauthorizedException(
+        "Authentication failed, the provided passkey could not be found or is invalid. Please remove this passkey from your device and register a new one.",
+        ErrorCode.PASSKEY_NOT_FOUND
       );
     }
     // ! Verify signature
@@ -324,9 +339,9 @@ export default class PasskeyService {
     });
 
     if (!verification.verified) {
-      throw new AuthenticationException(
-        "The provided passkey challenge is invalid or could not be verified.",
-        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey verification could not be completed successfully. Please ensure you are using the correct passkey and try again.",
+        ErrorCode.PASSKEY_CHALENGE_VERIFICATION_ERROR
       );
     }
 
@@ -383,8 +398,9 @@ export default class PasskeyService {
     const curentUser = req.user as Express.User;
 
     if (curentUser.id !== userid) {
-      throw new UnauthorizedException(
-        "You are not authorized to add a passkey for this user."
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
+        ErrorCode.ACCESS_FORBIDDEN
       );
     }
     // ! Find current user passkeys
@@ -437,8 +453,9 @@ export default class PasskeyService {
     const curentUser = req.user as Express.User;
 
     if (curentUser.id !== userid) {
-      throw new UnauthorizedException(
-        "You are not authorized to add a passkey for this user."
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
+        ErrorCode.ACCESS_FORBIDDEN
       );
     }
 
@@ -456,23 +473,29 @@ export default class PasskeyService {
     });
 
     if (!challengeSession) {
-      throw new BadRequestException(
-        "Passkey registration session not found.",
-        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey registration session was not found or is invalid. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_INVALID
       );
     }
 
     if (challengeSession.consumed) {
       throw new ConflictException(
-        "Passkey registration session has already been used.",
-        ErrorCode.PASSKEY_CHALLENGE_ALREADY_CONSUMED
+        "Authentication failed, the passkey session has already been used. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_CONSUMED
       );
     }
 
-    if (challengeSession.passkeyChallengeSessionPurpose !== "add-new-key") {
+    if (challengeSession.passkeyChallengeSessionPurpose !== "signin") {
       throw new BadRequestException(
-        "Passkey registration session purpose is invalid.",
-        ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
+        "Authentication failed, the passkey session purpose does not match the expected type. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE
+      );
+    }
+    if (challengeSession.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey session has expired. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__EXPIRED
       );
     }
 
@@ -490,9 +513,9 @@ export default class PasskeyService {
       !verification.registrationInfo ||
       !verification.registrationInfo.userVerified
     ) {
-      throw new BadRequestException(
-        "Passkey registration verification failed",
-        ErrorCode.VERIFICATION_ERROR
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey verification could not be completed successfully. Please ensure you are using the correct passkey and try again.",
+        ErrorCode.PASSKEY_CHALENGE_VERIFICATION_ERROR
       );
     }
 
@@ -541,8 +564,9 @@ export default class PasskeyService {
   ) {
     const currentUser = req.user as Express.User;
     if (currentUser.id !== userid) {
-      throw new UnauthorizedException(
-        "You are not authorized to remove a passkey for this user."
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
+        ErrorCode.ACCESS_FORBIDDEN
       );
     }
     const currentCredential = await PasskeyModel.findOne({
@@ -550,11 +574,15 @@ export default class PasskeyService {
     });
 
     if (!currentCredential) {
-      throw new NotFoundException("Passkey does not exists.");
+      throw new NotFoundException(
+        "Authentication failed, the provided passkey could not be found or is invalid. Please remove this passkey from your device and register a new one.",
+        ErrorCode.PASSKEY_NOT_FOUND
+      );
     }
     if (userid !== currentCredential.userID.toString()) {
-      throw new UnauthorizedException(
-        "You are not authorized to remove a passkey for this user."
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
+        ErrorCode.ACCESS_FORBIDDEN
       );
     }
     // ! Generate Options
@@ -584,8 +612,9 @@ export default class PasskeyService {
   ) {
     const currentUser = req.user as Express.User;
     if (currentUser.id !== userid) {
-      throw new UnauthorizedException(
-        "You are not authorized to remove a passkey for this user."
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
+        ErrorCode.ACCESS_FORBIDDEN
       );
     }
     const passkey = await PasskeyModel.findOne({
@@ -593,7 +622,10 @@ export default class PasskeyService {
     });
 
     if (!passkey) {
-      throw new NotFoundException("Passkey does not exists.");
+      throw new NotFoundException(
+        "Authentication failed, the provided passkey could not be found or is invalid. Please remove this passkey from your device and register a new one.",
+        ErrorCode.PASSKEY_NOT_FOUND
+      );
     }
     if (userid !== passkey.userID.toString()) {
       throw new UnauthorizedException(
@@ -614,23 +646,29 @@ export default class PasskeyService {
     });
 
     if (!challengeSession) {
-      throw new BadRequestException(
-        "Passkey registration session not found.",
-        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey registration session was not found or is invalid. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_INVALID
       );
     }
 
     if (challengeSession.consumed) {
       throw new ConflictException(
-        "Passkey registration session has already been used.",
-        ErrorCode.PASSKEY_CHALLENGE_ALREADY_CONSUMED
+        "Authentication failed, the passkey session has already been used. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION_CONSUMED
       );
     }
 
-    if (challengeSession.passkeyChallengeSessionPurpose !== "delete-key") {
+    if (challengeSession.passkeyChallengeSessionPurpose !== "signin") {
       throw new BadRequestException(
-        "Passkey registration session purpose is invalid.",
-        ErrorCode.PASSKEY_CHALLENGE__INVALID_PURPOSE
+        "Authentication failed, the passkey session purpose does not match the expected type. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE
+      );
+    }
+    if (challengeSession.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey session has expired. Please restart the passkey process.",
+        ErrorCode.PASSKEY_CHALLENGE_SESSION__EXPIRED
       );
     }
 
@@ -651,9 +689,9 @@ export default class PasskeyService {
     });
 
     if (!verification.verified) {
-      throw new AuthenticationException(
-        "The provided passkey challenge is invalid or could not be verified.",
-        ErrorCode.PASSKEY_CHALLENGE_INVALID
+      throw new UnauthorizedException(
+        "Authentication failed, the passkey verification could not be completed successfully. Please ensure you are using the correct passkey and try again.",
+        ErrorCode.PASSKEY_CHALENGE_VERIFICATION_ERROR
       );
     }
     const mongoSession = await mongoose.startSession();
@@ -680,8 +718,9 @@ export default class PasskeyService {
     // ! 1. Get verify currentUser
     const currentUser = req.user as Express.User;
     if (currentUser.id !== userid) {
-      throw new UnauthorizedException(
-        "You are not authorized to remove a passkey for this user."
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
+        ErrorCode.ACCESS_FORBIDDEN
       );
     }
 

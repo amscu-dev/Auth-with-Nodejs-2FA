@@ -80,6 +80,7 @@ export class AuthService {
           return { verificationCode, newUser };
         }
       );
+
       // ! 04. Send Verification Code Email
       const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}`;
       const isVerificationEmailSend = await apiRequestWithRetry(() => {

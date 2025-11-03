@@ -1,5 +1,6 @@
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import {
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from "@/common/utils/catch-errors";
@@ -38,12 +39,13 @@ export class SessionService {
 
     if (!sessionToDelete) {
       throw new NotFoundException(
-        "Unable to delete session: session not found."
+        "The session associated with this operation could not be found.",
+        ErrorCode.AUTH_SESSION_NOT_FOUND
       );
     }
     if (user.id !== sessionToDelete.userId.toString()) {
-      throw new UnauthorizedException(
-        "You do not have permission to perform this operation.",
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
         ErrorCode.ACCESS_FORBIDDEN
       );
     }

@@ -7,7 +7,7 @@ import {
   GoogleAuthResponse,
 } from "@/common/interface/oidc.interface";
 import {
-  AuthenticationException,
+  UnauthorizedException,
   BadRequestException,
   NotFoundException,
 } from "@/common/utils/catch-errors";
@@ -46,15 +46,20 @@ export class OIDCSessionService {
     });
     if (!session) {
       throw new NotFoundException(
-        "OIDC Session not found.",
-        ErrorCode.OIDC_MISSING_SESSION
+        "Authentication failed, no valid OIDC session was found for the given state and provider.",
+        ErrorCode.OIDC_SESSION_NOT_FOUND
       );
     }
-
+    if (session.expiresAt < new Date()) {
+      throw new BadRequestException(
+        "Authentication failed, the OIDC session has expired. Please restart the sign-in process.",
+        ErrorCode.OIDC_SESSION_EXPIRED
+      );
+    }
     if (session.consumed) {
       throw new BadRequestException(
-        "OIDC Session already consumed.",
-        ErrorCode.OIDC_EXPIRED_SESSION
+        "Authentication failed, the OIDC session has already been used and cannot be reused.",
+        ErrorCode.OIDC_SESSION_CONSUMED
       );
     }
     return session;
@@ -171,7 +176,6 @@ export class OIDCSessionService {
           },
         }
       );
-      console.log(data);
       const idtoken = data.id_token;
       // ! Validate Token
       const { payload, protectedHeader } =
@@ -181,7 +185,6 @@ export class OIDCSessionService {
           audience: config.GOOGLE_OAUTH_CLIENT_ID,
           issuer: ["https://accounts.google.com", "accounts.google.com"],
         });
-      console.log(payload);
       const { user, accessToken, refreshToken, mfaRequired } =
         await this.findOrCreateUser({
           email: payload.email || "",
@@ -196,7 +199,7 @@ export class OIDCSessionService {
       };
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
-        throw new AuthenticationException(
+        throw new UnauthorizedException(
           "Failed to authenticate with Google OAuth",
           ErrorCode.OIDC_FAILED_AUTHENTIFICATION
         );
@@ -229,7 +232,6 @@ export class OIDCSessionService {
           },
         }
       );
-      console.log(data);
 
       const [userData, userEmailData] = await Promise.all([
         axios
@@ -247,7 +249,7 @@ export class OIDCSessionService {
           })
           .then((res) => res.data),
       ]);
-      console.log(userData, userEmailData);
+
       const { user, accessToken, refreshToken, mfaRequired } =
         await this.findOrCreateUser({
           email: userData.email || userEmailData[0].email,
@@ -263,8 +265,8 @@ export class OIDCSessionService {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error);
-        throw new AuthenticationException(
-          "Failed to authenticate with Google OAuth",
+        throw new UnauthorizedException(
+          "Authentication failed while communicating with the external identity provider. Please try again or use a different sign-in method.",
           ErrorCode.OIDC_FAILED_AUTHENTIFICATION
         );
       } else {

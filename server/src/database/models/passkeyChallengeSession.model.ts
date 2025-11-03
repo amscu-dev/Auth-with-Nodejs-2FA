@@ -59,7 +59,7 @@ const PasskeyChallengeSessionSchema =
   });
 PasskeyChallengeSessionSchema.index(
   { expiresAt: 1 },
-  { expireAfterSeconds: 0 }
+  { expireAfterSeconds: 60 }
 );
 PasskeyChallengeSessionSchema.plugin(executionTimePlugin);
 

@@ -35,13 +35,12 @@ export class MfaService {
 
     if (user.userPreferences.enable2FA) {
       throw new ConflictException(
-        "Two-factor authentication is already enabled.",
+        "Two-factor authentication is already active. No further action is required.",
         ErrorCode.MFA_ALREADY_ENABLED
       );
     }
 
     // ! For Every Request at this endpoint we will regenerate code.
-
     const secret = speakeasy.generateSecret({ name: config.APP_NAME });
     const secretKey = secret.base32;
     const url = speakeasy.otpauthURL({
@@ -75,7 +74,7 @@ export class MfaService {
     const user = req.user as Express.User;
     if (user.userPreferences.enable2FA) {
       throw new ConflictException(
-        "Two-factor authentication is already enabled.",
+        "Two-factor authentication is already active. No further action is required.",
         ErrorCode.MFA_ALREADY_ENABLED
       );
     }
@@ -142,9 +141,9 @@ export class MfaService {
       !currentUser.userPreferences.twoFactorSecret ||
       !currentUser.userPreferences.enable2FA
     ) {
-      throw new ConflictException(
-        "Two-factor authentication is disabled.",
-        ErrorCode.MFA_ALREADY_DISABLED
+      throw new BadRequestException(
+        "Cannot verify MFA because two-factor authentication is not enabled for this account.",
+        ErrorCode.MFA_NOT_ENABLED
       );
     }
     // ! Decrypt Key
@@ -202,14 +201,17 @@ export class MfaService {
     const currentUser = req.user as Express.User;
 
     if (!currentUser) {
-      throw new NotFoundException("User not found.");
+      throw new NotFoundException(
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
+      );
     }
     if (
       !currentUser.userPreferences.twoFactorSecret ||
       !currentUser.userPreferences.enable2FA
     ) {
       throw new ConflictException(
-        "Two-factor authentication is already disabled.",
+        "Two-factor authentication is already disabled. No further action is required.",
         ErrorCode.MFA_ALREADY_DISABLED
       );
     }
@@ -256,9 +258,9 @@ export class MfaService {
       !currentUser.userPreferences.twoFactorSecret ||
       !currentUser.userPreferences.enable2FA
     ) {
-      throw new ConflictException(
-        "Two-factor authentication is disabled.",
-        ErrorCode.MFA_ALREADY_DISABLED
+      throw new BadRequestException(
+        "Cannot verify MFA because two-factor authentication is not enabled for this account.",
+        ErrorCode.MFA_NOT_ENABLED
       );
     }
 
@@ -358,15 +360,21 @@ export class MfaService {
     // ! CREATE TOKENS
     const accessToken = signJwtToken(
       {
+        sub: currentUser.id,
         userId: currentUser.id,
         sessionId: session.id,
+        type: "access",
+        role: "user",
       },
       { ...accessTokenSignOptions }
     );
 
     const refreshToken = signJwtToken(
       {
+        sub: currentUser.id,
+        userId: currentUser.id,
         sessionId: session.id,
+        type: "refresh",
       },
       { ...refreshTokenSignOptions }
     );
@@ -381,7 +389,7 @@ export class MfaService {
       !currentUser.userPreferences.enable2FA
     ) {
       throw new ConflictException(
-        "Two-factor authentication is already disabled.",
+        "Two-factor authentication is already disabled. No further action is required.",
         ErrorCode.MFA_ALREADY_DISABLED
       );
     }
@@ -413,9 +421,9 @@ export class MfaService {
       { new: true } // <- aici
     );
     if (!updatedUser) {
-      throw new BadRequestException(
-        "The backup code you entered is invalid or has already been used.",
-        ErrorCode.BACKUPCODE_INVALID_CODE
+      throw new NotFoundException(
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
     return { updatedUser };

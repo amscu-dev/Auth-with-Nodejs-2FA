@@ -138,7 +138,7 @@ export class AuthController {
       if (newRefreshToken) {
         res.cookie(
           "refreshToken",
-          refreshToken,
+          newRefreshToken,
           getRefreshTokenCookieOptions()
         );
       }

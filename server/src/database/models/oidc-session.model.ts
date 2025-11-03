@@ -45,7 +45,7 @@ const OIDCSessionSchema = new Schema<OIDCSessionDocument>({
   },
 });
 
-OIDCSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+OIDCSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 60 });
 OIDCSessionSchema.plugin(executionTimePlugin);
 
 export const OIDCSessionModel = model<OIDCSessionDocument>(

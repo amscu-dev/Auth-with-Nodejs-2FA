@@ -64,8 +64,8 @@ export class MagicLinkService {
     });
     if (!user) {
       throw new NotFoundException(
-        "There is no user registered with this email address.",
-        ErrorCode.AUTH_NOT_FOUND
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
     const isMagicLinkEmailSend = await this.createMagicLinkSession(
@@ -163,8 +163,8 @@ export class MagicLinkService {
     });
     if (!user) {
       throw new NotFoundException(
-        "There is no user registered with this email address.",
-        ErrorCode.AUTH_NOT_FOUND
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
     const isMagicLinkEmailSend = await this.createMagicLinkSession(
