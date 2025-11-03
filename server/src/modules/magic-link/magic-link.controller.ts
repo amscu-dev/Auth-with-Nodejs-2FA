@@ -15,9 +15,14 @@ export class MagicLinkController {
   }
   public signUpWithMagicLink = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate Input
       const body = magicLinkRegisterSchema.parse(req.body);
+
+      // ! 02. Call Service
       const { isMagicLinkEmailSend, user } =
         await this.magicLinkService.signUpWithMagicLink(body);
+
+      // ! 03. Return response
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,

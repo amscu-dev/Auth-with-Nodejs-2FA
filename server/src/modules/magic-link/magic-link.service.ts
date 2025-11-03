@@ -1,7 +1,9 @@
 import useragent from "express-useragent";
 import {
+  BadRequestException,
   InternalServerException,
   NotFoundException,
+  ServiceUnavaibleException,
 } from "@/common/utils/catch-errors";
 import {
   accessTokenSignOptions,
@@ -54,7 +56,10 @@ export class MagicLinkService {
       });
     });
     if (!isMagicLinkEmailSend) {
-      throw new InternalServerException();
+      throw new ServiceUnavaibleException(
+        "Failed to send the email. Please try again later.",
+        ErrorCode.EMAIL_SERVICE_ERROR
+      );
     }
     return isMagicLinkEmailSend;
   }
@@ -76,7 +81,19 @@ export class MagicLinkService {
     return isMagicLinkEmailSend;
   }
   public async signUpWithMagicLink(registerData: MagicLinkRegisterData) {
+    // ! 01. Extract Data
     const { email, name } = registerData;
+    // ! 02. Check user existence
+    const existingUser = await UserModel.exists({
+      email,
+    });
+    if (existingUser) {
+      throw new BadRequestException(
+        "Registration failed, this email address is already associated with an existing account.",
+        ErrorCode.AUTH_EMAIL_ALREADY_EXISTS
+      );
+    }
+    // ! 03. Create new user in db
     const user = await UserModel.create({
       name: name,
       email: email,
@@ -89,11 +106,14 @@ export class MagicLinkService {
         supportedAuthMethods: ["magic-link"],
       },
     });
+    // ! 04. Create MagicLink
     const isMagicLinkEmailSend = await this.createMagicLinkSession(
       email,
       user.id,
       "signup"
     );
+
+    // ! 05. Return User
     return { isMagicLinkEmailSend, user };
   }
   public async authenticateUser(req: Request) {
