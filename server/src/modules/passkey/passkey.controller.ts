@@ -19,6 +19,7 @@ export class PasskeyController {
   constructor(passkeyService: PasskeyService) {
     this.passkeyService = passkeyService;
   }
+  // ok
   public generatePasskeySignUpSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -45,16 +46,21 @@ export class PasskeyController {
       );
     }
   );
+  // ok
   public verifyPasskeySignUpSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const registrationResponse = passkeyRegistrationResponseJSONSchema.parse(
         req.body
       );
+
+      // ! 02. Call service
       const { user, isVerificationEmailSend } =
         await this.passkeyService.verifyPasskeySessionAndRegisterUser(
           registrationResponse
         );
 
+      // ! 03. Return user info
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,
@@ -62,7 +68,7 @@ export class PasskeyController {
           message:
             "Registration successful. A verification email has been sent to your email address.",
           data: {
-            ...user,
+            user,
             isVerificationEmailSend,
             nextStep: LOGIN.CONFIRM_SIGN_UP,
           },
@@ -73,11 +79,14 @@ export class PasskeyController {
       );
     }
   );
+
   public generatePasskeySignInSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Call service
       const publicKeyCredentialRequestOptions =
         await this.passkeyService.generatePasskeySignInSession();
 
+      // ! 02. Return data
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,

@@ -59,7 +59,7 @@ export default class PasskeyService {
     if (user.isEmailVerified) return true;
     return false;
   }
-
+  // ok
   public async generatePasskeySignUpSession(
     registerData: PasskeyRegisterData
   ): Promise<PublicKeyCredentialCreationOptionsJSON> {
@@ -110,18 +110,18 @@ export default class PasskeyService {
 
     return publicKeyCredentialCreationOptions;
   }
-
+  // ok
   public async verifyPasskeySessionAndRegisterUser(
     registrationResponse: RegistrationResponseJSON
   ) {
-    // ! Extract challenge from clientDataJSON
+    // ! 01. Extract challenge from clientDataJSON
     const { challenge } = clientDataJSONSchema.parse(
       JSON.parse(
         decodeBase64(registrationResponse.response.clientDataJSON, "utf8")
       )
     );
 
-    // ! Find Session Challenge
+    // ! 02. Find session challenge
     const challengeSession = await PasskeyChallengeSessionModel.findOne({
       challenge: challenge,
       passkeyChallengeSessionPurpose: "signup",
@@ -154,7 +154,7 @@ export default class PasskeyService {
       );
     }
 
-    // ! Verify Response
+    // ! 03. Verify response
     const verification = await verifyRegistrationResponse({
       response: registrationResponse,
       expectedChallenge: challenge,
@@ -173,13 +173,13 @@ export default class PasskeyService {
         ErrorCode.PASSKEY_CHALENGE_VERIFICATION_ERROR
       );
     }
-    // ! start a mongoose session
 
+    // ! 04. In verification passess save passkey, and succesfully register user
     const mongoSession = await mongoose.startSession();
     try {
       const { newUser, verificationCode } = await mongoSession.withTransaction(
         async () => {
-          // ! create new passkey
+          // ! 05. Create new passkey
           const passkey = new PasskeyModel({
             userID: challengeSession.userId,
             credentialID: verification.registrationInfo.credential.id,
@@ -198,6 +198,8 @@ export default class PasskeyService {
               name: getPasskeyProvider(verification.registrationInfo.aaguid),
             },
           });
+
+          // ! 06. Create new user
           const newUser = new UserModel({
             _id: challengeSession.userId,
             email: challengeSession.userEmail,
@@ -212,6 +214,7 @@ export default class PasskeyService {
               passkey: [passkey._id],
             },
           });
+          // ! 07. Create and send verification code
           const verificationCode = new VerificationCodeModel({
             userId: newUser._id,
             type: VerificationEnum.EMAIL_VERIFICATION,
@@ -225,7 +228,7 @@ export default class PasskeyService {
           return { newUser, verificationCode };
         }
       );
-
+      // ! 08. Send verification code
       const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}`;
       const isVerificationEmailSend = await apiRequestWithRetry(() => {
         return sendEmail({
@@ -241,7 +244,7 @@ export default class PasskeyService {
     } catch (error) {
       throw error;
     } finally {
-      mongoSession.endSession();
+      await mongoSession.endSession();
     }
   }
 
