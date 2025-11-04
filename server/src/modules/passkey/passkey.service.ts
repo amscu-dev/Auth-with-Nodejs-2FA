@@ -572,12 +572,13 @@ export default class PasskeyService {
       await mongoSession.endSession();
     }
   }
-
+  // ok
   public async generatePasskeyRemoveSession(
     userid: string,
     credentialid: string,
     req: Request
   ) {
+    // ! 01. Extract user from request (added & verified user existance in passport middleware)
     const currentUser = req.user as Express.User;
     if (currentUser.id !== userid) {
       throw new ForbiddenException(
@@ -585,6 +586,7 @@ export default class PasskeyService {
         ErrorCode.ACCESS_FORBIDDEN
       );
     }
+    // ! 02. Find passkey
     const currentCredential = await PasskeyModel.findOne({
       credentialID: credentialid,
     });
@@ -601,7 +603,7 @@ export default class PasskeyService {
         ErrorCode.ACCESS_FORBIDDEN
       );
     }
-    // ! Generate Options
+    // ! 03. Generate options
     const publicKeyCredentialRequestOptions =
       await generateAuthenticationOptions({
         timeout: 60000,
@@ -614,7 +616,8 @@ export default class PasskeyService {
         userVerification: "required",
         rpID: "localhost",
       });
-    const passkeySession = await PasskeyChallengeSessionModel.create({
+    // ! 04. Create session
+    await PasskeyChallengeSessionModel.create({
       challenge: publicKeyCredentialRequestOptions.challenge,
       passkeyChallengeSessionPurpose: "delete-key",
     });

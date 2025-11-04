@@ -218,19 +218,23 @@ export class PasskeyController {
       );
     }
   );
-
+  // ok
   public generatePasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Get userid & credentialid
       const { userid, credentialid } = removePasskeyRequestSchema.parse(
         req.params
       );
 
+      // ! 02. Call service
       const publicKeyCredentialRequestOptions =
         await this.passkeyService.generatePasskeyRemoveSession(
           userid,
           credentialid,
           req
         );
+
+      // ! 03. Return data
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,
@@ -246,14 +250,18 @@ export class PasskeyController {
       );
     }
   );
-
+  //
   public verifyPasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Extract data from request
       const { userid, credentialid } = removePasskeyRequestSchema.parse(
         req.params
       );
+      // ! 02. Validate data
       const authenticationResponse =
         passkeyAuthenticationResponseJSONSchema.parse(req.body);
+
+      // ! 03. Call service
       await this.passkeyService.verifyPasskeyRemoveSessionAndRemovePasskey(
         userid,
         credentialid,
@@ -261,6 +269,7 @@ export class PasskeyController {
         req
       );
 
+      // ! 04. Return response
       return res.status(HTTPSTATUS.NO_CONTENT).json(
         new ApiResponse({
           success: true,
