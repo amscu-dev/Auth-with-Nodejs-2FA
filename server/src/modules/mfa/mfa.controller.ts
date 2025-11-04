@@ -13,7 +13,7 @@ export class MfaController {
   constructor(mfaService: MfaService) {
     this.mfaService = mfaService;
   }
-  //  ok
+
   public generateMFASetup = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Call Service
@@ -37,7 +37,7 @@ export class MfaController {
       );
     }
   );
-  // ok
+
   public verifyMFASetup = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -63,7 +63,7 @@ export class MfaController {
       );
     }
   );
-  // ok
+
   public revokeMFA = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -89,7 +89,7 @@ export class MfaController {
       );
     }
   );
-  // ok
+
   public disableMFAWithBackupCode = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -118,7 +118,7 @@ export class MfaController {
       );
     }
   );
-  // ok
+
   public loginWithBackupCode = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate data
@@ -151,7 +151,7 @@ export class MfaController {
         );
     }
   );
-  //ok
+
   public verifyMFAForLogin = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -184,11 +184,16 @@ export class MfaController {
         );
     }
   );
+
   public verifyMFAForChangingPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const { code } = verifyMfaSchema.parse({ ...req.body });
 
+      // ! 02. Call service
       await this.mfaService.verifyMFAForChangingPassword(code, req);
+
+      // ! 03. Return data
       return res
         .status(HTTPSTATUS.OK)
         .clearCookie("mfaToken", {
@@ -200,7 +205,7 @@ export class MfaController {
             statusCode: HTTPSTATUS.OK,
             message:
               "Password reset request successfully processed. Please check your email for further instructions.",
-            data: { mfaRequired: false, nextStep: LOGIN.OK },
+            data: { nextStep: LOGIN.OK },
             metadata: { requestId: req.requestId },
           })
         );

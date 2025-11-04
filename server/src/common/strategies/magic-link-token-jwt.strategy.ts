@@ -36,7 +36,7 @@ const options: StrategyOptionsWithRequest = {
 };
 
 const verifyCallback: VerifyCallbackWithRequest = async (
-  req,
+  _req,
   payload: MagicLinkTokenPayload,
   done
 ) => {

@@ -8,6 +8,7 @@ import {
   ConflictException,
   InternalServerException,
   NotFoundException,
+  ServiceUnavaibleException,
 } from "@/common/utils/catch-errors";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import TempTOTPSecretModel from "@/database/models/tempTOTPSecret.model";
@@ -29,7 +30,6 @@ import { sendEmail } from "@/mailers/mailer";
 import { passwordResetTemplate } from "@/mailers/templates/template";
 
 export class MfaService {
-  // ok
   public async generateMFASetup(req: Express.Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const user = req.user as Express.User;
@@ -72,7 +72,7 @@ export class MfaService {
       qrImageUrl,
     };
   }
-  // ok
+
   public async verifyMFASetup(req: Request, code: string) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
 
@@ -138,7 +138,7 @@ export class MfaService {
       },
     };
   }
-  // ok
+
   public async revokeMFA(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
@@ -190,7 +190,7 @@ export class MfaService {
     // ! 05. Return data
     return { updatedUser };
   }
-  // ok
+
   public async disableMFAWithBackupCode(code: BackupCodeType, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
@@ -241,7 +241,7 @@ export class MfaService {
     // ! 05. Return data
     return { updatedUser };
   }
-  // ok
+
   public async loginWithBackupCode(code: BackupCodeType, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
@@ -308,7 +308,7 @@ export class MfaService {
     // ! 05. Return data
     return { updatedUser, accessToken, refreshToken, mfaRequired: false };
   }
-  // ok
+
   public async verifyMFAForLogin(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
@@ -386,7 +386,9 @@ export class MfaService {
     // ! 06. Return data
     return { currentUser, accessToken, refreshToken, mfaRequired: false };
   }
+
   public async verifyMFAForChangingPassword(code: string, req: Request) {
+    // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
 
     if (!currentUser) {
@@ -401,13 +403,13 @@ export class MfaService {
         ErrorCode.MFA_NOT_ENABLED
       );
     }
-    // ! Decrypt Key
+    // ! 02. Decrypt Key
     const decryptedKey = decrypt(
       currentUser.userPreferences.twoFactorSecret,
       currentUser.id,
       config.CRYPTO_SYMMETRIC_KEY
     );
-    // ! Verify 2FA
+    // ! 03. Verify 2FA
     const isValid = speakeasy.totp.verify({
       secret: decryptedKey,
       encoding: "base32",
@@ -422,8 +424,8 @@ export class MfaService {
       );
     }
 
-    // ! We already check for limit rate in /forgotPassword API so we can proceed to send email.
-    // ! Create a new Code
+    // ! 04. We already check for limit rate in /forgotPassword API so we can proceed to send email.
+    // ! 05. Create a new Code
     const expiresAt = anHourFromNow();
     const validCode = await VerificationCodeModel.create({
       userId: currentUser._id,
@@ -431,7 +433,7 @@ export class MfaService {
       expiresAt,
     });
 
-    // ! Create reset Link
+    // ! 06. Create reset Link
     const resetLink = `${config.APP_ORIGIN}/reset-password?code=${
       validCode.code
     }&exp=${expiresAt.getTime()}`;
@@ -444,7 +446,10 @@ export class MfaService {
     );
 
     if (!isResetPasswordEmailSend) {
-      throw new InternalServerException();
+      throw new ServiceUnavaibleException(
+        "Failed to send the email. Please try again later.",
+        ErrorCode.EMAIL_SERVICE_ERROR
+      );
     }
 
     return {

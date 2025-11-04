@@ -29,6 +29,7 @@ paths:
               $ref: "#/components/schemas/UserRegistrationRequestBody"
       responses:
         "201":
+          summary: Registration successful
           description: Registration successful. A verification email has been sent, the user must confirm their email to complete the signup process.
           headers:
             X-Request-Id:
@@ -38,6 +39,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/RegistrationSuccessReponse"
         "400":
+          summary: Bad request — validation failed or user exists
           description: Bad Request — validation failed or user already exists.
           headers:
             X-Request-Id:
@@ -70,6 +72,7 @@ paths:
               $ref: "#/components/schemas/UserLoginRequestBody"
       responses:
         "200":
+          summary: Authentication successful or pending
           description: >
             Authentication response. Depending on the user's status, one of the following outcomes is returned:
             1. Email not verified — user must confirm their email to proceed.
@@ -95,6 +98,7 @@ paths:
                   - $ref: "#/components/schemas/MFAPendingResponse"
                   - $ref: "#/components/schemas/LoginSuccessResponse"
         "404":
+          summary: User not found
           description: >
             User not found — no account exists with the provided email address. 
             The client should prompt the user to register before attempting login.
@@ -103,6 +107,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "400":
+          summary: Invalid credentials
           description: >
             Invalid credentials — the provided email or password is incorrect. 
             The client should notify the user and allow them to retry authentication.
@@ -132,6 +137,7 @@ paths:
                   example: n3910310n013912310sa
       responses:
         "200":
+          summary: Email verification successful
           description: >
             Email verification successful. The user's email address has been confirmed, enabling them to complete the login process and access protected resources.
           headers:
@@ -141,18 +147,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmailConfirmedSuccessResponse"
-        "404":
-          description: >
-            Verification failed, the provided verification code was not found.
-            This may happen if the code is invalid or never issued. The user should request a new verification code.
-          headers:
-            X-Request-Id:
-              $ref: "#/components/headers/XRequestId"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/VerificationCodeNotFoundError"
         "400":
+          summary: Invalid or consumed verification code
           description: >
             Verification failed due to an invalid verification code state:
             1. The code has expired — the user must request a new verification code.
@@ -171,6 +167,18 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/VerificationCodeExpiredError"
                   - $ref: "#/components/schemas/VerificationCodeConsumedError"
+        "404":
+          summary: Verification code not found
+          description: >
+            Verification failed, the provided verification code was not found.
+            This may happen if the code is invalid or never issued. The user should request a new verification code.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationCodeNotFoundError"
   /auth/password/forgot:
     post:
       tags: [Email & Password Auth]
@@ -187,6 +195,7 @@ paths:
               $ref: "#/components/schemas/ForgotPasswordRequestBody"
       responses:
         "200":
+          summary: Password reset request processed successfully
           description: >
             Password reset request processed successfully. Depending on the user's account configuration:
             1. MFA pending — if the user has two-factor authentication enabled, an MFA verification step is required before sending the reset email.
@@ -208,6 +217,7 @@ paths:
                   - $ref: "#/components/schemas/MFAPendingResponse"
                   - $ref: "#/components/schemas/ForgotPasswordSuccessResponse"
         "404":
+          summary: User not found
           description: >
             User not found — no account exists for the provided email address. Ensure the email is correct and try again.
           headers:
@@ -218,6 +228,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "503":
+          summary: Email service unavailable
           description: >
             Email service unavailable — the system could not send the password reset email due to a temporary email service failure. Retry the request later.
           headers:
@@ -240,13 +251,14 @@ paths:
         for security auditing purposes.
       requestBody:
         required: true
-        description: x
+        description: Password reset request payload including verification code and new password
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/ResetPasswordRequestBody"
       responses:
         "200":
+          summary: Password reset successfully completed
           description: >
             Password reset completed successfully.  
             All existing authentication cookies are invalidated to ensure previous sessions are closed.  
@@ -261,6 +273,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ResetPasswordSuccessResponse"
         "404":
+          summary: Verification code or user not found
           description: >
             The provided verification code or associated user could not be found.  
             This may occur if the code is invalid or the user no longer exists in the system.
@@ -279,6 +292,7 @@ paths:
                   - $ref: "#/components/schemas/VerificationCodeNotFoundError"
                   - $ref: "#/components/schemas/UserNotFoundError"
         "400":
+          summary: Invalid or expired password reset request
           description: >
             The password reset request could not be completed due to invalid or expired data.  
             Possible causes include:
@@ -315,6 +329,7 @@ paths:
         This endpoint ensures seamless session continuity while maintaining security best practices.
       responses:
         "200":
+          summary: Access token successfully refreshed
           description: >
             Access token successfully refreshed.  
             The user's session remains active, and new authentication cookies are set.  
@@ -329,45 +344,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/RefreshTokenEndpointSuccessResponse"
         "401":
-          description: >
-            The refresh token is invalid, expired, missing, or does not match the current session.  
-            All authentication cookies are invalidated to prevent unauthorized access,  
-            and the user must log in again to obtain a new session.  
-            This response covers multiple possible authentication-related errors such as invalid token type, missing cookie, or user/session mismatch.
-          headers:
-            X-Request-Id:
-              $ref: "#/components/headers/XRequestId"
-            Set-Cookie:
-              $ref: "#/components/headers/InvalidateAuthenticationCookies"
-          content:
-            application/json:
-              examples:
-                RefreshTokenInvalidSessionError:
-                  $ref: "#/components/examples/RefreshTokenInvalidSessionErrorExample"
-                AuthenticationTokenNotFoundError:
-                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
-                RefreshTokenTypeError:
-                  $ref: "#/components/examples/RefreshTokenTypeErrorExample"
-                AuthenticationTokenUserNotFoundError:
-                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
-                RefreshTokenExpiredSessionError:
-                  $ref: "#/components/examples/RefreshTokenExpiredSessionErrorExample"
-                AuthenticationTokenSessionMismatchError:
-                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
-                AuthenticationTokenInvalidErorr:
-                  $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
-                AuthenticationTokenExpiredError:
-                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/RefreshTokenInvalidSessionError"
-                  - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
-                  - $ref: "#/components/schemas/RefreshTokenTypeError"
-                  - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
-                  - $ref: "#/components/schemas/RefreshTokenExpiredSessionError"
-                  - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
-                  - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
-                  - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+          $ref: '#/components/responses/InvalidRefreshJwtToken'
   /auth/logout:
     post:
       security:
@@ -382,6 +359,7 @@ paths:
         After a successful logout, the client should remove any cached session state and redirect the user to a login page.
       responses:
         "200":
+          summary: Logout successful
           description: >
             User successfully logged out.  
             All authentication cookies have been invalidated and removed to ensure session termination.  
@@ -396,39 +374,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/LogoutSuccessResponse"
         "401":
-          description: >
-            The logout request could not be completed because the provided access token is missing, expired, invalid, or does not correspond to an active user session.  
-            In this case, the server cannot confirm the logout and does not modify authentication cookies.  
-            The client should treat the user as unauthenticated and clear any local session data.
-          headers:
-            X-Request-Id:
-              $ref: "#/components/headers/XRequestId"
-          content:
-            application/json:
-              examples:
-                AuthenticationTokenNotFoundError:
-                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
-                AccessTokenTypeError:
-                  $ref: "#/components/examples/AccessTokenTypeErrorExample"
-                AuthenticationTokenUserNotFoundError:
-                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
-                AuthenticationTokenInvalidSessionError:
-                  $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
-                AuthenticationTokenSessionMismatchError:
-                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
-                AuthenticationTokenInvalidError:
-                  $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
-                AuthenticationTokenExpiredError:
-                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
-                  - $ref: "#/components/schemas/AccessTokenTypeError"
-                  - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
-                  - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
-                  - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
-                  - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
-                  - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+          $ref: '#/components/responses/InvalidAccessJwtToken'
   /magic-link/signup:
     post:
       tags: [✨ Magic-Link Authentication]
@@ -446,6 +392,7 @@ paths:
               $ref: "#/components/schemas/MagicLinkSignUpRequestBody"
       responses:
         "200":
+          summary: Magic link signup request successful
           description: |
             Signup request successful — a magic link has been sent to the provided email address.
             The user must click the link to verify their email and activate their account.
@@ -457,6 +404,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/MagicLinkSignUpSuccessResponse"
         "401":
+          summary: Unauthorized — email already exists
           description: |
             Unauthorized — the email address is already registered or cannot be used for signup.
             The client should not attempt to resend the signup link for the same email.
@@ -468,6 +416,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmailAlreadyExistsError"
         "503":
+          summary: Email service unavailable
           description: |
             Service Unavailable — the email delivery service is temporarily unavailable or failed 
             to send the verification link. The client may retry after a short delay.
@@ -495,6 +444,7 @@ paths:
               $ref: "#/components/schemas/MagicLinkSignInRequestBody"
       responses:
         "200":
+          summary: Magic link sent successfully
           description: |
             Magic link successfully sent to the user's email address. 
             The user must click the link to complete authentication.
@@ -506,6 +456,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
         "404":
+          summary: User not found
           description: |
             Not Found. The specified email address does not match any registered user account. 
             The client should prompt the user to register or verify their email.
@@ -517,6 +468,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "503":
+          summary: Email service unavailable
           description: |
             Service Unavailable. The email delivery service is temporarily unavailable 
             or failed to send the magic link. The client may retry after a short delay.
@@ -545,6 +497,7 @@ paths:
               $ref: "#/components/schemas/MagicLinkSignInRequestBody"
       responses:
         "200":
+          summary: Magic link resent successfully
           description: |
             Magic link successfully sent to the user's email address.
           headers:
@@ -555,6 +508,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
         "404":
+          summary: User not found
           description: |
             Not Found. The specified email address does not match any registered user account. 
             The client should prompt the user to register or verify their email.
@@ -566,9 +520,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "503":
+          summary: Email service unavailable
           description: |
-            Service Unavailable. The email delivery service is temporarily unavailable 
-            or failed to send the magic link. The client may retry after a short delay.
+            Service Unavailable. The email delivery service is temporarily unavailable or failed to send the magic link. The client may retry after a short delay.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -595,6 +549,7 @@ paths:
             type: string
       responses:
         "200":
+          summary: Magic link verified successfully
           description: |
             Magic link verified successfully. The user's email has been confirmed (for signup verification) 
             or the user has been signed in (for passwordless authentication). 
@@ -609,45 +564,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/LoginSuccessResponse"
         "401":
-          description: |
-            Unauthorized. The provided magic link token is invalid, expired, or cannot be used to authenticate the user. 
-            Possible reasons include:
-            - The token was not found in the system (AuthenticationTokenNotFound).
-            - The token type is incorrect (MagicLinkTokenTypeError).
-            - The token does not belong to a valid user (AuthenticationTokenUserNotFoundError).
-            - The user's session is invalid or expired (AuthenticationTokenInvalidSessionError).
-            - The token does not match the current session (AuthenticationTokenSessionMismatchError).
-            - The token is malformed or otherwise invalid (AuthenticationTokenInvalidTokenError).
-            - The token has already expired (AuthenticationTokenExpiredError).
-          headers:
-            X-Request-Id:
-              $ref: "#/components/headers/XRequestId"
-          content:
-            application/json:
-              examples:
-                AuthenticationTokenNotFound:
-                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
-                MagicLinkTokenType:
-                  $ref: "#/components/examples/MagicLinkTokenTypeErrorExample"
-                AuthenticationTokenUserNotFound:
-                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
-                AuthenticationTokenInvalidSession:
-                  $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
-                AuthenticationTokenSessionMismatch:
-                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
-                AuthenticationTokenInvalidToken:
-                  $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
-                AuthenticationTokenExpired:
-                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
-                  - $ref: "#/components/schemas/MagicLinkTokenTypeError"
-                  - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
-                  - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
-                  - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
-                  - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
-                  - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+          $ref: '#/components/responses/InvalidMagicLinkJwtToken'
   /mfa/setup:
     get:
       security:
@@ -1082,7 +999,6 @@ paths:
         required: true
         description: >
           Contains the one-time MFA code generated by the user's authenticator app.  
-          This code is used to verify ownership of the 2FA secret before disabling it.
         content:
           application/json:
             schema:
@@ -1134,12 +1050,12 @@ paths:
               examples:
                 MfaNotEnabled:
                   $ref: "#/components/examples/MfaNotEnabledErrorExample"
-                MfaInvalidverificationCode:
-                  $ref: "#/components/examples/MfaInvalidverificationCodeErrorExample"
+                MfaInvalidVerificationCode:
+                  $ref: "#/components/examples/MfaInvalidVerificationCodeErrorExample"
               schema:
                 oneOf:
                   - $ref: '#/components/schemas/MfaNotEnabledError'
-                  - $ref: '#/components/schemas/MfaInvalidverificationCodeError'
+                  - $ref: '#/components/schemas/MfaInvalidVerificationCodeError'
         "401":
           $ref: "#/components/responses/InvalidMFAJwtToken"
         "403":
@@ -1169,6 +1085,114 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserNotFoundError'
+  /mfa/verify/forgot-password:
+    post:
+      post: 
+      security:
+        - MfaTokenCokie: []
+      tags: [🕹️Multi Factor Authentication Endpoints]
+      summary: Verify MFA code for password reset
+      description: >
+        Verifies the one-time MFA code submitted by the user in order to proceed with a password reset.  
+        Upon successful verification, a password reset email is sent to the user's registered email address with a link to complete the password change process.  
+        This endpoint also clears the temporary MFA token cookie to prevent reuse.
+      requestBody:
+        required: true
+        description: >
+          Contains the one-time MFA code generated by the user's authenticator app.  
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required:
+                      - code
+                    properties:
+                      code:
+                        type: string
+                        description: >
+                          The 6-digit one-time password (OTP) generated by the user's authenticator app.  
+                          Must be valid at the time of request.
+                        example: "481293"
+      responses:
+        '200':
+          summary: MFA code verified successfully
+          description: >
+            The provided MFA code was valid. A password reset email has been sent to the user's registered email address, and the user should follow the link to complete the password change.  
+            The temporary MFA token cookie has been cleared to prevent reuse.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFARequestChangePasswordSuccessReponse'
+        '400':
+          summary: Invalid MFA code or MFA not enabled
+          description: >
+            The provided MFA code is invalid, expired, or the user does not have MFA enabled.  
+            This can occur if:
+              - The MFA setup has not been completed for this account.
+              - The user entered an incorrect or outdated code.
+            The client should prompt the user to try again or restart the MFA setup process.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                MfaNotEnabled:
+                  $ref: "#/components/examples/MfaNotEnabledErrorExample"
+                MfaInvalidVerificationCode:
+                  $ref: "#/components/examples/MfaInvalidVerificationCodeErrorExample"
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MfaNotEnabledError'
+                  - $ref: '#/components/schemas/MfaInvalidVerificationCodeError'
+        "401":
+          $ref: "#/components/responses/InvalidMFAJwtToken"
+        "403":
+          summary: Action not allowed
+          description: >
+            Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
+            This typically occurs when the user does not have a password-based login method configured, 
+            which is required to enable Multi-Factor Authentication (2FA). 
+            The client should prompt the user to add a password-based login (e.g., via "Forgot Password") 
+            before attempting MFA setup.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MFAForbiddenError"
+        '404':
+          summary: User not found
+          description: >
+            Not Found — The authenticated user does not exist in the system or could not be retrieved.  
+            This may indicate that the user was deleted or the JWT token references an invalid account.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotFoundError'
+        "503":
+          summary: Email service unavailable
+          description: >
+            The password reset email could not be sent because the email delivery service is temporarily unavailable or failed.  
+            The client may retry the request after a short delay.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailServiceError"
+
 components:
   # REPONSES
   responses:
@@ -1176,16 +1200,48 @@ components:
     InvalidAccessJwtToken:
       summary: Invalid or expired access token
       description: >
-        Unauthorized. The request could not be authenticated because the provided token 
-        is invalid, expired, or cannot be used for the current session. 
-        Possible reasons include:
-        - The token does not exist or was already used (AuthenticationTokenNotFound).
-        - The token type is incorrect or not supported (AccessTokenTypeError).
-        - The token does not belong to a valid user (AuthenticationTokenUserNotFoundError).
-        - The user's session is invalid, expired, or has been terminated (AuthenticationTokenInvalidSessionError).
-        - The token does not match the current session or context (AuthenticationTokenSessionMismatchError).
-        - The token is malformed or otherwise invalid (AuthenticationTokenInvalidTokenError).
-        - The token has expired and is no longer usable (AuthenticationTokenExpiredError).
+        Indicates that the access token provided in the request cookie (`accessToken`) 
+        is missing, invalid, expired, or not associated with a valid user session.  
+        This response occurs when authentication fails during the verification of the primary
+        access JWT used to authorize protected API endpoints.
+
+        ### Validation logic
+        The authentication middleware extracts and validates the `accessToken` cookie
+        using the Access JWT Passport strategy.  
+        Several checks are performed to ensure the token’s authenticity and that the session and user
+        referenced by it are still valid:
+
+        1. **Missing Token** — The `accessToken` cookie is not present in the request.  
+          → `AuthenticationTokenNotFoundError`
+
+        2. **Invalid Token Type** — The decoded JWT does not represent an `"access"` token.  
+          → `AccessTokenTypeError`
+
+        3. **User Not Found** — The user associated with the token no longer exists in the system.  
+          → `AuthenticationTokenUserNotFoundError`
+
+        4. **Invalid or Expired Session** — The session (`sessionId`) referenced in the token payload
+          does not exist, has expired, or was invalidated (e.g., after logout).  
+          → `AuthenticationTokenInvalidSessionError`
+
+        5. **Session Mismatch** — The `userId` embedded in the token does not match the `userId`
+          associated with the active session.  
+          → `AuthenticationTokenSessionMismatchError`
+
+        6. **Invalid Token Format** — The JWT is malformed or fails RS256 signature verification using
+          the configured public key.  
+          → `AuthenticationTokenInvalidTokenErorr`
+
+        7. **Expired Token** — The JWT’s expiration claim (`exp`) has passed.  
+          → `AuthenticationTokenExpiredError`
+
+        ### Example scenario
+        After a successful login, the server issues an `accessToken` and `refreshToken`.
+        The `accessToken` is a short-lived RS256-signed JWT that authenticates the user
+        for protected endpoints.  
+        If the token is expired, invalid, or the user/session no longer exists,
+        the request will fail with this response.  
+        Clients should then attempt to refresh the token (using `/auth/refresh`) or reauthenticate.
       headers:
         X-Request-Id:
           $ref: "#/components/headers/XRequestId"
@@ -1216,8 +1272,52 @@ components:
             AuthenticationTokenExpired:
               $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
     InvalidMFAJwtToken:
-      summary: Invalid or expired mfa token
-      description: x
+      summary: Invalid or expired MFA token
+      description: >
+        Indicates that the MFA (Multi-Factor Authentication) token provided in the request cookie (`mfaToken`) 
+        is missing, invalid, expired, or does not match the expected format or purpose.  
+        This error occurs during the validation of the MFA JWT used to finalize a login or password reset flow.  
+        The system enforces strict checks to ensure the integrity and purpose of the MFA token before allowing 
+        access to sensitive endpoints such as `/mfa/verify-login` or `/mfa/verify-forgot-password`.
+
+        ### Validation logic
+        The authentication middleware extracts and verifies the `mfaToken` cookie using a dedicated JWT strategy.
+        During this process, several error conditions can occur:
+        
+        1. **Missing Token** — The `mfaToken` cookie is not present in the request.  
+          → `AuthenticationTokenNotFoundError`
+        
+        2. **Invalid Token Type** — The decoded JWT does not represent a token of type `"mfa"`.  
+          → `MFATokenTypeError`
+        
+        3. **Invalid Endpoint** — The token is being used on an endpoint that does not match its allowed purpose  
+          (e.g., a token intended for `"forgot_password"` is sent to `/mfa/verify-login`).  
+          → `MFATokenInvalidEndpointError`
+        
+        4. **Purpose Mismatch** — The token’s internal `purpose` field does not match the expected endpoint purpose.  
+          → `MFATokenInvalidTokenPurposeError`
+        
+        5. **User Not Found** — The user referenced in the token payload no longer exists in the system.  
+          → `AuthenticationTokenUserNotFoundError`
+        
+        6. **Invalid or Expired Session** — The MFA session record associated with the token (`mfaSessionId` or `jti`)  
+          could not be found, was already consumed, or is expired.  
+          → `AuthenticationTokenInvalidSessionError`
+        
+        7. **Session Mismatch** — The user ID in the token does not match the user ID of the MFA session.  
+        → `AuthenticationTokenSessionMismatchError`
+    
+        8. **Invalid Token Format** — The JWT is malformed or fails signature verification.  
+          → `AuthenticationTokenInvalidTokenErorr`
+        
+        9. **Expired Token** — The JWT has passed its expiration time (`exp` claim).  
+          → `AuthenticationTokenExpiredError`
+
+        ### Example scenario
+        When a user successfully passes the first authentication step (e.g., email + password),
+        the backend issues a short-lived `mfaToken`.  
+        This token is stored in a cookie and must be presented when verifying the MFA code.
+        If the token is invalid, expired, or used on the wrong endpoint, this response is returned.
       headers:
         X-Request-Id:
           $ref: "#/components/headers/XRequestId"
@@ -1251,6 +1351,164 @@ components:
               $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
             AuthenticationTokenInvalidToken:
               $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+            AuthenticationTokenExpired:
+              $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
+    InvalidMagicLinkJwtToken:
+      summary: Invalid or expired Magic Link token
+      description: >
+        Indicates that the Magic Link token provided in the request (`req.params.token`) 
+        is missing, invalid, expired, or not associated with a valid Magic Link session.  
+        This response occurs when authentication fails during the verification of the JWT 
+        used for passwordless login or password reset flows.
+
+        ### Validation logic
+        The authentication middleware extracts and validates the Magic Link token using 
+        the Passport JWT strategy (`magic-link-token`). Several checks are performed 
+        to ensure the token’s authenticity and that the session and user referenced by it 
+        are still valid:
+
+        1. **Missing Token** — The `token` parameter is not present in the request URL.  
+          → `AuthenticationTokenNotFoundError`
+
+        2. **Invalid Token Type** — The decoded JWT does not represent a `"magic-link"` token.  
+          → `MagicLinkTokenTypeError`
+
+        3. **User Not Found** — The user associated with the token no longer exists in the system.  
+          → `AuthenticationTokenUserNotFoundError`
+
+        4. **Invalid or Expired Session** — The Magic Link session (`magicLinkSessionId`) 
+          referenced in the token payload does not exist, has expired, or was already consumed.  
+          → `AuthenticationTokenInvalidSessionError`
+
+        5. **Session Mismatch** — The `userId` embedded in the token does not match the `userId` 
+          associated with the active Magic Link session.  
+          → `AuthenticationTokenSessionMismatchError`
+
+        6. **Invalid Token Format** — The JWT is malformed or fails HS256 signature verification using
+          the configured secret key.  
+          → `AuthenticationTokenInvalidTokenErorr`
+
+        7. **Expired Token** — The JWT’s expiration claim (`exp`) has passed.  
+          → `AuthenticationTokenExpiredError`
+
+        ### Example scenario
+        After initiating a passwordless login or a password reset flow, the server issues a 
+        short-lived Magic Link token (`magic-link`) and associates it with a Magic Link session.  
+        The token is sent to the user's email as part of a link.  
+        When the client clicks the link, the token is verified to authenticate the user.  
+
+        If the token is missing, expired, invalid, or the session/user no longer exists, 
+        the request will fail with this response.  
+        Clients should then prompt the user to request a new Magic Link.
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
+      content:
+        application/json:
+          examples:
+            AuthenticationTokenNotFound:
+              $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+            MagicLinkTokenType:
+              $ref: "#/components/examples/MagicLinkTokenTypeErrorExample"
+            AuthenticationTokenUserNotFound:
+              $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+            AuthenticationTokenInvalidSession:
+              $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
+            AuthenticationTokenSessionMismatch:
+              $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+            AuthenticationTokenInvalidToken:
+              $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+            AuthenticationTokenExpired:
+              $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
+                - $ref: "#/components/schemas/MagicLinkTokenTypeError"
+                - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
+                - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
+                - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
+                - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
+                - $ref: "#/components/schemas/AuthenticationTokenExpiredError"      
+    InvalidRefreshJwtToken:
+      summary: Invalid or expired refresh token
+      description: >
+        Indicates that the refresh token provided in the request cookie (`refreshToken`) 
+        is missing, invalid, expired, or not associated with a valid user session.  
+        This response occurs when authentication fails during the verification of the refresh JWT,
+        which is used to obtain new access tokens without requiring the user to log in again.
+
+        ### Validation logic
+        The authentication middleware extracts and validates the `refreshToken` cookie using
+        the Passport JWT strategy (`refresh-token`). Several checks are performed to ensure 
+        the token’s authenticity and that the session and user referenced by it are still valid:
+
+        1. **Missing Token** — The `refreshToken` cookie is not present in the request.  
+          → `AuthenticationTokenNotFoundError`
+
+        2. **Invalid Token Type** — The decoded JWT does not represent a `"refresh"` token.  
+          → `RefreshTokenTypeError`
+
+        3. **User Not Found** — The user associated with the token no longer exists in the system.  
+          → `AuthenticationTokenUserNotFoundError`
+
+        4. **Invalid Session** — The session (`sessionId`) referenced in the token payload
+          does not exist or has been invalidated (e.g., user logged out).  
+          → `RefreshTokenInvalidSessionError`
+
+        5. **Expired Session** — The session associated with the refresh token has expired.  
+          → `RefreshTokenExpiredSessionError`
+
+        6. **Session Mismatch** — The `userId` embedded in the token does not match the `userId`
+          associated with the active session.  
+          → `AuthenticationTokenSessionMismatchError`
+
+        7. **Invalid Token Format** — The JWT is malformed or fails RS256 signature verification using
+          the configured public key.  
+          → `AuthenticationTokenInvalidErorr`
+
+        8. **Expired Token** — The JWT’s expiration claim (`exp`) has passed.  
+          → `AuthenticationTokenExpiredError`
+
+        ### Example scenario
+        After a successful login, the server issues both an `accessToken` and a `refreshToken`.  
+        The `refreshToken` is a long-lived RS256-signed JWT that allows the client to obtain new 
+        access tokens without requiring credentials again.  
+
+        If the refresh token is missing, expired, invalid, or the session/user no longer exists,
+        the request to `/auth/refresh` will fail with this response.  
+        Clients should prompt the user to log in again to obtain fresh tokens.
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
+        Set-Cookie:
+          $ref: "#/components/headers/InvalidateAuthenticationCookies"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/RefreshTokenInvalidSessionError"
+              - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
+              - $ref: "#/components/schemas/RefreshTokenTypeError"
+              - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
+              - $ref: "#/components/schemas/RefreshTokenExpiredSessionError"
+              - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
+              - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
+              - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+          examples:
+            RefreshTokenInvalidSessionError:
+              $ref: "#/components/examples/RefreshTokenInvalidSessionErrorExample"
+            AuthenticationTokenNotFoundError:
+              $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+            RefreshTokenTypeError:
+              $ref: "#/components/examples/RefreshTokenTypeErrorExample"
+            AuthenticationTokenUserNotFoundError:
+              $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+            RefreshTokenExpiredSessionError:
+              $ref: "#/components/examples/RefreshTokenExpiredSessionErrorExample"
+            AuthenticationTokenSessionMismatchError:
+              $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+            AuthenticationTokenInvalidErorr:
+              $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
             AuthenticationTokenExpired:
               $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
   # SCHEMAS
@@ -1898,6 +2156,37 @@ components:
           properties:
             user:
               $ref: "#/components/schemas/UserData"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
+    MFARequestChangePasswordSuccessReponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+          example: true
+        statusCode:
+          type: integer
+          enum: [200]
+          example: 200
+        message:
+          type: string
+          example: Password reset request successfully processed. Please check your email for further instructions.
+        data:
+          type: object
+          required:
+            - nextStep
+          properties:
+            nextStep:
+              type: string
+              enum: ['OK']
+              example: OK
         metadata:
           $ref: "#/components/schemas/ResponseMetadata"
     # ERRORS
@@ -2621,7 +2910,7 @@ components:
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
-    MfaInvalidverificationCodeError:
+    MfaInvalidVerificationCodeError:
       type: object
       required:
         - success
