@@ -2143,6 +2143,11 @@ paths:
               $ref: "#/components/headers/XRequestId"
           content:
             application/json: 
+              examples:
+                OIDCSessionExpired:
+                  $ref: '#/components/examples/OIDCSessionExpiredErrorExample'
+                OIDCSessionConsumed:
+                  $ref: '#/components/examples/OIDCSessionConsumedErrorExample'
               schema: 
                 oneOf:
                   - $ref: '#/components/schemas/OIDCSessionExpiredError'
@@ -2207,7 +2212,104 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerError'
-  
+  /oidc/github/callback:
+      get:
+        tags: [🔒 OIDC Authentication]
+      summary: Authenticate user via Github OIDC callback
+      description: >
+        Handles the callback from Github after user authorization.
+        Expects `code` and `state` query parameters returned by Github. 
+        
+        **Flow:**
+        1. Verify that the `state` exists, has not expired, and has not been consumed.
+        2. Exchange the authorization code for tokens (access token, refresh token, ID token).
+        3. Validate the ID token against Github's JWKS endpoint and verify claims.
+        4. Create or find a corresponding user in the local database.
+        5. Set authentication cookies (`accessToken` and `refreshToken`).
+        6. Return a JSON response indicating successful login.
+
+      parameters:
+        - name: code
+          in: query
+          required: true
+          description: Authorization code returned by Github
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          description: Unique state generated during the authorization request
+          schema:
+            type: string
+
+      responses:
+        '200':
+          summary: Authentication successful via Github OIDC
+          description: >
+            The user has been successfully authenticated using Github as an OpenID Connect (OIDC) provider. 
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/AuthenticationCookies"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+        '404':
+          summary: OIDC session not found
+          description: >
+            No valid OIDC session was found for the provided `state` and provider. 
+            This usually happens if the user attempts to reuse a session that does not exist or has already been removed.
+            The user should restart the sign-in process.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/OIDCSessionNotFoundError'
+        '400':
+          summary: Invalid or expired OIDC session
+          description: >
+            The OIDC session is invalid. This can occur if:
+            - The session has already been consumed (used previously for authentication).
+            - The session has expired (passed the allowed time window).
+            
+            In both cases, the user must restart the authentication flow.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json: 
+              examples:
+                OIDCSessionExpired:
+                  $ref: '#/components/examples/OIDCSessionExpiredErrorExample'
+                OIDCSessionConsumed:
+                  $ref: '#/components/examples/OIDCSessionConsumedErrorExample'
+              schema: 
+                oneOf:
+                  - $ref: '#/components/schemas/OIDCSessionExpiredError'
+                  - $ref: '#/components/schemas/OIDCSessionConsumedError'
+        '401':
+          summary: Unauthorized - failed authentication with Google
+          description: >
+            Authentication with the OIDC provider (Google) failed. 
+            This can happen if:
+            - The authorization code is invalid.
+            - The ID token fails validation.
+            - Token exchange with Google was unsuccessful.
+            
+            The user cannot be authenticated until a valid authorization code is provided.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json: 
+              schema: 
+                oneOf:
+                  - $ref: '#/components/schemas/OIDCFailedAuthenticationError'
+
 components:
   # REPONSES
   responses:
