@@ -1384,7 +1384,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PassketCompletAuthenticationRequestBody'
+              $ref: '#/components/schemas/PasskeyCompletAuthenticationRequestBody'
       responses:
         '200':
           summary: Passkey authentication completed successfully
@@ -1689,7 +1689,7 @@ paths:
           type: string
           example: "a1b2c3d4e5f6789ghijk01234lm56789"
       responses:
-        '200':
+        '201':
           summary: Passkey removal session initiated successfully
           description: >
             The passkey removal session has been successfully created, and challenge options for removing the passkey are returned.  
@@ -1727,7 +1727,164 @@ paths:
                 $ref: '#/components/schemas/PasskeyNotFoundError'
         "401":
           $ref: '#/components/responses/InvalidAccessJwtToken'
+  /passkey/remove-key/verify/{userid}/{credentialid}:
+    delete:
+      security:
+        - AccessTokenCokie: []
+      tags: [🎭 Passkey Management]
+      summary: Remove a passkey credential from a user's account
+      description: >
+        This endpoint allows the authenticated user to remove a specific passkey credential from their account.
+        The request must include the user ID and the credential ID of the passkey to be removed.
+        The user can only remove their own passkeys. This action requires authentication and the provided session must be valid. If successful, the passkey will be permanently deleted from the system, and the session used for verification will be marked as consumed.
+      parameters:
+      - name: userid
+        in: path
+        required: true
+        description: >
+          The unique identifier of the user who is removing a passkey.  
+          This must match the authenticated user's ID. Only the user who owns the passkey can initiate the removal.
+        schema:
+          type: string
+          example: "64f2d2ab8e2e1b03b6f3cd44"
 
+      - name: credentialid
+        in: path
+        required: true
+        description: >
+          The unique identifier of the passkey credential that is being removed.  
+          This should match the credential ID of the passkey to be deleted.
+        schema:
+          type: string
+          example: "a1b2c3d4e5f6789ghijk01234lm56789"
+      requestBody:
+        description: >
+          The authentication response containing the necessary data for validating the passkey removal.
+          This includes the signature and other relevant data to ensure the security of the operation.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyCompletAuthenticationRequestBody'
+      responses:
+        '204':
+          summary: Successfully removed the passkey
+          description: >
+            The passkey credential was successfully removed from the user's account.
+            The associated session for verification has been marked as consumed.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyRemovedSuccessResponse'
+        '400':
+          summary: Invalid passkey session
+          description: >
+            The passkey session is invalid, possibly due to incorrect purpose or expired session. 
+            Please initiate the process again.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyChallengeSessionInvalidPurposeError'
+        '403':
+          summary: Forbidden – user mismatch
+          description: >
+            The authenticated user does not match the user ID provided in the path parameter.  
+            Users are only allowed to remove passkeys from their own accounts.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          summary: Passkey not found
+          description: >
+            The specified passkey credential could not be found or is no longer associated with the user.
+            Please check the provided credential ID.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyNotFoundError'
+        '401':
+          summary: Unauthorized – Invalid or Expired Authentication Token or Passkey Challenge
+          description: >
+            The provided authentication token is either invalid, expired, or missing, or there is an issue with the passkey authentication challenge. This may occur for several reasons:
+            - **Invalid Token**: The authentication token provided does not match any active session, or the user ID does not match the token's user.
+            - **Expired Token**: The authentication token has surpassed its expiration time, meaning the session is no longer valid.
+            - **Token Not Found**: The authentication token was not included in the request, or it cannot be found in the system.
+            - **Session Mismatch**: The token provided does not correspond to the current session, or it was issued for a different session or client.
+            - **Passkey Challenge Session Not Found**: The passkey challenge session associated with the user was not found, or it may have been invalidated.
+            - **Passkey Challenge Session Expired**: The passkey challenge session has expired, meaning it is no longer valid for completing the authentication.
+            - **Passkey Verification Error**: The passkey verification failed, either due to incorrect credentials, an expired challenge, or a mismatch in the expected data (such as the challenge itself, or the origin/ID).
+            
+            If you encounter this error, the following checks may help:
+            - Ensure that the authentication token is valid and has not expired or been revoked.
+            - Make sure the token corresponds to the correct user session.
+            - Verify that you are submitting the correct passkey challenge response and that the session has not expired.
+            - If the challenge session is expired or consumed, initiate a new passkey registration process.
+
+            Additionally:
+            - Ensure that the passkey verification step is completed properly, including correct matching of the public key, credentials, and session data.
+            - If you are using a client or browser, confirm that the token and passkey response are correctly passed in the request.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                PasskeyChallengeSessionNotFound:
+                  $ref: '#/components/examples/PasskeyChallengeSessionNotFoundErrorExample'
+                PasskeyChallengeSessionExpired:
+                  $ref: '#/components/examples/PasskeyChallengeSessionExpiredErrorExample'
+                PasskeyChallengeVerification:
+                  $ref: '#/components/examples/PasskeyChallengeVerificationErrorExample'
+                AuthenticationTokenNotFound:
+                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+                AccessTokenType:
+                  $ref: "#/components/examples/AccessTokenTypeErrorExample"
+                AuthenticationTokenUserNotFound:
+                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+                AuthenticationTokenInvalidSession:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
+                AuthenticationTokenSessionMismatch:
+                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+                AuthenticationTokenInvalidToken:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+                AuthenticationTokenExpired:
+                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PasskeyChallengeSessionNotFoundError'
+                  - $ref: '#/components/schemas/PasskeyChallengeSessionExpiredError'
+                  - $ref: '#/components/schemas/PasskeyChallengeVerificationError'
+                  - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
+                  - $ref: "#/components/schemas/AccessTokenTypeError"
+                  - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
+                  - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
+                  - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
+                  - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
+                  - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+        '409':
+          summary: Passkey challenge session already consumed
+          description: >
+            The passkey challenge session has already been used to remove a passkey. Please restart the process.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
 components:
   # REPONSES
   responses:
@@ -2370,7 +2527,7 @@ components:
             hmacCreateSecret:
               type: boolean
               description: Indicates if the "hmacCreateSecret" extension was used.
-    PassketCompletAuthenticationRequestBody:
+    PasskeyCompletAuthenticationRequestBody:
       type: object
       required:
         - id
@@ -3266,6 +3423,33 @@ components:
           properties:
             passkey:
               $ref: '#/components/schemas/PasskeyData'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+    PasskeyRemovedSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      description: >
+        Response returned when a new passkey has been successfully registered and added to the user account.
+      properties:
+        success:
+          type: boolean
+          example: true
+          description: Indicates whether the operation was successful.
+        statusCode:
+          type: integer
+          example: 201
+          description: HTTP status code associated with this response.
+        message:
+          type: string
+          example: "Passkey  has been successfully removed."
+          description: Human-readable message describing the result of the operation.
+        data:
+          type: object
         metadata:
           $ref: '#/components/schemas/ResponseMetadata'
     # ERRORS

@@ -5,6 +5,7 @@ const appConfig = () => ({
   APP_NAME: getEnv("APP_NAME", "MERN_AUTH_DEMO"),
   APP_ORIGIN: getEnv("APP_ORIGIN", "localhost"),
   FRONTEND_HOST: getEnv("FRONTEND_HOST"),
+  FRONTEND_ORIGIN: getEnv("FRONTEND_ORIGIN"),
   DB_URI: getEnv("DB_URI"),
   PORT: getEnv("PORT", "5000"),
   BASE_PATH: getEnv("BASE_PATH", "/api/v1"),

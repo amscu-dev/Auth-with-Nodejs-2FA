@@ -250,7 +250,7 @@ export class PasskeyController {
       );
     }
   );
-  //
+  // ok
   public verifyPasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Extract data from request

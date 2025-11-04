@@ -158,8 +158,8 @@ export default class PasskeyService {
     const verification = await verifyRegistrationResponse({
       response: registrationResponse,
       expectedChallenge: challenge,
-      expectedOrigin: "https://www.passkeys-debugger.io",
-      expectedRPID: "passkeys-debugger.io",
+      expectedOrigin: config.FRONTEND_ORIGIN,
+      expectedRPID: config.FRONTEND_HOST,
       requireUserVerification: true,
     });
 
@@ -333,8 +333,8 @@ export default class PasskeyService {
     const verification = await verifyAuthenticationResponse({
       response: authenticationResponse,
       expectedChallenge: challenge,
-      expectedOrigin: "https://www.passkeys-debugger.io",
-      expectedRPID: "passkeys-debugger.io",
+      expectedOrigin: config.FRONTEND_ORIGIN,
+      expectedRPID: config.FRONTEND_HOST,
       credential: {
         id: passkey.credentialID,
         publicKey: Uint8Array.from(
@@ -459,7 +459,7 @@ export default class PasskeyService {
     userid: string,
     req: Request
   ) {
-    // ! 01. Get user from req
+    // ! 01. Extract user from request (added & verified user existance in passport middleware)
     const curentUser = req.user as Express.User;
 
     if (curentUser.id !== userid) {
@@ -513,8 +513,8 @@ export default class PasskeyService {
     const verification = await verifyRegistrationResponse({
       response: registrationResponse,
       expectedChallenge: challenge,
-      expectedOrigin: "https://www.passkeys-debugger.io",
-      expectedRPID: "passkeys-debugger.io",
+      expectedOrigin: config.FRONTEND_ORIGIN,
+      expectedRPID: config.FRONTEND_HOST,
       requireUserVerification: true,
     });
 
@@ -614,7 +614,7 @@ export default class PasskeyService {
           },
         ],
         userVerification: "required",
-        rpID: "localhost",
+        rpID: config.FRONTEND_HOST,
       });
     // ! 04. Create session
     await PasskeyChallengeSessionModel.create({
@@ -623,13 +623,14 @@ export default class PasskeyService {
     });
     return publicKeyCredentialRequestOptions;
   }
-
+  // ok
   public async verifyPasskeyRemoveSessionAndRemovePasskey(
     userid: string,
     credentialid: string,
     authenticationResponse: AuthenticationResponseJSON,
     req: Request
   ) {
+    // ! 01. Extract user from request (added & verified user existance in passport middleware)
     const currentUser = req.user as Express.User;
     if (currentUser.id !== userid) {
       throw new ForbiddenException(
@@ -637,6 +638,7 @@ export default class PasskeyService {
         ErrorCode.ACCESS_FORBIDDEN
       );
     }
+    // ! 02. Find passkey
     const passkey = await PasskeyModel.findOne({
       credentialID: credentialid,
     });
@@ -648,17 +650,20 @@ export default class PasskeyService {
       );
     }
     if (userid !== passkey.userID.toString()) {
-      throw new UnauthorizedException(
-        "You are not authorized to remove a passkey for this user."
+      throw new ForbiddenException(
+        "Access denied, you do not have permission to perform this action.",
+        ErrorCode.ACCESS_FORBIDDEN
       );
     }
 
+    // ! 03. Extract challenge
     const { challenge } = clientDataJSONSchema.parse(
       JSON.parse(
         decodeBase64(authenticationResponse.response.clientDataJSON, "utf8")
       )
     );
-    // ! Find Session Challenge
+
+    // ! 04. Find session challenge
     const challengeSession = await PasskeyChallengeSessionModel.findOne({
       challenge: challenge,
       passkeyChallengeSessionPurpose: "delete-key",
@@ -692,12 +697,12 @@ export default class PasskeyService {
       );
     }
 
-    // ! Verify signature
+    // ! 05. Verify signature
     const verification = await verifyAuthenticationResponse({
       response: authenticationResponse,
       expectedChallenge: challenge,
-      expectedOrigin: "https://www.passkeys-debugger.io",
-      expectedRPID: "passkeys-debugger.io",
+      expectedOrigin: config.FRONTEND_ORIGIN,
+      expectedRPID: config.FRONTEND_HOST,
       credential: {
         id: passkey.credentialID,
         publicKey: Uint8Array.from(
