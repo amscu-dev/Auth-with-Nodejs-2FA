@@ -2047,6 +2047,15 @@ paths:
         - Returns an HTTP 307 redirect to the Google authorization URL.
         - Sets caching headers to prevent storing sensitive information.
         - No JSON body is returned.
+
+        **Authorization URL parameters sent to Google:**
+        - `access_type`: Requests offline access to receive refresh tokens (`offline`)
+        - `response_type`: Expected response type (`code`)
+        - `client_id`: Google OAuth Client ID
+        - `scope`: Requested access scopes (`openid profile email`)
+        - `redirect_uri`: Callback URL registered in Google OAuth App
+        - `state`: Randomly generated string to prevent CSRF
+        - `code_challenge` and `code_challenge_method`: PKCE parameters (`S256`)
         
       responses:
         '307':
@@ -2156,6 +2165,49 @@ paths:
               schema: 
                 oneOf:
                   - $ref: '#/components/schemas/OIDCFailedAuthenticationError'
+  /oidc/github/auth-url:
+    get:
+      tags: [🔒 OIDC Authentication]
+      summary: Generate GitHub OIDC authorization URL
+      description: >
+        Initiates the OAuth 2.0 Authorization Code Flow with PKCE for GitHub sign-in.
+        This endpoint generates a unique `state` and `code_challenge`, stores them in the database as an OIDC session, and redirects the client to the GitHub OAuth 2.0 authorization endpoint.
+        
+        The `state` is used to prevent CSRF attacks, and `code_challenge` is part of PKCE to enhance security.
+
+        **Behavior:**
+        - Returns an HTTP 307 redirect to the GitHub authorization URL.
+        - Sets caching headers to prevent storing sensitive information.
+        - No JSON body is returned.
+        
+        **Authorization URL parameters sent to GitHub:**
+        - `client_id`: GitHub OAuth App client ID
+        - `redirect_uri`: Callback URI registered in GitHub OAuth App
+        - `scope`: Requested access scopes (`user read:user user:email`)
+        - `state`: Randomly generated string to prevent CSRF
+        - `code_challenge` and `code_challenge_method`: PKCE parameters
+        - `allow_signup`: Whether GitHub should prompt to create a new account (`true`)
+        - `access_type`: Offline access for refresh tokens (`offline`)
+        - `prompt`: Account selection prompt (`select_account`)
+
+      responses:
+        '307':
+          description: Redirects the client to GitHub OAuth 2.0 authorization URL
+          headers:
+            Location:
+              description: The GitHub authorization URL
+              schema:
+                type: string
+                example: >
+                  https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=https%3A%2F%2Fyourapp.com%2Fauth%2Fgithub%2Fcallback&scope=user%20read%3Auser%20user%3Aemail&state=RANDOM_STATE&code_challenge=RANDOM_CODE_CHALLENGE&code_challenge_method=S256&allow_signup=true&access_type=offline&prompt=select_account
+          content: {}
+        '500':
+          description: Server error occurred while generating GitHub authorization URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  
 components:
   # REPONSES
   responses:
