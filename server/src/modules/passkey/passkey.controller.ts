@@ -21,9 +21,14 @@ export class PasskeyController {
   }
   public generatePasskeySignUpSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const body = passkeyRegisterSchema.parse(req.body);
+
+      // ! 02. Call service
       const publicKeyOpts =
         await this.passkeyService.generatePasskeySignUpSession(body);
+
+      // ! 03. Return options to client
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,

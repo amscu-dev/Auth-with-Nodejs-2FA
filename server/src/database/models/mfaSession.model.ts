@@ -1,5 +1,4 @@
 import { fiveMinutesFromNow } from "@/common/utils/date-time";
-import { MFAPurpose } from "@/common/utils/jwt";
 import { Document, Schema } from "mongoose";
 import mongoose from "../mongoose/mongoose";
 import executionTimePlugin from "../plugins/dbLogger";
@@ -8,7 +7,7 @@ export interface MFASessionDocument extends Document {
   tokenJTI: string;
   userId: mongoose.Types.ObjectId;
   consumed: boolean;
-  mfaSessionPurpose: MFAPurpose;
+  mfaSessionPurpose: "login" | "forgot_password";
   requestIP: string;
   createdAt: Date;
   expiresAt: Date;
@@ -48,7 +47,7 @@ const MFASessionSchema = new Schema<MFASessionDocument>({
 });
 
 MFASessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-MFASessionSchema.plugin(executionTimePlugin)
+MFASessionSchema.plugin(executionTimePlugin);
 
 export const MFASessionModel = mongoose.model<MFASessionDocument>(
   "MFASession",

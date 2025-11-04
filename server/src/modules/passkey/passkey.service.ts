@@ -63,8 +63,10 @@ export default class PasskeyService {
   public async generatePasskeySignUpSession(
     registerData: PasskeyRegisterData
   ): Promise<PublicKeyCredentialCreationOptionsJSON> {
+    // ! 01. Extract data
     const { email, name } = registerData;
-    // ! If user already exista throw error;
+
+    // ! 02. If user already exista throw error;
     const user = await UserModel.findOne({ email });
     if (user) {
       throw new BadRequestException(
@@ -75,11 +77,11 @@ export default class PasskeyService {
 
     const userId = new mongoose.Types.ObjectId();
 
-    // ! Create PublicKeyCredentialCreationOptions
+    // ! 03. Create PublicKeyCredentialCreationOptions
     const publicKeyCredentialCreationOptions =
       await generateRegistrationOptions({
         rpName: config.APP_NAME,
-        rpID: "localhost",
+        rpID: config.FRONTEND_HOST,
         userName: email,
         userDisplayName: name,
         userID: objectIdToUint8Array(userId),
@@ -97,8 +99,8 @@ export default class PasskeyService {
         supportedAlgorithmIDs: [-7, -8, -257],
       });
 
-    // ! Create PasskeySession
-    const passkeySession = await PasskeyChallengeSessionModel.create({
+    // ! 04. Create PasskeySession
+    await PasskeyChallengeSessionModel.create({
       challenge: publicKeyCredentialCreationOptions.challenge,
       passkeyChallengeSessionPurpose: "signup",
       userId,
@@ -394,6 +396,7 @@ export default class PasskeyService {
       mfaToken: "",
     };
   }
+
   public async generatePasskeyAddSession(userid: string, req: Request) {
     const curentUser = req.user as Express.User;
 
@@ -445,6 +448,7 @@ export default class PasskeyService {
     });
     return publicKeyCredentialCreationOptions;
   }
+
   public async verifyPasskeyAddSessionAndAddPasskey(
     registrationResponse: RegistrationResponseJSON,
     userid: string,
@@ -557,6 +561,7 @@ export default class PasskeyService {
       mongoSession.endSession();
     }
   }
+
   public async generatePasskeyRemoveSession(
     userid: string,
     credentialid: string,
@@ -604,6 +609,7 @@ export default class PasskeyService {
     });
     return publicKeyCredentialRequestOptions;
   }
+
   public async verifyPasskeyRemoveSessionAndRemovePasskey(
     userid: string,
     credentialid: string,
@@ -714,6 +720,7 @@ export default class PasskeyService {
       await mongoSession.endSession();
     }
   }
+
   public async getAllPaskeyByUserId(userid: string, req: Request) {
     // ! 1. Get verify currentUser
     const currentUser = req.user as Express.User;

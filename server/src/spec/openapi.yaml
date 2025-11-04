@@ -1192,7 +1192,62 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmailServiceError"
-
+  /passkey/register/init:
+    post:
+      tags: [🎭 Passkey Authentication]
+      summary: Initialize a passkey registration session
+      description: >
+        Starts the registration process for a new user using passwordless passkey authentication. 
+        The client provides the user's name and email address. If the email is not already registered, the server generates a **PublicKeyCredentialCreationOptions** object required by the WebAuthn API.
+        This object includes a challenge, relying party information, user details, allowed algorithms, and authenticator selection criteria. It must be sent back to the client to complete the registration on the authenticator (device or platform). The server also stores a temporary PasskeyChallengeSession to track the challenge for later verification.
+      requestBody: 
+        required: true
+        description: >
+          Contains the user's registration information:
+          - **name**: Full name or display name of the user.
+          - **email**: User's email address for account identification.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                  description: The display name of the user registering a passkey.
+                  example: "John Doe"
+                email:
+                  type: string
+                  description: The email address of the user registering a passkey.
+                  example: "john.doe@gmail.com"
+      responses:
+        '200':
+          summary: Passkey registration session created
+          description: >
+            The server successfully generated a **PublicKeyCredentialCreationOptions** object for passkey registration.
+            This object contains all necessary information for the client to complete registration on the user's device.
+            The response also includes a unique request ID for tracing.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse'
+        '404':  
+          summary: Email already registered
+          description: >
+            Registration failed because the provided email address is already associated with an existing account.
+            The client should prompt the user to log in or use a different email for registration.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailAlreadyExistsError'
 components:
   # REPONSES
   responses:
@@ -2187,6 +2242,122 @@ components:
               type: string
               enum: ['OK']
               example: OK
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
+    # PASSKEY RESPONSES
+    PasskeyGenerateSignUpSessionSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code of the response.
+          example: 201
+        success:
+          type: boolean
+          description: Indicates that the request was successful.
+          example: true
+        message:
+          type: string
+          description: Human-readable message describing the response.
+          example: "Passkey registration session has been successfully created."
+        data:
+          type: object
+          properties:
+            publicKeyOpts:
+              type: object
+              description: WebAuthn options to complete the passkey registration on the client side.
+              properties:
+                challenge:
+                  type: string
+                  description: Base64-encoded challenge for WebAuthn registration.
+                  example: "sK5JeWWiLW0duSUWmv9W9Ck5LGZWTXCSZW8c34Fioa0"
+                rp:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: >
+                        The display name of the application (Relying Party). 
+                        This is shown to the user during registration/authentication.
+                      example: "app.example.com"
+                    id:
+                      type: string
+                      description: >
+                        The unique identifier of the Relying Party, usually the domain name. 
+                        Used by the browser to validate the registration request and prevent phishing.
+                      example: "app.example.com"
+                user:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Base64 or URL-safe encoded user ID
+                      example: "aQoHTR7y_Sec3D9B"
+                    name:
+                      type: string
+                      example: "john.doe@gmail.com"
+                    displayName:
+                      type: string
+                      example: "USER_01"
+                pubKeyCredParams:
+                  type: array
+                  description: >
+                    The cryptographic algorithms supported by the relying party for the public-key credential. 
+                    Each object specifies the algorithm (`alg`) and type (`type`). 
+                    These algorithms correspond to the COSE algorithm identifiers:
+                      -7: ES256 (ECDSA w/ SHA-256)
+                      -8: EdDSA (Ed25519)
+                      -257: RS256 (RSASSA-PKCS1-v1_5 w/ SHA-256)
+                  items:
+                    type: object
+                    properties:
+                      alg:
+                        type: integer
+                        example: -7
+                      type:
+                        type: string
+                        example: "public-key"
+                    required:
+                      - alg
+                      - type
+                timeout:
+                  type: integer
+                  example: 60000
+                  description: Timeout for the operation in milliseconds
+                attestation:
+                  type: string
+                  enum: ['direct']
+                  example: "direct"
+                excludeCredentials:
+                  type: array
+                  items:
+                    type: object
+                authenticatorSelection:
+                  type: object
+                  properties:
+                    residentKey:
+                      type: string
+                      enum: ['required']
+                      example: "required"
+                    requireResidentKey:
+                      type: boolean
+                      enum: [true]
+                      example: true
+                    userVerification:
+                      type: string
+                      enum: ['required']
+                      example: "required"
+                extensions:
+                  type: object
+                  properties:
+                    credProps:
+                      type: boolean
+                      enum: [true]
+                      example: true
+                hints:
+                  type: array
+                  items:
+                    type: string
         metadata:
           $ref: "#/components/schemas/ResponseMetadata"
     # ERRORS
