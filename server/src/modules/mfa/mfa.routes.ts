@@ -13,7 +13,7 @@ mfaRoutes.get(
   mfaController.generateMFASetup
 );
 mfaRoutes.post(
-  "/verify",
+  "/verify/setup",
   AuthenticateAccessJWTToken,
   requireRegularAuthMethod,
   mfaController.verifyMFASetup
@@ -26,26 +26,26 @@ mfaRoutes.patch(
 );
 
 mfaRoutes.post(
-  "/backup-codes/consume",
+  "/backup-code/consume",
   AuthenticateAccessJWTToken,
   requireRegularAuthMethod,
   mfaController.disableMFAWithBackupCode
 );
 mfaRoutes.post(
-  "/login-backup-code",
+  "/backup-code/login",
   AuthenticateMfaJWTToken,
   requireRegularAuthMethod,
   mfaController.loginWithBackupCode
 );
 
 mfaRoutes.post(
-  "/verify-login",
+  "/verify/login",
   AuthenticateMfaJWTToken,
   requireRegularAuthMethod,
   mfaController.verifyMFAForLogin
 );
 mfaRoutes.post(
-  "/verify-forgot-password",
+  "/verify/forgot-password",
   AuthenticateMfaJWTToken,
   requireRegularAuthMethod,
   mfaController.verifyMFAForChangingPassword

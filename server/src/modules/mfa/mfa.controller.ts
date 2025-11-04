@@ -63,11 +63,16 @@ export class MfaController {
       );
     }
   );
+  // ok
   public revokeMFA = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const { code } = verifyMfaSchema.parse({ ...req.body });
+
+      // ! 02. Call service
       const { updatedUser } = await this.mfaService.revokeMFA(code, req);
 
+      // ! 03. Return data
       return res.status(HTTPSTATUS.OK).json(
         new ApiResponse({
           statusCode: HTTPSTATUS.OK,
@@ -82,6 +87,67 @@ export class MfaController {
           },
         })
       );
+    }
+  );
+  // ok
+  public disableMFAWithBackupCode = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
+      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
+
+      // ! 02. Call service
+      const { updatedUser } = await this.mfaService.disableMFAWithBackupCode(
+        backupCode,
+        req
+      );
+
+      // ! 03. Return data
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          statusCode: HTTPSTATUS.OK,
+          success: true,
+          message:
+            "Two-factor authentication has been successfully disabled for your account.",
+          data: {
+            user: updatedUser,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
+    }
+  );
+  public loginWithBackupCode = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate data
+      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
+
+      // ! 02. Call service
+      const { updatedUser, accessToken, refreshToken, mfaRequired } =
+        await this.mfaService.loginWithBackupCode(backupCode, req);
+
+      // ! 03. Return authenticated user
+      return setAuthenticationCookies({
+        res,
+        accessToken,
+        refreshToken,
+      })
+        .clearCookie("mfaToken", {
+          path: MFA_PATH,
+        })
+        .status(HTTPSTATUS.OK)
+        .json(
+          new ApiResponse({
+            success: true,
+            statusCode: HTTPSTATUS.OK,
+            message: "Authentication successful: User successfully login.",
+            data: { mfaRequired, user: updatedUser, nextStep: LOGIN.OK },
+            metadata: {
+              requestId: req.requestId,
+            },
+          })
+        );
     }
   );
   public verifyMFAForLogin = asyncHandler(
@@ -132,60 +198,6 @@ export class MfaController {
             metadata: { requestId: req.requestId },
           })
         );
-    }
-  );
-
-  public loginWithBackupCode = asyncHandler(
-    async (req: Request, res: Response): Promise<any> => {
-      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
-      const { updatedUser, accessToken, refreshToken, mfaRequired } =
-        await this.mfaService.loginWithBackupCode(backupCode, req);
-
-      return setAuthenticationCookies({
-        res,
-        accessToken,
-        refreshToken,
-      })
-        .clearCookie("mfaToken", {
-          path: MFA_PATH,
-        })
-        .status(HTTPSTATUS.OK)
-        .json(
-          new ApiResponse({
-            success: true,
-            statusCode: HTTPSTATUS.OK,
-            message: "Authentication successful: User successfully login.",
-            data: { mfaRequired, user: updatedUser, nextStep: LOGIN.OK },
-            metadata: {
-              requestId: req.requestId,
-            },
-          })
-        );
-    }
-  );
-  public disableMFAWithBackupCode = asyncHandler(
-    async (req: Request, res: Response): Promise<any> => {
-      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
-
-      const { updatedUser } = await this.mfaService.disableMFAWithBackupCode(
-        backupCode,
-        req
-      );
-
-      return res.status(HTTPSTATUS.OK).json(
-        new ApiResponse({
-          statusCode: HTTPSTATUS.OK,
-          success: true,
-          message:
-            "Two-factor authentication has been successfully disabled for your account.",
-          data: {
-            user: updatedUser,
-          },
-          metadata: {
-            requestId: req.requestId,
-          },
-        })
-      );
     }
   );
 }

@@ -138,7 +138,9 @@ export class MfaService {
       },
     };
   }
+  // ok
   public async revokeMFA(code: string, req: Request) {
+    // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
 
     if (!currentUser) {
@@ -157,16 +159,15 @@ export class MfaService {
       );
     }
 
-    // ! First we decrypt the 2fa key
-
+    // ! 02. First we decrypt the 2fa key
     const decryptedKey = decrypt(
       currentUser.userPreferences.twoFactorSecret,
       currentUser.id,
       config.CRYPTO_SYMMETRIC_KEY
     );
-    // ! Verify 2FA Before revoke
+    // ! 03. Verify 2FA Before revoke
     const isValid = speakeasy.totp.verify({
-      // ! we verify with decrypted key
+      // ! 03.1 We verify with decrypted key
       secret: decryptedKey,
       encoding: "base32",
       token: code,
@@ -180,11 +181,64 @@ export class MfaService {
       );
     }
 
+    // ! 04. Update user
     currentUser.userPreferences.enable2FA = false;
     currentUser.userPreferences.twoFactorSecret = undefined;
     currentUser.userPreferences.backupCodes = undefined;
     const updatedUser = await currentUser.save();
 
+    // ! 05. Return data
+    return { updatedUser };
+  }
+  // ok
+  public async disableMFAWithBackupCode(code: BackupCodeType, req: Request) {
+    // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
+    const currentUser = req.user as Express.User;
+    // ! 02. Check if user have 2fa disabled
+    if (
+      !currentUser.userPreferences.twoFactorSecret ||
+      !currentUser.userPreferences.enable2FA
+    ) {
+      throw new ConflictException(
+        "Two-factor authentication is already disabled. No further action is required.",
+        ErrorCode.MFA_ALREADY_DISABLED
+      );
+    }
+    // ! 03. Verify validity of backupcode
+    const { isValidBackupCode, matchedCode } =
+      await currentUser.validateBackupCode(code);
+
+    if (!isValidBackupCode) {
+      throw new BadRequestException(
+        "The backup code you entered is invalid or has already been used. Please try a different one.",
+        ErrorCode.BACKUPCODE_INVALID_CODE
+      );
+    }
+    // ! 04. Remove all codes, disabled 2fa, remove 2fa secret;
+    const updatedUser = await UserModel.findOneAndUpdate(
+      {
+        _id: currentUser._id,
+        "userPreferences.backupCodes": { $elemMatch: { $eq: matchedCode } },
+      },
+      {
+        $set: {
+          "userPreferences.enable2FA": false,
+          "userPreferences.backupCodes": [],
+        },
+        $unset: {
+          "userPreferences.twoFactorSecret": "",
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new NotFoundException(
+        "User with the specified email was not found.",
+        ErrorCode.AUTH_USER_NOT_FOUND
+      );
+    }
+    // ! 05. Return data
     return { updatedUser };
   }
   public async verifyMFAForChangingPassword(code: string, req: Request) {
@@ -386,52 +440,5 @@ export class MfaService {
     );
 
     return { updatedUser, accessToken, refreshToken, mfaRequired: false };
-  }
-  public async disableMFAWithBackupCode(code: BackupCodeType, req: Request) {
-    const currentUser = req.user as Express.User;
-    // ! Check if user have 2fa disabled
-    if (
-      !currentUser.userPreferences.twoFactorSecret ||
-      !currentUser.userPreferences.enable2FA
-    ) {
-      throw new ConflictException(
-        "Two-factor authentication is already disabled. No further action is required.",
-        ErrorCode.MFA_ALREADY_DISABLED
-      );
-    }
-    // ! Verify validity of backupcode
-    const { isValidBackupCode, matchedCode } =
-      await currentUser.validateBackupCode(code);
-
-    if (!isValidBackupCode) {
-      throw new BadRequestException(
-        "The backup code you entered is invalid or has already been used. Please try a different one.",
-        ErrorCode.BACKUPCODE_INVALID_CODE
-      );
-    }
-    // ! Remove all codes + disabled 2fa + remove 2fa secret;
-    const updatedUser = await UserModel.findOneAndUpdate(
-      {
-        _id: currentUser._id,
-        "userPreferences.backupCodes": { $elemMatch: { $eq: matchedCode } },
-      },
-      {
-        $set: {
-          "userPreferences.enable2FA": false,
-          "userPreferences.backupCodes": [],
-        },
-        $unset: {
-          "userPreferences.twoFactorSecret": "",
-        },
-      },
-      { new: true } // <- aici
-    );
-    if (!updatedUser) {
-      throw new NotFoundException(
-        "User with the specified email was not found.",
-        ErrorCode.AUTH_USER_NOT_FOUND
-      );
-    }
-    return { updatedUser };
   }
 }
