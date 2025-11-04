@@ -453,12 +453,13 @@ export default class PasskeyService {
     });
     return publicKeyCredentialCreationOptions;
   }
-  //
+  // ok
   public async verifyPasskeyAddSessionAndAddPasskey(
     registrationResponse: RegistrationResponseJSON,
     userid: string,
     req: Request
   ) {
+    // ! 01. Get user from req
     const curentUser = req.user as Express.User;
 
     if (curentUser.id !== userid) {
@@ -474,7 +475,7 @@ export default class PasskeyService {
       )
     );
 
-    // ! Find Session Challenge
+    // ! 02. Find session challenge
     const challengeSession = await PasskeyChallengeSessionModel.findOne({
       challenge: challenge,
       passkeyChallengeSessionPurpose: "add-new-key",
@@ -508,7 +509,7 @@ export default class PasskeyService {
       );
     }
 
-    // ! Verify Response
+    // ! 03. Verify response
     const verification = await verifyRegistrationResponse({
       response: registrationResponse,
       expectedChallenge: challenge,
@@ -531,6 +532,7 @@ export default class PasskeyService {
     const mongoSession = await mongoose.startSession();
     try {
       const passkey = await mongoSession.withTransaction(async () => {
+        // ! 04. Create new passkey
         const passkey = new PasskeyModel({
           userID: challengeSession.userId,
           credentialID: verification.registrationInfo.credential.id,
@@ -547,12 +549,16 @@ export default class PasskeyService {
             name: getPasskeyProvider(verification.registrationInfo.aaguid),
           },
         });
+
+        // ! 05. Update user
         curentUser.userPreferences.passkeys.push(passkey.id);
         if (
           !curentUser.userPreferences.supportedAuthMethods.includes("passkey")
         ) {
           curentUser.userPreferences.supportedAuthMethods.push("passkey");
         }
+
+        // ! 06. Mark session as consumed
         challengeSession.consumed = true;
         await challengeSession.save({ session: mongoSession });
         await passkey.save({ session: mongoSession });
@@ -563,7 +569,7 @@ export default class PasskeyService {
     } catch (error) {
       throw error;
     } finally {
-      mongoSession.endSession();
+      await mongoSession.endSession();
     }
   }
 

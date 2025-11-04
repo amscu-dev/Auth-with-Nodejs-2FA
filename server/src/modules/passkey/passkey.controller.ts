@@ -183,7 +183,7 @@ export class PasskeyController {
       );
     }
   );
-  //
+  // ok
   public verifyPasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Get userid from request
@@ -218,6 +218,7 @@ export class PasskeyController {
       );
     }
   );
+
   public generatePasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { userid, credentialid } = removePasskeyRequestSchema.parse(
@@ -245,6 +246,7 @@ export class PasskeyController {
       );
     }
   );
+
   public verifyPasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { userid, credentialid } = removePasskeyRequestSchema.parse(
@@ -272,6 +274,7 @@ export class PasskeyController {
       );
     }
   );
+
   public getAllUserPasskeys = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 1. Validation

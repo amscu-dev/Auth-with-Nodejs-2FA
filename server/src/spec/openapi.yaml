@@ -1223,7 +1223,7 @@ paths:
                   description: The email address of the user registering a passkey.
                   example: "john.doe@gmail.com"
       responses:
-        '200':
+        '201':
           summary: Passkey registration session created
           description: >
             The server successfully generated a **PublicKeyCredentialCreationOptions** object for passkey registration.
@@ -1350,7 +1350,7 @@ paths:
         4. Frontend calls `navigator.credentials.get(options)` with those options
         5. The result is sent to `/passkey/authenticate/verify` for final verification
       responses:
-        '200':
+        '201':
           summary: Passkey sign-in session successfully created
           description: >
             The passkey sign-in session has been created successfully.  
@@ -1473,52 +1473,186 @@ paths:
               schema:
                 $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
   /passkey/add-passkey/init/{userid}:
-    security:
-      - AccessTokenCokie: []
-    tags: [🎭 Passkey Management]
-    summary: Initialize a new passkey registration session for an authenticated user
-    description: |
-      Initializes a **WebAuthn passkey registration session** that allows a logged-in user to securely add a new passkey to their account.  
+    post:
+      security:
+        - AccessTokenCokie: []
+      tags: [🎭 Passkey Management]
+      summary: Initialize a new passkey registration session for an authenticated user
+      description: |
+        Initializes a **WebAuthn passkey registration session** that allows a logged-in user to securely add a new passkey to their account.  
 
-      This endpoint performs the following steps:
-        1. Validates the authenticated user and checks that they match the `{userid}` path parameter.
-        2. Retrieves existing passkeys associated with the account to prevent re-registration of the same authenticator.
-        3. Generates a new **WebAuthn PublicKeyCredentialCreationOptions** object (challenge, relying party info, user identity, supported algorithms, etc.).
-        4. Persists the challenge session in the database with the `"add-new-key"` purpose for later verification.
+        This endpoint performs the following steps:
+          1. Validates the authenticated user and checks that they match the `{userid}` path parameter.
+          2. Retrieves existing passkeys associated with the account to prevent re-registration of the same authenticator.
+          3. Generates a new **WebAuthn PublicKeyCredentialCreationOptions** object (challenge, relying party info, user identity, supported algorithms, etc.).
+          4. Persists the challenge session in the database with the `"add-new-key"` purpose for later verification.
 
-      The client (frontend) should use the returned `publicKeyOpts` object as input for the `navigator.credentials.create()` call in the browser.
+        The client (frontend) should use the returned `publicKeyOpts` object as input for the `navigator.credentials.create()` call in the browser.
 
-      This route requires a valid **access token cookie** for authentication.
-    parameters:
-    - name: userid
-      in: path
-      required: true
-      description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
-      schema:
-        type: string
-        example: "64f2d2ab8e2e1b03b6f3cd44"
-    responses:
-      '200':
-        summary: Passkey registration session successfully created
+        This route requires a valid **access token cookie** for authentication.
+      parameters:
+      - name: userid
+        in: path
+        required: true
+        description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
+        schema:
+          type: string
+          example: "64f2d2ab8e2e1b03b6f3cd44"
+      responses:
+        '201':
+          summary: Passkey registration session successfully created
+          description: |
+            Returns the WebAuthn registration challenge and configuration parameters required for the browser to begin passkey registration.
+            The frontend should use this response to call `navigator.credentials.create()` and generate a new credential.
+        content:
+          content:  
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse'
+        '401':
+          $ref: '#/components/responses/InvalidAccessJwtToken'
+        '403':
+          summary: Forbidden — User does not have permission to initiate passkey registration
+          description: |
+            Returned when the `{userid}` path parameter does not match the authenticated user.
+            This ensures that users cannot create passkeys for other accounts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+  /passkey/add-passkey/verify/{userid}:
+    post:
+      security:
+        - AccessTokenCokie: []
+      tags: [🎭 Passkey Management]
+      summary: Verify and finalize new Passkey registration
+      description: |
+        Completes the registration of a new **Passkey** for the currently authenticated user.  
+        This endpoint verifies the passkey attestation response generated by the client after initiating the "Add new passkey" process.  
+        
+        Once verification succeeds:
+          - The passkey is securely registered and linked to the user’s account.
+          - The corresponding challenge session is marked as consumed.
+          - A success response containing the stored passkey details is returned.
+        
+        Access to this endpoint requires a valid authenticated session and a matching user ID in the path parameter.
+      parameters:
+      - name: userid
+        in: path
+        required: true
+        description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
+        schema:
+          type: string
+          example: "64f2d2ab8e2e1b03b6f3cd44"
+      requestBody:
+        required: true
         description: |
-          Returns the WebAuthn registration challenge and configuration parameters required for the browser to begin passkey registration.
-          The frontend should use this response to call `navigator.credentials.create()` and generate a new credential.
-      content:
-        content:  
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse'
-      '401':
-        $ref: '#/components/responses/InvalidAccessJwtToken'
-      '403':
-        summary: Forbidden — User does not have permission to initiate passkey registration
-        description: |
-          Returned when the `{userid}` path parameter does not match the authenticated user.
-          This ensures that users cannot create passkeys for other accounts.
+          Contains the **passkey attestation response** returned by the browser after a successful WebAuthn registration ceremony.  
+          This data is verified server-side to ensure that the credential is valid, was generated for the expected challenge, and belongs to the authenticated user.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ForbiddenError'
+              $ref: '#/components/schemas/PasskeyCompletRegistrationRequestBody'
+      responses:
+        '201':
+          summary: Passkey successfully verified and added
+          description: >
+            The provided passkey attestation response was successfully verified,  
+            and a new passkey credential has been securely added to the user's account.  
+            The challenge session has been marked as consumed to prevent replay attacks.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyAddedSuccessResponse'
+        '401':
+          summary: Passkey verification failed or session expired
+          description: |
+            The verification of the passkey failed due to one of the following reasons:
+              - The registration session was not found or has expired.
+              - The provided credential is invalid or does not match the expected challenge.
+              - The user's authentication token is missing or invalid.
+            
+            The client should prompt the user to restart the passkey registration process.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                PasskeyChallengeSessionExpired:
+                  $ref: '#/components/examples/PasskeyChallengeSessionExpiredErrorExample'
+                PasskeyChallengeSessionNotFound:
+                  $ref: '#/components/examples/PasskeyChallengeSessionNotFoundErrorExample'
+                PasskeyChallengeVerification:
+                  $ref: '#/components/examples/PasskeyChallengeVerificationErrorExample'
+                PasskeyNotFound:
+                  $ref: '#/components/examples/PasskeyNotFoundErrorExample'
+                AuthenticationTokenNotFound:
+                  $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
+                AccessTokenType:
+                  $ref: "#/components/examples/AccessTokenTypeErrorExample"
+                AuthenticationTokenUserNotFound:
+                  $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
+                AuthenticationTokenInvalidSession:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidSessionErrorExample"
+                AuthenticationTokenSessionMismatch:
+                  $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
+                AuthenticationTokenInvalidToken:
+                  $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+                AuthenticationTokenExpired:
+                  $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PasskeyChallengeSessionNotFoundError'
+                  - $ref: '#/components/schemas/PasskeyChallengeSessionExpiredError'
+                  - $ref: '#/components/schemas/PasskeyChallengeVerificationError'
+                  - $ref: '#/components/schemas/PasskeyNotFoundError'
+                  - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
+                  - $ref: "#/components/schemas/AccessTokenTypeError"
+                  - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
+                  - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
+                  - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
+                  - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
+                  - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
+        '400':
+          summary: Invalid passkey session purpose
+          description: >
+            The provided challenge session exists, but its purpose does not match `"add-new-key"`.  
+            This can occur if a session intended for another purpose (e.g., login or signup) is reused.
+          headers:
+              X-Request-Id:
+                $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyChallengeSessionInvalidPurposeError'
+        '409':
+          summary: Passkey session already consumed
+          description: >
+            The passkey registration session has already been used.  
+            This safeguard prevents replay attacks by ensuring a challenge session cannot be reused.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
+        "403":
+          summary: Forbidden – user mismatch
+          description: >
+            The authenticated user does not match the user ID provided in the path parameter.  
+            Users are only allowed to add passkeys to their own accounts.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
 components:
   # REPONSES
   responses:
@@ -1898,6 +2032,97 @@ components:
           example: 627c83c6ac314a94bd9348d78
         count:
           type: number
+    PasskeyData:
+      type: object
+      required:
+      - _id
+      - userID
+      - credentialID
+      - credentialPublicKey
+      - credentialType
+      - publicKeyAlgorithm
+      - counter
+      - transports
+      - authenticatorAttachment
+      - aaguid
+      - createdAt
+      description: >
+        Represents a registered WebAuthn passkey credential associated with a user account.  
+        Each passkey stores the credential’s unique identifiers, cryptographic parameters, and metadata about its usage and origin device.
+      properties:
+        _id:
+          type: string
+          format: objectId
+          description: Unique identifier of the passkey record in the database.
+          example: "64fae2d9c6b50d2a4bf1a39b"
+        userID:
+          type: string
+          format: objectId
+          description: Unique identifier of the user who owns this passkey.
+          example: "64fae2d9c6b50d2a4bf1a39c"
+        credentialID:
+          type: string
+          description: Base64URL-encoded credential ID returned by the authenticator.
+          example: "BQoX8jNYXn_8FZ6rYc3K0Q"
+        credentialPublicKey:
+          type: string
+          description: Base64-encoded public key associated with the credential used for authentication.
+          example: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQE..."
+        credentialType:
+          type: string
+          enum: ["public-key"]
+          description: Type of WebAuthn credential. Always `"public-key"`.
+          example: "public-key"
+        publicKeyAlgorithm:
+          type: integer
+          description: >
+            COSE algorithm identifier used for the credential’s public key.
+            Common values include `-7` (ES256), `-257` (RS256), or `-8` (EdDSA).
+          example: -7
+        counter:
+          type: integer
+          description: Monotonically increasing counter maintained by the authenticator to prevent replay attacks.
+          example: 12
+        transports:
+          type: array
+          description: >
+            List of supported authenticator transports that can be used to communicate with the credential.
+            Examples include `["usb", "ble", "nfc", "internal"]`.
+          items:
+            type: string
+            enum: ["usb", "nfc", "ble", "internal", "hybrid"]
+          example: ["internal"]
+        authenticatorAttachment:
+          type: string
+          description: >
+            Describes the attachment modality of the authenticator.  
+            `"platform"` means a device-integrated authenticator (e.g., Touch ID, Windows Hello).  
+            `"cross-platform"` means an external authenticator (e.g., YubiKey, phone-based passkey).
+          enum: ["platform", "cross-platform"]
+          example: "platform"
+        aaguid:
+          type: object
+          description: >
+            Information about the authenticator’s Attestation AAGUID and provider identity.
+          properties:
+            aaguid:
+              type: string
+              description: Authenticator Attestation GUID uniquely identifying the authenticator model.
+              example: "adce0002-35bc-c60a-648b-0b25f1f05503"
+            name:
+              type: string
+              description: Human-readable name of the authenticator provider or model.
+              example: "Apple Face ID / Touch ID"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the passkey was first registered.
+          example: "2025-11-01T18:30:22.123Z"
+        lastUsed:
+          type: string
+          format: date-time
+          description: Timestamp of the most recent use of this passkey for authentication.
+          example: "2025-11-03T10:45:17.552Z"
     # REQUEST BODY
     UserRegistrationRequestBody:
       type: object
@@ -2858,7 +3083,37 @@ components:
         metadata:
           metadata:
           $ref: "#/components/schemas/ResponseMetadata"
-      
+    PasskeyAddedSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      description: >
+        Response returned when a new passkey has been successfully registered and added to the user account.
+      properties:
+        success:
+          type: boolean
+          example: true
+          description: Indicates whether the operation was successful.
+        statusCode:
+          type: integer
+          example: 201
+          description: HTTP status code associated with this response.
+        message:
+          type: string
+          example: "Passkey was successfully added."
+          description: Human-readable message describing the result of the operation.
+        data:
+          type: object
+          description: Contains the newly added passkey details.
+          properties:
+            passkey:
+              $ref: '#/components/schemas/PasskeyData'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
     # ERRORS
     # GENERAL ERRORS
     InternalServerError:
