@@ -11,15 +11,21 @@ export default function addInfoAsyncLocalStorage(
     asyncLocalStorage.getStore()?.set("reqStartTime", Date.now());
     asyncLocalStorage.getStore()?.set("reqEndpoint", req.path);
     asyncLocalStorage.getStore()?.set("reqMethod", req.method);
-    asyncLocalStorage
-      .getStore()
-      ?.set("reqHeaders", JSON.parse(JSON.stringify(req.headers)));
-    asyncLocalStorage
-      .getStore()
-      ?.set("reqPayload", JSON.parse(JSON.stringify(req.body)));
-    asyncLocalStorage
-      .getStore()
-      ?.set("reqQueryStrings", JSON.parse(JSON.stringify(req.query)));
+    if (req.headers) {
+      asyncLocalStorage
+        .getStore()
+        ?.set("reqHeaders", JSON.parse(JSON.stringify(req.headers)));
+    }
+    if (req.body) {
+      asyncLocalStorage
+        .getStore()
+        ?.set("reqPayload", JSON.parse(JSON.stringify(req.body)));
+    }
+    if (req.query) {
+      asyncLocalStorage
+        .getStore()
+        ?.set("reqQueryStrings", JSON.parse(JSON.stringify(req.query)));
+    }
     next();
   });
 }

@@ -1963,6 +1963,7 @@ paths:
           $ref: '#/components/responses/InvalidAccessJwtToken'
   /session/:
       get:
+        tags: [🔒 Session Management]
         security:
           - AccessTokenCokie: []
         summary: Retrieve the current user session
@@ -1984,6 +1985,47 @@ paths:
                   $ref: '#/components/schemas/GetCurrentSessionSuccessResponse'
           '401':
             $ref: '#/components/responses/InvalidAccessJwtToken'
+  /{id}:
+    delete:
+      tags: [🔒 Session Management]
+      security:
+        - AccessTokenCokie: []
+      summary: Delete a user session by ID
+      description: >
+        Deletes a specific user session identified by its ID. 
+        The operation validates that the session exists and that the authenticated user has permission to delete it. 
+        If the deleted session is the current session of the user, authentication cookies will be cleared, effectively logging the user out.
+        
+        Responses include a success message and, if the current session was deleted, a `nextStep` indicating that the user should be redirected to the login page.
+        
+        Possible errors:
+          - 403 Forbidden: If the user tries to delete a session that does not belong to them.
+          - 404 Not Found: If the session ID does not exist.
+      responses:
+        '200':
+          summary: x
+          description: x
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: '#/components/headers/InvalidateAuthenticationCookies'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSessionByIdSuccessResponse'
+        '401':
+          $ref: '#/components/responses/InvalidAccessJwtToken'
+        '403':  
+          summary: x
+          description: x
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
 components:
   # REPONSES
   responses:
@@ -3626,9 +3668,11 @@ components:
       properties:
         success:
           type: boolean
+          description: Indicates whether the operation was successful
           example: true
         statusCode:
           type: integer
+          description: HTTP status code of the response
           example: 200
         message:
           type: string
@@ -3691,9 +3735,11 @@ components:
       properties:
         success:
           type: boolean
+          description: Indicates whether the operation was successful
           example: true
         statusCode:
           type: integer
+          description: HTTP status code of the response
           example: 200
         message:
           type: string
@@ -3703,6 +3749,39 @@ components:
           properties:
             user:
               $ref: '#/components/schemas/UserData'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+    DeleteSessionByIdSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          description: Indicates whether the operation was successful
+          example: true
+        statusCode:
+          type: integer
+          description: HTTP status code of the response
+          example: 200
+        message:
+          type: string
+          description: A human-readable message describing the result
+          example: "User session successfully removed."
+        data:
+          type: object
+          properties:
+            nextStep:
+              type: string
+              nullable: true
+              description: >
+                If the deleted session was the current session, indicates
+                the next action for the client (e.g., LOGIN.LOGOUT).
+              example: "LOGOUT"
         metadata:
           $ref: '#/components/schemas/ResponseMetadata'
     # ERRORS

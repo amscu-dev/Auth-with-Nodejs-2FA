@@ -45,17 +45,9 @@ export class SessionController {
       );
     }
   );
-  // TODO check logic below
   public getSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      const sessionId = req.sessionId;
-
-      if (!sessionId) {
-        throw new NotFoundException(
-          "Session ID not found.",
-          ErrorCode.RESOURCE_NOT_FOUND
-        );
-      }
+      const sessionId = req.sessionId! as string;
 
       const session = await this.sessionService.findSessionById(sessionId);
 
