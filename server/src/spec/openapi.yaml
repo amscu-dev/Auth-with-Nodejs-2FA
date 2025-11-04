@@ -29,7 +29,6 @@ paths:
               $ref: "#/components/schemas/UserRegistrationRequestBody"
       responses:
         "201":
-          summary: Registration successful
           description: Registration successful. A verification email has been sent, the user must confirm their email to complete the signup process.
           headers:
             X-Request-Id:
@@ -39,7 +38,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/RegistrationSuccessReponse"
         "400":
-          summary: Bad request — validation failed or user exists
           description: Bad Request — validation failed or user already exists.
           headers:
             X-Request-Id:
@@ -72,7 +70,6 @@ paths:
               $ref: "#/components/schemas/UserLoginRequestBody"
       responses:
         "200":
-          summary: Authentication successful or pending
           description: >
             Authentication response. Depending on the user's status, one of the following outcomes is returned:
             1. Email not verified — user must confirm their email to proceed.
@@ -98,7 +95,6 @@ paths:
                   - $ref: "#/components/schemas/MFAPendingResponse"
                   - $ref: "#/components/schemas/LoginSuccessResponse"
         "404":
-          summary: User not found
           description: >
             User not found — no account exists with the provided email address. 
             The client should prompt the user to register before attempting login.
@@ -137,7 +133,7 @@ paths:
                   example: n3910310n013912310sa
       responses:
         "200":
-          summary: Email verification successful
+          
           description: >
             Email verification successful. The user's email address has been confirmed, enabling them to complete the login process and access protected resources.
           headers:
@@ -148,7 +144,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmailConfirmedSuccessResponse"
         "400":
-          summary: Invalid or consumed verification code
+          
           description: >
             Verification failed due to an invalid verification code state:
             1. The code has expired — the user must request a new verification code.
@@ -168,7 +164,7 @@ paths:
                   - $ref: "#/components/schemas/VerificationCodeExpiredError"
                   - $ref: "#/components/schemas/VerificationCodeConsumedError"
         "404":
-          summary: Verification code not found
+          
           description: >
             Verification failed, the provided verification code was not found.
             This may happen if the code is invalid or never issued. The user should request a new verification code.
@@ -195,7 +191,7 @@ paths:
               $ref: "#/components/schemas/ForgotPasswordRequestBody"
       responses:
         "200":
-          summary: Password reset request processed successfully
+          
           description: >
             Password reset request processed successfully. Depending on the user's account configuration:
             1. MFA pending — if the user has two-factor authentication enabled, an MFA verification step is required before sending the reset email.
@@ -217,7 +213,7 @@ paths:
                   - $ref: "#/components/schemas/MFAPendingResponse"
                   - $ref: "#/components/schemas/ForgotPasswordSuccessResponse"
         "404":
-          summary: User not found
+          
           description: >
             User not found — no account exists for the provided email address. Ensure the email is correct and try again.
           headers:
@@ -228,7 +224,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "503":
-          summary: Email service unavailable
+          
           description: >
             Email service unavailable — the system could not send the password reset email due to a temporary email service failure. Retry the request later.
           headers:
@@ -1386,14 +1382,12 @@ paths:
               $ref: '#/components/schemas/PasskeyCompletAuthenticationRequestBody'
       responses:
         '200':
-          summary: Passkey authentication completed successfully
           description: |
             The passkey authentication response has been verified and the user successfully logged in.  
             Depending on the user's verification status, one of the following responses is returned:
 
             - **LoginSuccessResponse:** user authenticated and session created  
             - **LoginEmailVerificationPendingResponse:** user must first verify their email before continuing
-        headers:
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -1411,7 +1405,6 @@ paths:
                   - $ref: "#/components/schemas/LoginEmailVerificationPendingResponse"
                   - $ref: "#/components/schemas/LoginSuccessResponse"
         "404":
-          summary: User not found
           description: >
             User not found — no account exists with the provided email address. 
             The client should prompt the user to register before attempting login.
@@ -1420,7 +1413,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         '401':
-          summary: Passkey verification failed or session expired
           description: |
             The authentication failed due to one of the following reasons:
               - Passkey registration session not found
@@ -1499,11 +1491,9 @@ paths:
           example: "64f2d2ab8e2e1b03b6f3cd44"
       responses:
         '201':
-          summary: Passkey registration session successfully created
           description: |
             Returns the WebAuthn registration challenge and configuration parameters required for the browser to begin passkey registration.
             The frontend should use this response to call `navigator.credentials.create()` and generate a new credential.
-        content:
           content:  
             application/json:
               schema:
@@ -1511,7 +1501,6 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidAccessJwtToken'
         '403':
-          summary: Forbidden — User does not have permission to initiate passkey registration
           description: |
             Returned when the `{userid}` path parameter does not match the authenticated user.
             This ensures that users cannot create passkeys for other accounts.
@@ -1858,7 +1847,7 @@ paths:
                 AuthenticationTokenSessionMismatch:
                   $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
                 AuthenticationTokenInvalidToken:
-                  $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+                  $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
                 AuthenticationTokenExpired:
                   $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
               schema:
@@ -1895,9 +1884,16 @@ paths:
         The user must be authenticated and the `userid` in the path must match the authenticated user's ID to prevent unauthorized access.
         Each passkey returned will include essential details such as the credential ID, the associated provider (`aaguid`), the date it was created, 
         and the last time it was used. The response also includes metadata with the total count of passkeys retrieved.
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        description: The unique identifier of the user for whom the sessions are being retrieved.
+        schema:
+          type: string
+          example: "60c72b2f9f1b2c001c8a3e5f"
       responses:
         '200':
-          summary: Successfully retrieved all passkeys for the user.
           description: >
             The passkeys for the authenticated user have been successfully retrieved. The response includes the details of each passkey,
             such as the credential ID, the associated provider (`aaguid`), and the creation date. The metadata includes the total count 
@@ -1912,10 +1908,8 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidAccessJwtToken'
         '403':
-          summary: Access forbidden – user mismatch
           description: >
             The `userid` parameter does not match the authenticated user. Only the authenticated user can retrieve their own passkeys.
-        headers:
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -1936,15 +1930,6 @@ paths:
         Each returned session includes device information (`userAgent`), creation and expiration timestamps, and a boolean flag (`isCurrent`) indicating whether it corresponds to the current active session (the one used to make the request).  
         
         Expired sessions are automatically filtered out and are **not included** in the response.
-
-      parameters:
-      - name: userId
-        in: path
-        required: true
-        description: The unique identifier of the user for whom the sessions are being retrieved.
-        schema:
-          type: string
-          example: "60c72b2f9f1b2c001c8a3e5f"
       responses:
         '200':
           summary: Active sessions retrieved successfully
@@ -2000,6 +1985,14 @@ paths:
         Possible errors:
           - 403 Forbidden: If the user tries to delete a session that does not belong to them.
           - 404 Not Found: If the session ID does not exist.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the session who will be deleted.
+        schema:
+          type: string
+          example: "60c72b2f9f1b2c001c8a3e5f"
       responses:
         '200':
           summary: User session successfully deleted
@@ -2388,7 +2381,6 @@ components:
             AuthenticationTokenExpired:
               $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
     InvalidMFAJwtToken:
-      summary: Invalid or expired MFA token
       description: >
         Indicates that the MFA (Multi-Factor Authentication) token provided in the request cookie (`mfaToken`) 
         is missing, invalid, expired, or does not match the expected format or purpose.  
@@ -2444,7 +2436,7 @@ components:
               - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
               - $ref: "#/components/schemas/MFATokenTypeError"
               - $ref: "#/components/schemas/MFATokenInvalidEndpointError"
-              - $ref: "#/components/schemas/ MFATokenInvalidTokenPurposeError"
+              - $ref: "#/components/schemas/MFATokenInvalidTokenPurposeError"
               - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
               - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
               - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
@@ -2458,7 +2450,7 @@ components:
             MFATokenInvalidEndpoint:
               $ref: "#/components/examples/MFATokenInvalidEndpointErrorExample"
             MFATokenInvalidTokenPurpose:
-              $ref: "#/components/examples/ MFATokenInvalidTokenPurposeErrorExample"
+              $ref: "#/components/examples/MFATokenInvalidTokenPurposeErrorExample"
             AuthenticationTokenUserNotFound:
               $ref: "#/components/examples/AuthenticationTokenUserNotFoundErrorExample"
             AuthenticationTokenInvalidSession:
