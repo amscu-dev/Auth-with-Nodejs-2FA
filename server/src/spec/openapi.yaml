@@ -17,7 +17,7 @@ servers:
 paths:
   /auth/register:
     post:
-      tags: [Email & Password Auth]
+      tags: [✉️ Email & Password Auth]
       summary: Register a new user
       description: This endpoint allows a new user to create an account using their email and password. After registration, the user must verify their email to complete the registration process successfully.
       requestBody:
@@ -57,7 +57,7 @@ paths:
                   - $ref: "#/components/schemas/InvalidRequestBodyValidationError"
   /auth/login:
     post:
-      tags: [Email & Password Auth]
+      tags: [✉️ Email & Password Auth]
       summary: Authenticate a user with email and password
       description: >
         This endpoint allows an existing user to log in using their email and password.
@@ -117,7 +117,7 @@ paths:
                 $ref: "#/components/schemas/InvalidCredentialsError"
   /auth/email/verify:
     post:
-      tags: [Email & Password Auth]
+      tags: [✉️ Email & Password Auth]
       summary: Authenticate a user with email and password
       description: >
         Verifies a user's email address using a verification token sent via email.
@@ -181,7 +181,7 @@ paths:
                 $ref: "#/components/schemas/VerificationCodeNotFoundError"
   /auth/password/forgot:
     post:
-      tags: [Email & Password Auth]
+      tags: [✉️ Email & Password Auth]
       summary: Request a password reset for a user account
       description: >
         Initiates the password reset process for a user by submitting their email address. 
@@ -240,7 +240,7 @@ paths:
                 $ref: "#/components/schemas/EmailServiceError"
   /auth/password/reset:
     patch:
-      tags: [Email & Password Auth]
+      tags: [✉️ Email & Password Auth]
       summary: Complete the password reset process
       description: >
         Completes the password reset process for a user account using a valid verification code.  
@@ -320,7 +320,7 @@ paths:
     get:
       security:
         - RefreshTokenCokie: []
-      tags: [Email & Password Auth]
+      tags: [✉️ Email & Password Auth]
       summary: Refresh the user's access token using a valid refresh token
       description: >
         Issues a new access token (and optionally a new refresh token) for an authenticated session.  
@@ -349,7 +349,7 @@ paths:
     post:
       security:
         - AccessTokenCokie: []
-      tags: [Email & Password Auth]
+      tags: [✉️ Email & Password Auth]
       summary: Log out the authenticated user and invalidate the current session
       description: >
         Terminates the current authenticated session by invalidating all active authentication tokens and clearing related cookies (`accessToken`, `refreshToken`).  
@@ -900,7 +900,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MfaAlreadyDisabledError'
-  /mfa//backup-code/login:
+  /mfa/backup-code/login:
     post:
       security:
         - MfaTokenCokie: []
@@ -928,7 +928,6 @@ paths:
                   description: The valid unused backup code associated with the user's account.
                   example: "3F9A2B7QK"
       responses:
-        responses:
         "200":
           summary: MFA backup code login successful
           description: >
@@ -2035,7 +2034,7 @@ paths:
                 $ref: '#/components/schemas/ForbiddenError'
   /oidc/google/auth-url:
     get:
-      tags: [🔒 OIDC Authentication]
+      tags: [🤝 OIDC Authentication]
       summary: Generate Google OIDC authorization URL
       description: >
         Initiates the OAuth 2.0 Authorization Code Flow with PKCE for Google sign-in.
@@ -2075,7 +2074,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerError'
   /oidc/google/callback:
       get:
-        tags: [🔒 OIDC Authentication]
+        tags: [🤝 OIDC Authentication]
       summary: Authenticate user via Google OIDC callback
       description: >
         Handles the callback from Google after user authorization.
@@ -2172,7 +2171,7 @@ paths:
                   - $ref: '#/components/schemas/OIDCFailedAuthenticationError'
   /oidc/github/auth-url:
     get:
-      tags: [🔒 OIDC Authentication]
+      tags: [🤝 OIDC Authentication]
       summary: Generate GitHub OIDC authorization URL
       description: >
         Initiates the OAuth 2.0 Authorization Code Flow with PKCE for GitHub sign-in.
@@ -2214,7 +2213,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerError'
   /oidc/github/callback:
       get:
-        tags: [🔒 OIDC Authentication]
+        tags: [🤝 OIDC Authentication]
       summary: Authenticate user via Github OIDC callback
       description: >
         Handles the callback from Github after user authorization.
