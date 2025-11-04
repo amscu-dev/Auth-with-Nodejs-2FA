@@ -247,17 +247,19 @@ export default class PasskeyService {
       await mongoSession.endSession();
     }
   }
-
+  // ok
   public async generatePasskeySignInSession() {
+    // ! 01. Generate credentials for webauth
     const publicKeyCredentialRequestOptions =
       await generateAuthenticationOptions({
         timeout: 60000,
         allowCredentials: [],
         userVerification: "required",
-        rpID: "localhost",
+        rpID: config.FRONTEND_HOST,
       });
 
-    const passkeySession = await PasskeyChallengeSessionModel.create({
+    // ! 02. Create session in db
+    await PasskeyChallengeSessionModel.create({
       challenge: publicKeyCredentialRequestOptions.challenge,
       passkeyChallengeSessionPurpose: "signin",
     });
