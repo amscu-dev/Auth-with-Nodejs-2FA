@@ -270,13 +270,13 @@ export default class PasskeyService {
     authenticationResponse: AuthenticationResponseJSON,
     req: Request
   ) {
-    // ! Extract challenge from clientDataJSON
+    // ! 01. Extract challenge from clientDataJSON
     const { challenge } = clientDataJSONSchema.parse(
       JSON.parse(
         decodeBase64(authenticationResponse.response.clientDataJSON, "utf8")
       )
     );
-    // ! Find Session Challenge
+    // ! 02. Find Session Challenge
     const challengeSession = await PasskeyChallengeSessionModel.findOne({
       challenge: challenge,
       passkeyChallengeSessionPurpose: "signin",
@@ -308,7 +308,7 @@ export default class PasskeyService {
         ErrorCode.PASSKEY_CHALLENGE_SESSION__EXPIRED
       );
     }
-    // ! Find User in DB
+    // ! 03. Find user provided by authentificator
     const user = await UserModel.findById(
       authenticationResponse.response.userHandle
     );
@@ -319,7 +319,7 @@ export default class PasskeyService {
       );
     }
 
-    // ! Parse credential ID
+    // ! 04. Parse credential Id
     const passkey = await PasskeyModel.findOne({
       credentialID: authenticationResponse.id,
     });
@@ -329,7 +329,7 @@ export default class PasskeyService {
         ErrorCode.PASSKEY_NOT_FOUND
       );
     }
-    // ! Verify signature
+    // ! 05. Verify signature
     const verification = await verifyAuthenticationResponse({
       response: authenticationResponse,
       expectedChallenge: challenge,
@@ -352,12 +352,12 @@ export default class PasskeyService {
       );
     }
 
-    // ! Increment counter & update last used
+    // ! 06. Increment counter & update last used
     passkey.counter++;
     passkey.lastUsed = new Date();
     await passkey.save();
 
-    // ! Create Session & JWT Tokens
+    // ! 07. Create Session & JWT Tokens
     const uaSource = req.headers["user-agent"];
     const parsedUA = useragent.parse(uaSource ?? "unknown");
 
@@ -371,7 +371,6 @@ export default class PasskeyService {
       },
     });
 
-    // ! CREATE TOKENS
     const accessToken = signJwtToken(
       {
         sub: user.id,

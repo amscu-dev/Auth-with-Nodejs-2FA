@@ -79,7 +79,7 @@ export class PasskeyController {
       );
     }
   );
-
+  // ok
   public generatePasskeySignInSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Call service
@@ -103,16 +103,17 @@ export class PasskeyController {
       );
     }
   );
+  // ok
   public verifyPasskeySignInSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const authenticationResponse =
         passkeyAuthenticationResponseJSONSchema.parse(req.body);
 
-      // ! SIGN-UP CONFIRMATION
+      // ! 02. Confirm that user verified his email
       const isCompletedSignUP = await this.passkeyService.confirmSignUp(
         authenticationResponse.response.userHandle
       );
-      // ! REDIRECT USER TO EMAIL VERIFICATION
       if (!isCompletedSignUP) {
         return res.status(HTTPSTATUS.OK).json(
           new ApiResponse({
@@ -127,13 +128,13 @@ export class PasskeyController {
           })
         );
       }
-
+      // ! 03. Call service
       const { user, accessToken, refreshToken, mfaRequired, mfaToken } =
         await this.passkeyService.verifyPasskeySessionAndAuthenticateUser(
           authenticationResponse,
           req
         );
-      // ! Return response to USER
+      // ! 04. Return data to client
       return setAuthenticationCookies({
         res,
         accessToken,
@@ -153,6 +154,7 @@ export class PasskeyController {
         );
     }
   );
+  //
   public generatePasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { userid } = addPasskeyRequestSchema.parse(req.params);

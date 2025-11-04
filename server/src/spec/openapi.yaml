@@ -1362,6 +1362,116 @@ paths:
   /passkey/authenticate/verify:
     post:
       tags: [🎭 Passkey Authentication]
+      summary: Verify a passkey authentication response and complete user login
+      description: |
+        Completes the **passkey-based sign-in process** by verifying the WebAuthn authentication response 
+        returned by the browser after calling `navigator.credentials.get()`.  
+        
+        This endpoint:
+          - Validates the cryptographic response (challenge, signature, authenticator data)
+          - Ensures the passkey session is still valid and not consumed
+          - Confirms that the user exists and is eligible for login
+          - Creates a new authenticated session and issues secure access and refresh tokens
+
+        On success, the user is authenticated, tokens are issued, and authentication cookies are set.  
+        If the user's email has not yet been verified, the endpoint returns a pending verification response instead of logging in.
+      requestBody:
+        description: |
+          WebAuthn **authentication response** returned by the browser’s 
+          `navigator.credentials.get()` call.  
+          It includes the credential ID, authenticator data, and digital signature required for verification.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PassketCompletAuthenticationRequestBody'
+      responses:
+        '200':
+          summary: Passkey authentication completed successfully
+          description: |
+            The passkey authentication response has been verified and the user successfully logged in.  
+            Depending on the user's verification status, one of the following responses is returned:
+
+            - **LoginSuccessResponse:** user authenticated and session created  
+            - **LoginEmailVerificationPendingResponse:** user must first verify their email before continuing
+        headers:
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Set-Cookie:
+              $ref: "#/components/headers/AuthenticationCookies"
+          content:
+            application/json:
+              examples:
+                LoginEmailVerificationPendingResponse:
+                  $ref: "#/components/examples/LoginEmailVerificationPendingResponseExample"
+                LoginSuccessResponse:
+                  $ref: "#/components/examples/LoginSuccessResponseExample"
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/LoginEmailVerificationPendingResponse"
+                  - $ref: "#/components/schemas/LoginSuccessResponse"
+        "404":
+          summary: User not found
+          description: >
+            User not found — no account exists with the provided email address. 
+            The client should prompt the user to register before attempting login.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserNotFoundError"
+        '401':
+          summary: Passkey verification failed or session expired
+          description: |
+            The authentication failed due to one of the following reasons:
+              - Passkey registration session not found
+              - Passkey session expired
+              - Passkey verification could not be completed successfully
+            The client should restart the passkey registration process in case of failure.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                PasskeyChallengeSessionExpired:
+                  $ref: '#/components/examples/PasskeyChallengeSessionExpiredErrorExample'
+                PasskeyChallengeSessionNotFound:
+                  $ref: '#/components/examples/PasskeyChallengeSessionNotFoundErrorExample'
+                PasskeyChallengeVerification:
+                  $ref: '#/components/examples/PasskeyChallengeVerificationErrorExample'
+                PasskeyNotFound:
+                  $ref: '#/components/examples/PasskeyNotFoundErrorExample'
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PasskeyChallengeSessionNotFoundError'
+                  - $ref: '#/components/schemas/PasskeyChallengeSessionExpiredError'
+                  - $ref: '#/components/schemas/PasskeyChallengeVerificationError'
+                  - $ref: '#/components/schemas/PasskeyNotFoundError'
+        '400':
+          summary: Invalid passkey session purpose
+          description: |
+            The passkey registration session exists but the purpose does not match "signup". 
+            This can occur if a session intended for a different operation is reused.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyChallengeSessionInvalidPurposeError'
+        '409':
+          summary: Passkey session already consumed
+          description: |
+            The passkey registration session has already been used for verification. 
+            This ensures that a registration session cannot be reused ( prevent replay attacks).
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
 components:
   # REPONSES
   responses:
@@ -1913,6 +2023,88 @@ components:
             hmacCreateSecret:
               type: boolean
               description: Indicates if the "hmacCreateSecret" extension was used.
+    PassketCompletAuthenticationRequestBody:
+      type: object
+      required:
+        - id
+        - rawId
+        - type
+        - response
+      description: >
+        Represents the **WebAuthn authentication response** sent by the browser after
+        calling `navigator.credentials.get()` during the passkey sign-in process.
+        This object contains all cryptographic data needed by the backend to verify
+        the authenticity and integrity of the authentication ceremony.
+      properties:
+        id:
+          type: string
+          description: |
+            The base64url-encoded credential ID uniquely identifying the passkey credential.
+          example: "hT1lYyBBtU4QxZ5L5RjYuw"
+        rawId:
+          type: string
+          description: |
+            The raw credential ID in base64url format. Usually identical to `id` but encoded differently.
+          example: "hT1lYyBBtU4QxZ5L5RjYuw"
+        type:
+          type: string
+          enum: ["public-key"]
+          description: The credential type. For WebAuthn, always `"public-key"`.
+          example: "public-key"
+        authenticatorAttachment:
+          type: string
+          enum: ["cross-platform", "platform"]
+          description: |
+            Indicates the attachment modality of the authenticator:
+            - `"platform"`: built into the device (e.g. Touch ID, Windows Hello)
+            - `"cross-platform"`: external authenticator (e.g. security key)
+          example: "platform"
+        clientExtensionResults:
+          type: object
+          description: Results from any WebAuthn extensions used during authentication.
+          properties:
+            appid:
+              type: boolean
+              description: Indicates if the AppID extension was used.
+              example: false
+            credProps:
+              type: object
+              description: Credential properties returned by the authenticator.
+              properties:
+                rk:
+                  type: boolean
+                  description: Whether the credential is a resident key.
+                  example: true
+            hmacCreateSecret:
+              type: boolean
+              description: Indicates if the `hmac-secret` extension was used.
+              example: false
+        response:
+          type: object
+          required:
+            - clientDataJSON
+            - authenticatorData
+            - signature
+            - userHandle
+          description: |
+            Contains the raw cryptographic materials returned by the authenticator, required for verifying the authentication response.
+          properties:
+            clientDataJSON:
+              type: string
+              description: Base64url-encoded JSON object that was passed to the authenticator.
+              example: "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0Iiwib3JpZ2luIjoiaHR0cHM6Ly9hcHAuZXhhbXBsZS5jb20ifQ"
+            authenticatorData:
+              type: string
+              description: Base64url-encoded authenticator data containing RP ID hash, flags, and signature counter.
+              example: "SZYNfIE2DkFyGJvhC4LwE8EAAAA="
+            signature:
+              type: string
+              description: Base64url-encoded signature that proves possession of the private key.
+              example: "MEUCIQD7G8rLC4Y..."
+            userHandle:
+              type: string
+              description: Base64url-encoded identifier for the user account associated with the credential.
+              example: "dXNlcl8xMjM0NQ=="
     # RESPONSES
     RegistrationSuccessReponse:
       type: object
