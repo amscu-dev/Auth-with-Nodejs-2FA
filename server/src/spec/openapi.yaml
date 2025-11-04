@@ -1472,6 +1472,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
+  /passkey/add-passkey/init/{userid}:
+    security:
+      - AccessTokenCokie: []
+    tags: [🎭 Passkey Management]
+    summary: Initialize a new passkey registration session for an authenticated user
+    description: |
+      Initializes a **WebAuthn passkey registration session** that allows a logged-in user to securely add a new passkey to their account.  
+
+      This endpoint performs the following steps:
+        1. Validates the authenticated user and checks that they match the `{userid}` path parameter.
+        2. Retrieves existing passkeys associated with the account to prevent re-registration of the same authenticator.
+        3. Generates a new **WebAuthn PublicKeyCredentialCreationOptions** object (challenge, relying party info, user identity, supported algorithms, etc.).
+        4. Persists the challenge session in the database with the `"add-new-key"` purpose for later verification.
+
+      The client (frontend) should use the returned `publicKeyOpts` object as input for the `navigator.credentials.create()` call in the browser.
+
+      This route requires a valid **access token cookie** for authentication.
+    parameters:
+    - name: userid
+      in: path
+      required: true
+      description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
+      schema:
+        type: string
+        example: "64f2d2ab8e2e1b03b6f3cd44"
+    responses:
+      '200':
+        summary: Passkey registration session successfully created
+        description: |
+          Returns the WebAuthn registration challenge and configuration parameters required for the browser to begin passkey registration.
+          The frontend should use this response to call `navigator.credentials.create()` and generate a new credential.
+      content:
+        content:  
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse'
+      '401':
+        $ref: '#/components/responses/InvalidAccessJwtToken'
+      '403':
+        summary: Forbidden — User does not have permission to initiate passkey registration
+        description: |
+          Returned when the `{userid}` path parameter does not match the authenticated user.
+          This ensures that users cannot create passkeys for other accounts.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForbiddenError'
 components:
   # REPONSES
   responses:

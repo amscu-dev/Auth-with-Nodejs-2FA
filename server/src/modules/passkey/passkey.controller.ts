@@ -154,15 +154,19 @@ export class PasskeyController {
         );
     }
   );
-  //
+  // ok
   public generatePasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Get user id
       const { userid } = addPasskeyRequestSchema.parse(req.params);
+
+      // ! 02. Call service
       const publicKeyOpts = await this.passkeyService.generatePasskeyAddSession(
         userid,
         req
       );
 
+      // ! 03. Return data
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,
@@ -179,18 +183,26 @@ export class PasskeyController {
       );
     }
   );
+  //
   public verifyPasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Get userid from request
       const { userid } = addPasskeyRequestSchema.parse(req.params);
+
+      // ! 02. Validate input
       const registrationResponse = passkeyRegistrationResponseJSONSchema.parse(
         req.body
       );
+
+      // ! 03. Call service
       const passkey =
         await this.passkeyService.verifyPasskeyAddSessionAndAddPasskey(
           registrationResponse,
           userid,
           req
         );
+
+      // ! 04. Return data
       return res.status(HTTPSTATUS.CREATED).json(
         new ApiResponse({
           success: true,

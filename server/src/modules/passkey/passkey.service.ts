@@ -265,7 +265,7 @@ export default class PasskeyService {
     });
     return publicKeyCredentialRequestOptions;
   }
-
+  // ok
   public async verifyPasskeySessionAndAuthenticateUser(
     authenticationResponse: AuthenticationResponseJSON,
     req: Request
@@ -400,8 +400,9 @@ export default class PasskeyService {
       mfaToken: "",
     };
   }
-
+  // ok
   public async generatePasskeyAddSession(userid: string, req: Request) {
+    // ! 01. Extract user from request (added & verified user existance in passport middleware)
     const curentUser = req.user as Express.User;
 
     if (curentUser.id !== userid) {
@@ -410,7 +411,7 @@ export default class PasskeyService {
         ErrorCode.ACCESS_FORBIDDEN
       );
     }
-    // ! Find current user passkeys
+    // ! 02. Find current user passkeys
     const passkeys = await PasskeyModel.find({
       userID: userid,
     });
@@ -420,11 +421,11 @@ export default class PasskeyService {
       transports: passkey.transports,
     }));
 
-    // ! Create PublicKeyCredentialCreationOptions
+    // ! 03. Create PublicKeyCredentialCreationOptions
     const publicKeyCredentialCreationOptions =
       await generateRegistrationOptions({
         rpName: config.APP_NAME,
-        rpID: "localhost",
+        rpID: config.FRONTEND_HOST,
         userName: curentUser.email,
         userDisplayName: curentUser.name,
         userID: objectIdToUint8Array(curentUser._id),
@@ -442,8 +443,8 @@ export default class PasskeyService {
         supportedAlgorithmIDs: [-7, -8, -257],
       });
 
-    // ! Create PasskeySession
-    const passkeySession = await PasskeyChallengeSessionModel.create({
+    // ! 04. Create PasskeySession
+    await PasskeyChallengeSessionModel.create({
       challenge: publicKeyCredentialCreationOptions.challenge,
       passkeyChallengeSessionPurpose: "add-new-key",
       userId: curentUser._id,
@@ -452,7 +453,7 @@ export default class PasskeyService {
     });
     return publicKeyCredentialCreationOptions;
   }
-
+  //
   public async verifyPasskeyAddSessionAndAddPasskey(
     registrationResponse: RegistrationResponseJSON,
     userid: string,
