@@ -59,7 +59,7 @@ export default class PasskeyService {
     if (user.isEmailVerified) return true;
     return false;
   }
-  // ok
+
   public async generatePasskeySignUpSession(
     registerData: PasskeyRegisterData
   ): Promise<PublicKeyCredentialCreationOptionsJSON> {
@@ -110,7 +110,7 @@ export default class PasskeyService {
 
     return publicKeyCredentialCreationOptions;
   }
-  // ok
+
   public async verifyPasskeySessionAndRegisterUser(
     registrationResponse: RegistrationResponseJSON
   ) {
@@ -247,7 +247,7 @@ export default class PasskeyService {
       await mongoSession.endSession();
     }
   }
-  // ok
+
   public async generatePasskeySignInSession() {
     // ! 01. Generate credentials for webauth
     const publicKeyCredentialRequestOptions =
@@ -265,7 +265,7 @@ export default class PasskeyService {
     });
     return publicKeyCredentialRequestOptions;
   }
-  // ok
+
   public async verifyPasskeySessionAndAuthenticateUser(
     authenticationResponse: AuthenticationResponseJSON,
     req: Request
@@ -400,7 +400,7 @@ export default class PasskeyService {
       mfaToken: "",
     };
   }
-  // ok
+
   public async generatePasskeyAddSession(userid: string, req: Request) {
     // ! 01. Extract user from request (added & verified user existance in passport middleware)
     const curentUser = req.user as Express.User;
@@ -453,7 +453,7 @@ export default class PasskeyService {
     });
     return publicKeyCredentialCreationOptions;
   }
-  // ok
+
   public async verifyPasskeyAddSessionAndAddPasskey(
     registrationResponse: RegistrationResponseJSON,
     userid: string,
@@ -572,7 +572,7 @@ export default class PasskeyService {
       await mongoSession.endSession();
     }
   }
-  // ok
+
   public async generatePasskeyRemoveSession(
     userid: string,
     credentialid: string,
@@ -623,7 +623,7 @@ export default class PasskeyService {
     });
     return publicKeyCredentialRequestOptions;
   }
-  // ok
+
   public async verifyPasskeyRemoveSessionAndRemovePasskey(
     userid: string,
     credentialid: string,
@@ -741,7 +741,7 @@ export default class PasskeyService {
   }
 
   public async getAllPaskeyByUserId(userid: string, req: Request) {
-    // ! 1. Get verify currentUser
+    // ! 01. Get verify currentUser
     const currentUser = req.user as Express.User;
     if (currentUser.id !== userid) {
       throw new ForbiddenException(
@@ -750,14 +750,14 @@ export default class PasskeyService {
       );
     }
 
-    // ! 2. Get all passkey by userid
+    // ! 02. Get all passkey by userid
     const passkeys = await PasskeyModel.find(
       {
         userID: userid,
       },
       "credentialID aaguid createdAt lastUsed"
     );
-    // ! 3. Mapping aaguid providers icons
+    // ! 03. Mapping aaguid providers icons
     const mappedPasskeys = passkeys.map((p) => {
       const icons = getPasskeyProviderWithIcons(p.aaguid.aaguid);
       return {
@@ -768,7 +768,7 @@ export default class PasskeyService {
       };
     });
 
-    // ! 4. Return passkeys info
+    // ! 04. Return passkeys info
     return mappedPasskeys;
   }
 }

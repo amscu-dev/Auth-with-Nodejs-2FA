@@ -19,7 +19,7 @@ export class PasskeyController {
   constructor(passkeyService: PasskeyService) {
     this.passkeyService = passkeyService;
   }
-  // ok
+
   public generatePasskeySignUpSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -46,7 +46,7 @@ export class PasskeyController {
       );
     }
   );
-  // ok
+
   public verifyPasskeySignUpSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -79,7 +79,7 @@ export class PasskeyController {
       );
     }
   );
-  // ok
+
   public generatePasskeySignInSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Call service
@@ -103,7 +103,7 @@ export class PasskeyController {
       );
     }
   );
-  // ok
+
   public verifyPasskeySignInSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
@@ -154,7 +154,7 @@ export class PasskeyController {
         );
     }
   );
-  // ok
+
   public generatePasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Get user id
@@ -183,7 +183,7 @@ export class PasskeyController {
       );
     }
   );
-  // ok
+
   public verifyPasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Get userid from request
@@ -218,7 +218,7 @@ export class PasskeyController {
       );
     }
   );
-  // ok
+
   public generatePasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Get userid & credentialid
@@ -250,7 +250,7 @@ export class PasskeyController {
       );
     }
   );
-  // ok
+
   public verifyPasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Extract data from request
@@ -286,7 +286,7 @@ export class PasskeyController {
 
   public getAllUserPasskeys = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      // ! 1. Validation
+      // ! 1. Extract user
       const { userid } = getAllPaskeySchema.parse(req.params);
 
       // ! 2. Call service

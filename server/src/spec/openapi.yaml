@@ -1885,6 +1885,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
+  /passkey/all/{userid}:
+    get:
+      security:
+        - AccessTokenCokie: []
+      tags: [🎭 Passkey Management]
+      summary: Retrieve all passkeys associated with a user.
+      description: >
+        This endpoint allows you to retrieve all passkeys that are associated with a specific user by their unique `userid`. 
+        The user must be authenticated and the `userid` in the path must match the authenticated user's ID to prevent unauthorized access.
+        Each passkey returned will include essential details such as the credential ID, the associated provider (`aaguid`), the date it was created, 
+        and the last time it was used. The response also includes metadata with the total count of passkeys retrieved.
+      responses:
+        '200':
+          summary: Successfully retrieved all passkeys for the user.
+          description: >
+            The passkeys for the authenticated user have been successfully retrieved. The response includes the details of each passkey,
+            such as the credential ID, the associated provider (`aaguid`), and the creation date. The metadata includes the total count 
+            of passkeys returned.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyGetAllPasskeryByUserIdSuccessResponse'
+        '401':
+          $ref: '#/components/responses/InvalidAccessJwtToken'
+        '403':
+          summary: Access forbidden – user mismatch
+          description: >
+            The `userid` parameter does not match the authenticated user. Only the authenticated user can retrieve their own passkeys.
+        headers:
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ForbiddenError'
 components:
   # REPONSES
   responses:
@@ -3452,6 +3491,69 @@ components:
           type: object
         metadata:
           $ref: '#/components/schemas/ResponseMetadata'
+    PasskeyGetAllPasskeryByUserIdSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates whether the request was successful.
+          example: true
+        statusCode:
+          type: integer
+          description: HTTP status code.
+          example: 200
+        message:
+          type: string
+          description: A message summarizing the request result.
+          example: "All passkeys were successfully retrieved."
+        data:
+          type: object
+          properties:
+            passkeys:
+              type: array
+              items:
+                type: object
+                properties:
+                  aaguid:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: The name of the passkey provider.
+                        example: "Google Password Manager"
+                      icon_dark:
+                        type: string
+                        description: The base64 encoded SVG for the dark theme icon.
+                        example: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0c..."
+                      icon_light:
+                        type: string
+                        description: The base64 encoded SVG for the light theme icon.
+                        example: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0c..."
+                  credentialId:
+                    type: string
+                    description: The unique identifier of the passkey credential.
+                    example: "a1b2c3d4e5f6789ghijk01234lm56789"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: The date and time when the passkey was created.
+                    example: "2023-05-01T14:30:00Z"
+                  lastUsed:
+                    type: string
+                    format: date-time
+                    description: The date and time when the passkey was last used.
+                    example: "2023-10-29T18:15:00Z"
+        metadata:
+          type: object
+          properties:
+            requestId:
+              type: string
+              description: A unique identifier for the request.
+              example: "12345-abcde-67890-fghij"
+            count:
+              type: integer
+              description: The total number of passkeys retrieved.
+              example: 5
     # ERRORS
     # GENERAL ERRORS
     InternalServerError:
