@@ -983,7 +983,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MfaAlreadyDisabledError'
-
+  /mfa//backup-code/login:
+    post:
+      security:
+        - AccessTokenCokie: []
+      tags: [🕹️Multi Factor Authentication Endpoints]
 components:
   # REPONSES
   responses:
