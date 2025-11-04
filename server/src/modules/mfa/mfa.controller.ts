@@ -118,6 +118,7 @@ export class MfaController {
       );
     }
   );
+  // ok
   public loginWithBackupCode = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate data
@@ -150,12 +151,17 @@ export class MfaController {
         );
     }
   );
+  //ok
   public verifyMFAForLogin = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
       const { code } = verifyMfaSchema.parse({ ...req.body });
+
+      // ! 02. Call service
       const { currentUser, accessToken, refreshToken, mfaRequired } =
         await this.mfaService.verifyMFAForLogin(code, req);
 
+      // ! 03. Return authenticated user
       return setAuthenticationCookies({
         res,
         accessToken,

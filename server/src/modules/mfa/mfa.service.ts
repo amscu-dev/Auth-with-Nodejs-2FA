@@ -241,6 +241,151 @@ export class MfaService {
     // ! 05. Return data
     return { updatedUser };
   }
+  // ok
+  public async loginWithBackupCode(code: BackupCodeType, req: Request) {
+    // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
+    const currentUser = req.user as Express.User;
+
+    const uaSource = req.headers["user-agent"];
+    const parsedUA = useragent.parse(uaSource ?? "unknown");
+
+    if (!currentUser) {
+      throw new NotFoundException(
+        "User with the specified email was not found."
+      );
+    }
+
+    // ! 02. Verify validity of backupcode
+    const { isValidBackupCode, matchedCode } =
+      await currentUser.validateBackupCode(code);
+
+    if (!isValidBackupCode) {
+      throw new BadRequestException(
+        "The backup code you entered is invalid or has already been used. Please try a different one.",
+        ErrorCode.BACKUPCODE_INVALID_CODE
+      );
+    }
+    // ! 03. Remove used code
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      currentUser._id,
+      { $pull: { "userPreferences.backupCodes": matchedCode } },
+      { new: true }
+    );
+
+    // ! 04. Create auth session
+    const session = await SessionModel.create({
+      userId: currentUser._id,
+      userAgent: {
+        browser: parsedUA.browser || "unknown",
+        version: parsedUA.version || "unknown",
+        os: parsedUA.os || "unknown",
+        platform: parsedUA.platform || "unknown",
+      },
+    });
+
+    // ! 05. Create tokens associated with session
+    const accessToken = signJwtToken(
+      {
+        sub: currentUser.id,
+        userId: currentUser.id,
+        sessionId: session.id,
+        type: "access",
+        role: "user",
+      },
+      { ...accessTokenSignOptions }
+    );
+
+    const refreshToken = signJwtToken(
+      {
+        sub: currentUser.id,
+        userId: currentUser.id,
+        sessionId: session.id,
+        type: "refresh",
+      },
+      { ...refreshTokenSignOptions }
+    );
+
+    // ! 05. Return data
+    return { updatedUser, accessToken, refreshToken, mfaRequired: false };
+  }
+  // ok
+  public async verifyMFAForLogin(code: string, req: Request) {
+    // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
+    const currentUser = req.user as Express.User;
+    const uaSource = req.headers["user-agent"];
+    const parsedUA = useragent.parse(uaSource ?? "unknown");
+
+    if (!currentUser) {
+      throw new NotFoundException(
+        "User with the specified email was not found."
+      );
+    }
+    if (
+      !currentUser.userPreferences.twoFactorSecret ||
+      !currentUser.userPreferences.enable2FA
+    ) {
+      throw new BadRequestException(
+        "Cannot verify MFA because two-factor authentication is not enabled for this account.",
+        ErrorCode.MFA_NOT_ENABLED
+      );
+    }
+
+    // ! 02. Decrypt secret
+    const decryptedKey = decrypt(
+      currentUser.userPreferences.twoFactorSecret,
+      currentUser.id,
+      config.CRYPTO_SYMMETRIC_KEY
+    );
+    // ! 03. Verify mfa code
+    const isValid = speakeasy.totp.verify({
+      secret: decryptedKey,
+      encoding: "base32",
+      token: code,
+      window: 1,
+    });
+
+    if (!isValid) {
+      throw new BadRequestException(
+        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
+        ErrorCode.MFA_INVALID_VERIFICATION_CODE
+      );
+    }
+
+    // ! 04. If all okey, create auth session
+    const session = await SessionModel.create({
+      userId: currentUser._id,
+      userAgent: {
+        browser: parsedUA.browser || "unknown",
+        version: parsedUA.version || "unknown",
+        os: parsedUA.os || "unknown",
+        platform: parsedUA.platform || "unknown",
+      },
+    });
+
+    // ! 05. Generate tokens associated with session
+    const accessToken = signJwtToken(
+      {
+        sub: currentUser.id,
+        userId: currentUser.id,
+        sessionId: session.id,
+        type: "access",
+        role: "user",
+      },
+      { ...accessTokenSignOptions }
+    );
+
+    const refreshToken = signJwtToken(
+      {
+        sub: currentUser.id,
+        userId: currentUser.id,
+        sessionId: session.id,
+        type: "refresh",
+      },
+      { ...refreshTokenSignOptions }
+    );
+    // ! 06. Return data
+    return { currentUser, accessToken, refreshToken, mfaRequired: false };
+  }
   public async verifyMFAForChangingPassword(code: string, req: Request) {
     const currentUser = req.user as Express.User;
 
@@ -305,140 +450,5 @@ export class MfaService {
     return {
       url: resetLink,
     };
-  }
-  public async verifyMFAForLogin(code: string, req: Request) {
-    const currentUser = req.user as Express.User;
-    const uaSource = req.headers["user-agent"];
-    const parsedUA = useragent.parse(uaSource ?? "unknown");
-
-    if (!currentUser) {
-      throw new NotFoundException("User not found.");
-    }
-    if (
-      !currentUser.userPreferences.twoFactorSecret ||
-      !currentUser.userPreferences.enable2FA
-    ) {
-      throw new BadRequestException(
-        "Cannot verify MFA because two-factor authentication is not enabled for this account.",
-        ErrorCode.MFA_NOT_ENABLED
-      );
-    }
-
-    const decryptedKey = decrypt(
-      currentUser.userPreferences.twoFactorSecret,
-      currentUser.id,
-      config.CRYPTO_SYMMETRIC_KEY
-    );
-    // ! Verify 2FA Before revoke
-    const isValid = speakeasy.totp.verify({
-      secret: decryptedKey,
-      encoding: "base32",
-      token: code,
-      window: 1,
-    });
-
-    if (!isValid) {
-      throw new BadRequestException(
-        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
-        ErrorCode.MFA_INVALID_VERIFICATION_CODE
-      );
-    }
-
-    // ! CREATE SESSION
-    const session = await SessionModel.create({
-      userId: currentUser._id,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
-      },
-    });
-
-    // ! CREATE TOKENS
-    const accessToken = signJwtToken(
-      {
-        sub: currentUser.id,
-        userId: currentUser.id,
-        sessionId: session.id,
-        type: "access",
-        role: "user",
-      },
-      { ...accessTokenSignOptions }
-    );
-
-    const refreshToken = signJwtToken(
-      {
-        sub: currentUser.id,
-        userId: currentUser.id,
-        sessionId: session.id,
-        type: "refresh",
-      },
-      { ...refreshTokenSignOptions }
-    );
-
-    return { currentUser, accessToken, refreshToken, mfaRequired: false };
-  }
-  public async loginWithBackupCode(code: BackupCodeType, req: Request) {
-    const currentUser = req.user as Express.User;
-
-    const uaSource = req.headers["user-agent"];
-    const parsedUA = useragent.parse(uaSource ?? "unknown");
-
-    if (!currentUser) {
-      throw new NotFoundException("User not found.");
-    }
-
-    // ! Verify validity of backupcode
-    const { isValidBackupCode, matchedCode } =
-      await currentUser.validateBackupCode(code);
-
-    if (!isValidBackupCode) {
-      throw new BadRequestException(
-        "The backup code you entered is invalid or has already been used. Please try a different one.",
-        ErrorCode.BACKUPCODE_INVALID_CODE
-      );
-    }
-    // ! Remove used code
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      currentUser._id,
-      { $pull: { "userPreferences.backupCodes": matchedCode } },
-      { new: true }
-    );
-
-    // ! CREATE SESSION
-    const session = await SessionModel.create({
-      userId: currentUser._id,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
-      },
-    });
-
-    // ! CREATE TOKENS
-    const accessToken = signJwtToken(
-      {
-        sub: currentUser.id,
-        userId: currentUser.id,
-        sessionId: session.id,
-        type: "access",
-        role: "user",
-      },
-      { ...accessTokenSignOptions }
-    );
-
-    const refreshToken = signJwtToken(
-      {
-        sub: currentUser.id,
-        userId: currentUser.id,
-        sessionId: session.id,
-        type: "refresh",
-      },
-      { ...refreshTokenSignOptions }
-    );
-
-    return { updatedUser, accessToken, refreshToken, mfaRequired: false };
   }
 }

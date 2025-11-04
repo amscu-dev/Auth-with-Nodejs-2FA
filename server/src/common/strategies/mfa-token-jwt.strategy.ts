@@ -72,7 +72,7 @@ const verifyCallback: VerifyCallbackWithRequest = async (
       return done(
         new UnauthorizedException(
           `Authentication failed, MFA token purpose mismatch. Expected '${expectedPurpose}', got '${payload.purpose}'.`,
-          ErrorCode.AUTH_INVALID_TOKEN_PURPOSE
+          ErrorCode.AUTH_MFA_TOKEN_PURPOSE_MISMATCH
         ),
         false
       );
