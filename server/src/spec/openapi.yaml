@@ -2377,7 +2377,7 @@ components:
             AuthenticationTokenSessionMismatch:
               $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
             AuthenticationTokenInvalidToken:
-              $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+              $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
             AuthenticationTokenExpired:
               $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
     InvalidMFAJwtToken:
@@ -2458,7 +2458,7 @@ components:
             AuthenticationTokenSessionMismatch:
               $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
             AuthenticationTokenInvalidToken:
-              $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+              $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
             AuthenticationTokenExpired:
               $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
     InvalidMagicLinkJwtToken:
@@ -2525,18 +2525,18 @@ components:
             AuthenticationTokenSessionMismatch:
               $ref: "#/components/examples/AuthenticationTokenSessionMismatchErrorExample"
             AuthenticationTokenInvalidToken:
-              $ref: "#/components/examples/AuthenticationTokenInvalidTokenErorrExample"
+              $ref: "#/components/examples/AuthenticationTokenInvalidErrorExample"
             AuthenticationTokenExpired:
               $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
-            schema:
-              oneOf:
-                - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
-                - $ref: "#/components/schemas/MagicLinkTokenTypeError"
-                - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
-                - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
-                - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
-                - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
-                - $ref: "#/components/schemas/AuthenticationTokenExpiredError"      
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
+              - $ref: "#/components/schemas/MagicLinkTokenTypeError"
+              - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
+              - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
+              - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
+              - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
+              - $ref: "#/components/schemas/AuthenticationTokenExpiredError"      
     InvalidRefreshJwtToken:
       summary: Invalid or expired refresh token
       description: >
@@ -3123,7 +3123,7 @@ components:
             - user
           properties:
             user:
-              $ref: "#/components/schema/UserData"
+              $ref: "#/components/schemas/UserData"
             nextStep:
               type: string
               enum: ["OK"]
