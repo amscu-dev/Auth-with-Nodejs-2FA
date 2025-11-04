@@ -2003,8 +2003,12 @@ paths:
           - 404 Not Found: If the session ID does not exist.
       responses:
         '200':
-          summary: x
-          description: x
+          summary: User session successfully deleted
+          description: >
+            The session with the specified ID was successfully deleted. 
+            If the deleted session was the current session of the authenticated user, authentication cookies are cleared,
+            effectively logging the user out. The response includes a `nextStep` field indicating whether the client
+            should redirect the user to the login page.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -2017,8 +2021,11 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidAccessJwtToken'
         '403':  
-          summary: x
-          description: x
+          summary: Forbidden - user cannot delete this session
+          description: >
+            The authenticated user attempted to delete a session that does not belong to them.
+            The operation is denied to prevent unauthorized access to other users' sessions.
+            Ensure that the session ID belongs to the current user before attempting deletion.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -2026,6 +2033,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ForbiddenError'
+  /google/auth-url:
+    get:
+      tags:
+        - 🔒 OIDC Authentication
+      summary: Generate Google OIDC authorization URL
+      description: >
+        Initiates the OAuth 2.0 Authorization Code Flow with PKCE for Google sign-in.
+        This endpoint generates a unique `state` and `code_challenge`, stores them in the database
+        as an OIDC session, and redirects the client to the Google OAuth 2.0 authorization endpoint.
+        
+        The `state` is used to prevent CSRF attacks, and `code_challenge` is part of PKCE to enhance security.
+
+        **Behavior:**
+        - Returns an HTTP 307 redirect to the Google authorization URL.
+        - Sets caching headers to prevent storing sensitive information.
+        - No JSON body is returned.
+        
+      responses:
+        '307':
+          description: Redirects the client to Google OAuth 2.0 authorization URL
+          headers:
+            Location:
+              description: The Google authorization URL
+              schema:
+                type: string
+                example: https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&response_type=code&client_id=YOUR_CLIENT_ID&scope=openid%20profile%20email&redirect_uri=https%3A%2F%2Fyourapp.com%2Fauth%2Fgoogle%2Fcallback&state=RANDOM_STATE&code_challenge=RANDOM_CODE_CHALLENGE&code_challenge_method=S256
+          content: {}
+        '500':
+          description: Server error occurred while generating authorization URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
 components:
   # REPONSES
   responses:
