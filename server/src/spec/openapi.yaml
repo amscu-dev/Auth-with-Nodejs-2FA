@@ -1961,7 +1961,29 @@ paths:
                 $ref: '#/components/schemas/GetAllSessionsSuccessResponse'
         '401':
           $ref: '#/components/responses/InvalidAccessJwtToken'
-
+  /session/:
+      get:
+        security:
+          - AccessTokenCokie: []
+        summary: Retrieve the current user session
+        description: >
+          Retrieves the **current active session** for the authenticated user, based on the session ID stored in the request context.  
+          This endpoint is primarily used to identify the session associated with the current request and to retrieve minimal user information .
+        responses:
+          '200':
+            summary: Current user session retrieved successfully
+            description: >
+              The session corresponding to the current request has been found.  
+              Returns the user associated with this session along with metadata about the request.
+            headers:
+              X-Request-Id:
+                $ref: "#/components/headers/XRequestId"
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/GetCurrentSessionSuccessResponse'
+          '401':
+            $ref: '#/components/responses/InvalidAccessJwtToken'
 components:
   # REPONSES
   responses:
@@ -3656,6 +3678,31 @@ components:
                     type: boolean
                     description: Indicates if this is the current session.
                     example: true
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+    GetCurrentSessionSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data
+        - metadata
+      properties:
+        success:
+          type: boolean
+          example: true
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "User session retrieved successfully."
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserData'
         metadata:
           $ref: '#/components/schemas/ResponseMetadata'
     # ERRORS
