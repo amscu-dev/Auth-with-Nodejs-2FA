@@ -45,6 +45,7 @@ export class SessionController {
       );
     }
   );
+  // TODO check logic below
   public getSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const sessionId = req.sessionId;
