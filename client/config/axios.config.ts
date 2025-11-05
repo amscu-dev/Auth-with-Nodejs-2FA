@@ -1,7 +1,28 @@
 import { AxiosError, AxiosRequestConfig, AxiosInstance } from "axios";
 import axios from "axios";
 import { env } from "@/env";
+import { ErrorCode } from "@/types/enums/error-code.enum";
 
+export interface FieldError {
+  field: string;
+  message: string;
+}
+
+// forma de bază a erorii
+export interface BaseErrorRes {
+  success: false;
+  message: string;
+  errorCode: ErrorCode;
+  requestId: string;
+}
+
+export interface ValidationErrorRes extends BaseErrorRes {
+  errors: FieldError[];
+}
+
+export type ErrorRes = BaseErrorRes | ValidationErrorRes;
+
+export type AxiosErrorRes = AxiosError<ErrorRes>;
 interface CancellablePromise<T> extends Promise<T> {
   cancel: () => void;
 }

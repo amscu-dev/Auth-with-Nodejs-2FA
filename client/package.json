@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate": "orval --config ./config/orval.config.ts"
+    "generate": "orval --config ./config/orval.config.ts && node ./scripts/copy-enum.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -5,7 +5,7 @@ export default defineConfig({
   "auth-client": {
     input: path.resolve(__dirname, "../../server/src/spec/openapi.yaml"),
     output: {
-      target: "../api/clients/client.ts",
+      target: "../api/client/client.ts",
       mode: "tags",
       override: {
         mutator: {
