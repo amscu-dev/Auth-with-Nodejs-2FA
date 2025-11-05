@@ -15,9 +15,10 @@ servers:
   - url: https://accounts.authportal.com/api/v1
     description: Production Server
 paths:
-  /auth/register:
+  /auth/signup:
     post:
-      tags: [✉️ Email & Password Auth]
+      tags: [Password Authentication Module]
+      operationId: authSignUpMutationFn
       summary: Register a new user
       description: This endpoint allows a new user to create an account using their email and password. After registration, the user must verify their email to complete the registration process successfully.
       requestBody:
@@ -53,9 +54,10 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/EmailAlreadyExistsError"
                   - $ref: "#/components/schemas/InvalidRequestBodyValidationError"
-  /auth/login:
+  /auth/signin:
     post:
-      tags: [✉️ Email & Password Auth]
+      tags: [Password Authentication Module]
+      operationId: authSignInMutationFn
       summary: Authenticate a user with email and password
       description: >
         This endpoint allows an existing user to log in using their email and password.
@@ -112,7 +114,8 @@ paths:
                 $ref: "#/components/schemas/InvalidCredentialsError"
   /auth/email/verify:
     post:
-      tags: [✉️ Email & Password Auth]
+      tags: [Password Authentication Module]
+      operationId: authEmailVerifyMutationFn
       summary: Authenticate a user with email and password
       description: >
         Verifies a user's email address using a verification token sent via email.
@@ -173,7 +176,8 @@ paths:
                 $ref: "#/components/schemas/VerificationCodeNotFoundError"
   /auth/password/forgot:
     post:
-      tags: [✉️ Email & Password Auth]
+      tags: [Password Authentication Module]
+      operationId: authPasswordForgotMutationFn
       summary: Request a password reset for a user account
       description: >
         Initiates the password reset process for a user by submitting their email address. 
@@ -229,7 +233,8 @@ paths:
                 $ref: "#/components/schemas/EmailServiceError"
   /auth/password/reset:
     patch:
-      tags: [✉️ Email & Password Auth]
+      tags: [Password Authentication Module]
+      operationId: authPasswordResetMutationFn
       summary: Complete the password reset process
       description: >
         Completes the password reset process for a user account using a valid verification code.  
@@ -306,7 +311,8 @@ paths:
     get:
       security:
         - RefreshTokenCokie: []
-      tags: [✉️ Email & Password Auth]
+      tags: [Password Authentication Module]
+      operationId: authRefreshTokenQueryFn
       summary: Refresh the user's access token using a valid refresh token
       description: >
         Issues a new access token (and optionally a new refresh token) for an authenticated session.  
@@ -334,7 +340,8 @@ paths:
     post:
       security:
         - AccessTokenCokie: []
-      tags: [✉️ Email & Password Auth]
+      tags: [Password Authentication Module]
+      operationId: authLogoutMutationFn
       summary: Log out the authenticated user and invalidate the current session
       description: >
         Terminates the current authenticated session by invalidating all active authentication tokens and clearing related cookies (`accessToken`, `refreshToken`).  
@@ -361,7 +368,8 @@ paths:
           $ref: "#/components/responses/InvalidAccessJwtToken"
   /magic-link/signup:
     post:
-      tags: [✨ Magic-Link Authentication]
+      tags: [Magic Link Authentication Module]
+      operationId: magicLinkSignUpMutationFn
       summary: Register a new user using a magic link
       description: |
         Registers a new user account by sending a **magic link** to the provided email address. 
@@ -410,7 +418,8 @@ paths:
                 $ref: "#/components/schemas/EmailServiceError"
   /magic-link/signin:
     post:
-      tags: [✨ Magic-Link Authentication]
+      tags: [Magic Link Authentication Module]
+      operationId: magicLinkSignInMutationFn
       summary: Sign in a user using a magic link
       description: |
         Initiates a passwordless sign-in flow by sending a magic link to the user email address. 
@@ -459,7 +468,8 @@ paths:
                 $ref: "#/components/schemas/EmailServiceError"
   /magic-link/resend:
     post:
-      tags: [✨ Magic-Link Authentication]
+      tags: [Magic Link Authentication Module]
+      operationId: magicLinkResendMutationFn
       summary: Resend a magic link for email verification or sign-in
       description: |
         Resends a new generated magic link to the user's email address. 
@@ -505,9 +515,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmailServiceError"
-  /magic-link/verify/{token}:
+  /magic-link/authenticate/{token}:
     get:
-      tags: [✨ Magic-Link Authentication]
+      tags: [Magic Link Authentication Module]
+      operationId: magicLinkAuthenticateQueryFn
       summary: Verify a user's email using a magic link token
       description: |
         Verifies a user's email or signs them in by validating the provided magic link token. 
@@ -543,7 +554,8 @@ paths:
     get:
       security:
         - AccessTokenCokie: []
-      tags: [🕹️Multi Factor Authentication Endpoints]
+      tags: [Mfa Module]
+      operationId: mfaSetupQueryFn
       summary: Retrieve temporary TOTP secret and QR code for MFA setup
       description: |
         Initiates the setup process for Multi-Factor Authentication (MFA) using TOTP (Time-Based One-Time Password). 
@@ -593,7 +605,8 @@ paths:
     post:
       security:
         - AccessTokenCokie: []
-      tags: [🕹️Multi Factor Authentication Endpoints]
+      tags: [Mfa Module]
+      operationId: mfaVerifyMutationFn
       summary: Verify the MFA code for a user
       description: >
         Verifies the multi-factor authentication (MFA) code provided by the user.
@@ -678,7 +691,8 @@ paths:
     patch:
       security:
         - AccessTokenCokie: []
-      tags: [🕹️Multi Factor Authentication Endpoints]
+      tags: [Mfa Module]
+      operationId: mfaRevokeMutationFn
       summary: Disable (revoke) Two-Factor Authentication (2FA) for the current user
       description: >
         Revokes (disables) Two-Factor Authentication (2FA) for the authenticated user.  
@@ -767,7 +781,8 @@ paths:
     post:
       security:
         - AccessTokenCokie: []
-      tags: [🕹️Multi Factor Authentication Endpoints]
+      tags: [Mfa Module]
+      operationId: mfaBackupCodeConsumeMutationFn
       summary: Disable Two-Factor Authentication (2FA) using a backup code
       description: >
         Disables Multi-Factor Authentication (2FA) for the currently authenticated user using one of their previously generated backup codes.  
@@ -854,7 +869,8 @@ paths:
     post:
       security:
         - MfaTokenCokie: []
-      tags: [🕹️Multi Factor Authentication Endpoints]
+      tags: [Mfa Module]
+      operationId: mfaBackupCodeLoginMutationFn
       summary: Log in using a backup code
       description: >
         Authenticates a user by consuming one of their valid MFA backup codes.
@@ -934,7 +950,8 @@ paths:
     post:
       security:
         - MfaTokenCokie: []
-      tags: [🕹️Multi Factor Authentication Endpoints]
+      tags: [Mfa Module]
+      operationId: mfaVerifyLoginMutationFn
       summary: Verify MFA code during login
       description: >
         Validates the one-time MFA code provided by the user during the login process.  
@@ -1025,7 +1042,8 @@ paths:
     post:
       security:
         - MfaTokenCokie: []
-      tags: [🕹️Multi Factor Authentication Endpoints]
+      tags: [Mfa Module]
+      operationId: mfaVerifyForgotPasswordMutationFn
       summary: Verify MFA code for password reset
       description: >
         Verifies the one-time MFA code submitted by the user in order to proceed with a password reset.  
@@ -1116,9 +1134,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmailServiceError"
-  /passkey/register/init:
+  /passkey/signup/init:
     post:
-      tags: [🎭 Passkey Authentication]
+      tags: [Passkey Authentication Module]
+      operationId: passkeySignUpInitMutationFn
       summary: Initialize a passkey registration session
       description: >
         Starts the registration process for a new user using passwordless passkey authentication. 
@@ -1170,9 +1189,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmailAlreadyExistsError"
-  /passkey/register/verify:
+  /passkey/signup/verify:
     post:
-      tags: [🎭 Passkey Authentication]
+      tags: [Passkey Authentication Module]
+      operationId: passkeySignUpVerifyMutationFn
       summary: Verify a passkey registration session and complete user signup
       description: |
         Verifies a passkey registration session provided by the client to complete the user signup process.
@@ -1247,9 +1267,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PasskeyChallengeSessionConsumedError"
-  /passkey/authenticate/init:
+  /passkey/signin/init:
     post:
-      tags: [🎭 Passkey Authentication]
+      tags: [Passkey Authentication Module]
+      operationId: passkeySignInInitMutationFn
       summary: Initialize a passkey authentication (sign-in) session
       description: >
         Initializes a new **WebAuthn passkey authentication session** for a user who wants to sign in using a registered passkey.  
@@ -1276,9 +1297,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PasskeyGenerateSignInSessionSuccessResponse"
-  /passkey/authenticate/verify:
+  /passkey/signin/verify:
     post:
-      tags: [🎭 Passkey Authentication]
+      tags: [Passkey Authentication Module]
+      operationId: passkeySignInVerifyMutationFn
       summary: Verify a passkey authentication response and complete user login
       description: |
         Completes the **passkey-based sign-in process** by verifying the WebAuthn authentication response 
@@ -1387,7 +1409,8 @@ paths:
     post:
       security:
         - AccessTokenCokie: []
-      tags: [🎭 Passkey Management]
+      tags: [Passkey Authentication Module]
+      operationId: passkeyAddPasskeyByUserIdInitMutationFn
       summary: Initialize a new passkey registration session for an authenticated user
       description: |
         Initializes a **WebAuthn passkey registration session** that allows a logged-in user to securely add a new passkey to their account.  
@@ -1432,7 +1455,8 @@ paths:
     post:
       security:
         - AccessTokenCokie: []
-      tags: [🎭 Passkey Management]
+      tags: [Passkey Authentication Module]
+      operationId: passkeyAddPasskeyByUserIdVerifyMutationFn
       summary: Verify and finalize new Passkey registration
       description: |
         Completes the registration of a new **Passkey** for the currently authenticated user.  
@@ -1560,7 +1584,8 @@ paths:
     post:
       security:
         - AccessTokenCokie: []
-      tags: [🎭 Passkey Management]
+      tags: [Passkey Authentication Module]
+      operationId: passkeyRemovePasskeyByIdInitMutationFn
       summary: Initiate Passkey removal for a user
       description: |
         This endpoint initiates the process to remove a passkey associated with a user's account.  
@@ -1631,7 +1656,8 @@ paths:
     delete:
       security:
         - AccessTokenCokie: []
-      tags: [🎭 Passkey Management]
+      tags: [Passkey Authentication Module]
+      operationId: passkeyRemovePasskeyByIdVerifyMutationFn
       summary: Remove a passkey credential from a user's account
       description: >
         This endpoint allows the authenticated user to remove a specific passkey credential from their account.
@@ -1783,7 +1809,8 @@ paths:
     get:
       security:
         - AccessTokenCokie: []
-      tags: [🎭 Passkey Management]
+      tags: [Passkey Authentication Module]
+      operationId: passkeyAllGetByUserIdQueryFn
       summary: Retrieve all passkeys associated with a user.
       description: >
         This endpoint allows you to retrieve all passkeys that are associated with a specific user by their unique `userid`. 
@@ -1827,7 +1854,8 @@ paths:
     get:
       security:
         - AccessTokenCokie: []
-      tags: [🔒 Session Management]
+      tags: [Session Module]
+      operationId: sessionAllGetQueryFn
       summary: Retrieve all active sessions for the authenticated user
       description: >
         Retrieves a list of all **active login sessions** associated with the authenticated user.  
@@ -1852,7 +1880,8 @@ paths:
           $ref: "#/components/responses/InvalidAccessJwtToken"
   /session/:
     get:
-      tags: [🔒 Session Management]
+      tags: [Session Module]
+      operationId: sessionGetCurrentQueryFn
       security:
         - AccessTokenCokie: []
       summary: Retrieve the current user session
@@ -1875,7 +1904,8 @@ paths:
           $ref: "#/components/responses/InvalidAccessJwtToken"
   /session/{id}:
     delete:
-      tags: [🔒 Session Management]
+      tags: [Session Module]
+      operationId: sessionRemoveByIdMutationFn
       security:
         - AccessTokenCokie: []
       summary: Delete a user session by ID
@@ -1929,7 +1959,8 @@ paths:
                 $ref: "#/components/schemas/ForbiddenError"
   /oidc/google/auth-url:
     get:
-      tags: [🤝 OIDC Authentication]
+      tags: [OIDC Authentication Module] 
+      operationId: oidcGoogleAuthUrlGetQueryFn
       summary: Generate Google OIDC authorization URL
       description: >
         Initiates the OAuth 2.0 Authorization Code Flow with PKCE for Google sign-in.
@@ -1968,7 +1999,8 @@ paths:
                 $ref: "#/components/schemas/InternalServerError"
   /oidc/google/callback:
     get:
-      tags: [🤝 OIDC Authentication]
+      tags: [OIDC Authentication Module] 
+      operationId: oidcGoogleCallbackGetQueryFn
       summary: Authenticate user via Google OIDC callback
       description: >
         Handles the callback from Google after user authorization.
@@ -2061,7 +2093,8 @@ paths:
                   - $ref: "#/components/schemas/OIDCFailedAuthenticationError"
   /oidc/github/auth-url:
     get:
-      tags: [🤝 OIDC Authentication]
+      tags: [OIDC Authentication Module] 
+      operationId: oidcGithubAuthUrlGetQueryFn
       summary: Generate GitHub OIDC authorization URL
       description: >
         Initiates the OAuth 2.0 Authorization Code Flow with PKCE for GitHub sign-in.
@@ -2102,8 +2135,8 @@ paths:
                 $ref: "#/components/schemas/InternalServerError"
   /oidc/github/callback:
     get:
-      tags: [🤝 OIDC Authentication]
-      operationId: getGithubOidcAuthUrl
+      tags: [OIDC Authentication Module] 
+      operationId: oidcGithubCallbackGetQueryFn
       summary: Authenticate user via Github OIDC callback
       description: >
         Handles the callback from Github after user authorization.

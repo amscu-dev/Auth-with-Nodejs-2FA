@@ -1,29 +1,29 @@
+import { AxiosInstance } from "axios";
 import axios from "axios";
+import { env } from "@/env";
 
-const options = {
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  withCredentials: true,
-  timeout: 10000,
-};
+let api: AxiosInstance;
 
-const API = axios.create(options);
-
-API.interceptors.response.use(
-  (response) => {
-    console.log(response.data);
-    return response;
-  },
-  (error) => {
-    console.log(error);
-    console.log(error.response);
-    const { data, status } = error.response;
-    if (data === "Unauthorized" && status === 401) {
-      // retry pe endpoint ul de /refrehs
-    }
-    return Promise.reject({
-      ...data,
+export function customAxiosInstance(): AxiosInstance {
+  if (!api) {
+    console.log("New instance created");
+    api = axios.create({
+      baseURL: env.NEXT_PUBLIC_API_BASE_URL,
+      withCredentials: true,
+      timeout: 10000,
     });
-  }
-);
 
-export default API;
+    api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        const { data, status } = error.response ?? {};
+        if (data === "Unauthorized" && status === 401) {
+          // aici poți implementa retry pe /refresh
+        }
+        return Promise.reject({ ...data });
+      }
+    );
+  }
+
+  return api;
+}

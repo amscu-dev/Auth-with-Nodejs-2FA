@@ -1,18 +1,18 @@
-import API from "./axios-client";
+// import API from "./axios-client";
 
-type LoginType = {
-  email: string;
-  password: string;
-};
-type RegisterType = {
-  email: string;
-  name: string;
-  password: string;
-  confirmPassword: string;
-};
+// type LoginType = {
+//   email: string;
+//   password: string;
+// };
+// type RegisterType = {
+//   email: string;
+//   name: string;
+//   password: string;
+//   confirmPassword: string;
+// };
 
-export const loginMutationFn = async (data: LoginType) =>
-  await API.post("/auth/login", data);
+// export const loginMutationFn = async (data: LoginType) =>
+//   await API.post("/auth/login", data);
 
-export const registerMutationFn = async (data: RegisterType) =>
-  await API.post("/auth/register", data);
+// export const registerMutationFn = async (data: RegisterType) =>
+//   await API.post("/auth/register", data);

@@ -8,7 +8,7 @@ magicLinkRoutes.post("/signup", magicLinkController.signUpWithMagicLink);
 magicLinkRoutes.post("/signin", magicLinkController.signInWithMagicLink);
 magicLinkRoutes.post("/resend", magicLinkController.resendMagicLink);
 magicLinkRoutes.get(
-  "/verify/:token",
+  "/authenticate/:token",
   AuthenticateMagicLinkJWTToken,
   magicLinkController.authenticateMagicLink
 );

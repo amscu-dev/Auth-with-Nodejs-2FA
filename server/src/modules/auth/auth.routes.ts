@@ -7,8 +7,8 @@ import { AuthenticateRefreshJWTToken } from "@/common/strategies/refresh-token-j
 const authRoutes = Router();
 
 // ! Register Routes
-authRoutes.post("/register", authController.register);
-authRoutes.post("/login", authController.login);
+authRoutes.post("/signup", authController.register);
+authRoutes.post("/signin", authController.login);
 authRoutes.post("/email/verify", authController.verifyEmail);
 // authRoutes.post("/email/resend", authController.verifyEmail);
 authRoutes.post("/password/forgot", authController.forgotPassword);

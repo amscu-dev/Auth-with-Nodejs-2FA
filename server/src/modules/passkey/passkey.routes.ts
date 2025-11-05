@@ -5,19 +5,19 @@ import { AuthenticateAccessJWTToken } from "@/common/strategies/access-token-jwt
 const passkeyRoutes = Router();
 
 passkeyRoutes.post(
-  "/register/init",
+  "/signup/init",
   passkeyController.generatePasskeySignUpSession
 );
 passkeyRoutes.post(
-  "/register/verify",
+  "/signup/verify",
   passkeyController.verifyPasskeySignUpSession
 );
 passkeyRoutes.post(
-  "/authenticate/init",
+  "/signin/init",
   passkeyController.generatePasskeySignInSession
 );
 passkeyRoutes.post(
-  "/authenticate/verify",
+  "/signin/verify",
   passkeyController.verifyPasskeySignInSession
 );
 
