@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/theme-provider";
+import QueryProvider from "@/context/query-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const dm_sans = DM_Sans({ subsets: ["latin"] });
 
@@ -20,14 +22,17 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <head />
         <body className={`bg-background ${dm_sans.className} antialiased  `}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </QueryProvider>
         </body>
       </html>
     </>
