@@ -1,38 +1,38 @@
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import {
   AuthEmailVerifyMutationFnBody,
-  AuthPasswordForgotMutationFn200,
-  AuthSignInMutationFn200,
-  EmailConfirmedSuccessResponse,
   ForgotPasswordRequestBody,
-  LogoutSuccessResponse,
-  RegistrationSuccessReponse,
   ResetPasswordRequestBody,
-  ResetPasswordSuccessResponse,
   UserLoginRequestBody,
   UserRegistrationRequestBody,
 } from "../client/client.schemas";
 import { AxiosErrorRes } from "@/config/axios.config";
 import {
   authEmailVerifyMutationFn,
+  AuthEmailVerifyMutationFnResult,
   authLogoutMutationFn,
+  AuthLogoutMutationFnResult,
   authPasswordForgotMutationFn,
+  AuthPasswordForgotMutationFnResult,
   authPasswordResetMutationFn,
+  AuthPasswordResetMutationFnResult,
   authSignInMutationFn,
+  AuthSignInMutationFnResult,
   authSignUpMutationFn,
+  AuthSignUpMutationFnResult,
 } from "../client/password-authentication-module";
 
 export const PasswordAuth = {
   SignUp: {
     useMutation: (
       options?: UseMutationOptions<
-        RegistrationSuccessReponse,
+        AuthSignUpMutationFnResult,
         AxiosErrorRes,
         UserRegistrationRequestBody
       >
     ) => {
       return useMutation<
-        RegistrationSuccessReponse,
+        AuthSignUpMutationFnResult,
         AxiosErrorRes,
         UserRegistrationRequestBody
       >({
@@ -46,13 +46,13 @@ export const PasswordAuth = {
   SignIn: {
     useMutation: (
       options?: UseMutationOptions<
-        AuthSignInMutationFn200,
+        AuthSignInMutationFnResult,
         AxiosErrorRes,
         UserLoginRequestBody
       >
     ) => {
       return useMutation<
-        AuthSignInMutationFn200,
+        AuthSignInMutationFnResult,
         AxiosErrorRes,
         UserLoginRequestBody
       >({
@@ -65,18 +65,18 @@ export const PasswordAuth = {
   VerifyEmail: {
     useMutation: (
       options?: UseMutationOptions<
-        EmailConfirmedSuccessResponse,
+        AuthEmailVerifyMutationFnResult,
         AxiosErrorRes,
         AuthEmailVerifyMutationFnBody
       >
     ) => {
       return useMutation<
-        EmailConfirmedSuccessResponse,
+        AuthEmailVerifyMutationFnResult,
         AxiosErrorRes,
         AuthEmailVerifyMutationFnBody
       >({
         ...options,
-        mutationKey: ["user"],
+        mutationKey: ["email-verified"],
         mutationFn: (data: AuthEmailVerifyMutationFnBody) =>
           authEmailVerifyMutationFn(data),
       });
@@ -85,18 +85,18 @@ export const PasswordAuth = {
   ForgotPassword: {
     useMutation: (
       options?: UseMutationOptions<
-        AuthPasswordForgotMutationFn200,
+        AuthPasswordForgotMutationFnResult,
         AxiosErrorRes,
         ForgotPasswordRequestBody
       >
     ) => {
       return useMutation<
-        AuthPasswordForgotMutationFn200,
+        AuthPasswordForgotMutationFnResult,
         AxiosErrorRes,
         ForgotPasswordRequestBody
       >({
         ...options,
-        mutationKey: ["user"],
+        mutationKey: ["password-forgot"],
         mutationFn: (data: ForgotPasswordRequestBody) =>
           authPasswordForgotMutationFn(data),
       });
@@ -105,18 +105,18 @@ export const PasswordAuth = {
   ResetPassword: {
     useMutation: (
       options?: UseMutationOptions<
-        ResetPasswordSuccessResponse,
+        AuthPasswordResetMutationFnResult,
         AxiosErrorRes,
         ResetPasswordRequestBody
       >
     ) => {
       return useMutation<
-        ResetPasswordSuccessResponse,
+        AuthPasswordResetMutationFnResult,
         AxiosErrorRes,
         ResetPasswordRequestBody
       >({
         ...options,
-        mutationKey: ["user"],
+        mutationKey: ["password-reset"],
         mutationFn: (data: ResetPasswordRequestBody) =>
           authPasswordResetMutationFn(data),
       });
@@ -124,9 +124,9 @@ export const PasswordAuth = {
   },
   Logout: {
     useMutation: (
-      options?: UseMutationOptions<LogoutSuccessResponse, AxiosErrorRes>
+      options?: UseMutationOptions<AuthLogoutMutationFnResult, AxiosErrorRes>
     ) => {
-      return useMutation<LogoutSuccessResponse, AxiosErrorRes>({
+      return useMutation<AuthLogoutMutationFnResult, AxiosErrorRes>({
         ...options,
         mutationKey: ["user"],
         mutationFn: () => authLogoutMutationFn(),

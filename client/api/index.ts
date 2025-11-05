@@ -1,5 +1,6 @@
+import { MagicLink } from "./hooks/magic-link-authentication.hooks";
 import PasswordAuth from "./hooks/password-authentication.hooks";
 
-const api = { PasswordAuth };
+const client = { PasswordAuth, MagicLink };
 
-export default api;
+export default client;
