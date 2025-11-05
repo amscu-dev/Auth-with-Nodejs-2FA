@@ -103,7 +103,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "400":
-          summary: Invalid credentials
           description: >
             Invalid credentials — the provided email or password is incorrect. 
             The client should notify the user and allow them to retry authentication.
@@ -133,7 +132,6 @@ paths:
                   example: n3910310n013912310sa
       responses:
         "200":
-          
           description: >
             Email verification successful. The user's email address has been confirmed, enabling them to complete the login process and access protected resources.
           headers:
@@ -144,7 +142,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmailConfirmedSuccessResponse"
         "400":
-          
           description: >
             Verification failed due to an invalid verification code state:
             1. The code has expired — the user must request a new verification code.
@@ -164,7 +161,6 @@ paths:
                   - $ref: "#/components/schemas/VerificationCodeExpiredError"
                   - $ref: "#/components/schemas/VerificationCodeConsumedError"
         "404":
-          
           description: >
             Verification failed, the provided verification code was not found.
             This may happen if the code is invalid or never issued. The user should request a new verification code.
@@ -191,7 +187,6 @@ paths:
               $ref: "#/components/schemas/ForgotPasswordRequestBody"
       responses:
         "200":
-          
           description: >
             Password reset request processed successfully. Depending on the user's account configuration:
             1. MFA pending — if the user has two-factor authentication enabled, an MFA verification step is required before sending the reset email.
@@ -213,7 +208,6 @@ paths:
                   - $ref: "#/components/schemas/MFAPendingResponse"
                   - $ref: "#/components/schemas/ForgotPasswordSuccessResponse"
         "404":
-          
           description: >
             User not found — no account exists for the provided email address. Ensure the email is correct and try again.
           headers:
@@ -224,7 +218,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "503":
-          
           description: >
             Email service unavailable — the system could not send the password reset email due to a temporary email service failure. Retry the request later.
           headers:
@@ -254,7 +247,6 @@ paths:
               $ref: "#/components/schemas/ResetPasswordRequestBody"
       responses:
         "200":
-          summary: Password reset successfully completed
           description: >
             Password reset completed successfully.  
             All existing authentication cookies are invalidated to ensure previous sessions are closed.  
@@ -269,7 +261,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ResetPasswordSuccessResponse"
         "404":
-          summary: Verification code or user not found
           description: >
             The provided verification code or associated user could not be found.  
             This may occur if the code is invalid or the user no longer exists in the system.
@@ -288,7 +279,6 @@ paths:
                   - $ref: "#/components/schemas/VerificationCodeNotFoundError"
                   - $ref: "#/components/schemas/UserNotFoundError"
         "400":
-          summary: Invalid or expired password reset request
           description: >
             The password reset request could not be completed due to invalid or expired data.  
             Possible causes include:
@@ -325,7 +315,6 @@ paths:
         This endpoint ensures seamless session continuity while maintaining security best practices.
       responses:
         "200":
-          summary: Access token successfully refreshed
           description: >
             Access token successfully refreshed.  
             The user's session remains active, and new authentication cookies are set.  
@@ -340,7 +329,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/RefreshTokenEndpointSuccessResponse"
         "401":
-          $ref: '#/components/responses/InvalidRefreshJwtToken'
+          $ref: "#/components/responses/InvalidRefreshJwtToken"
   /auth/logout:
     post:
       security:
@@ -355,7 +344,6 @@ paths:
         After a successful logout, the client should remove any cached session state and redirect the user to a login page.
       responses:
         "200":
-          summary: Logout successful
           description: >
             User successfully logged out.  
             All authentication cookies have been invalidated and removed to ensure session termination.  
@@ -370,7 +358,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/LogoutSuccessResponse"
         "401":
-          $ref: '#/components/responses/InvalidAccessJwtToken'
+          $ref: "#/components/responses/InvalidAccessJwtToken"
   /magic-link/signup:
     post:
       tags: [✨ Magic-Link Authentication]
@@ -388,7 +376,6 @@ paths:
               $ref: "#/components/schemas/MagicLinkSignUpRequestBody"
       responses:
         "200":
-          summary: Magic link signup request successful
           description: |
             Signup request successful — a magic link has been sent to the provided email address.
             The user must click the link to verify their email and activate their account.
@@ -400,7 +387,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/MagicLinkSignUpSuccessResponse"
         "401":
-          summary: Unauthorized — email already exists
           description: |
             Unauthorized — the email address is already registered or cannot be used for signup.
             The client should not attempt to resend the signup link for the same email.
@@ -412,7 +398,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmailAlreadyExistsError"
         "503":
-          summary: Email service unavailable
           description: |
             Service Unavailable — the email delivery service is temporarily unavailable or failed 
             to send the verification link. The client may retry after a short delay.
@@ -440,7 +425,6 @@ paths:
               $ref: "#/components/schemas/MagicLinkSignInRequestBody"
       responses:
         "200":
-          summary: Magic link sent successfully
           description: |
             Magic link successfully sent to the user's email address. 
             The user must click the link to complete authentication.
@@ -452,7 +436,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
         "404":
-          summary: User not found
           description: |
             Not Found. The specified email address does not match any registered user account. 
             The client should prompt the user to register or verify their email.
@@ -464,7 +447,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "503":
-          summary: Email service unavailable
           description: |
             Service Unavailable. The email delivery service is temporarily unavailable 
             or failed to send the magic link. The client may retry after a short delay.
@@ -493,7 +475,6 @@ paths:
               $ref: "#/components/schemas/MagicLinkSignInRequestBody"
       responses:
         "200":
-          summary: Magic link resent successfully
           description: |
             Magic link successfully sent to the user's email address.
           headers:
@@ -504,7 +485,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/MagicLinkSignInSuccessResponse"
         "404":
-          summary: User not found
           description: |
             Not Found. The specified email address does not match any registered user account. 
             The client should prompt the user to register or verify their email.
@@ -516,7 +496,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
         "503":
-          summary: Email service unavailable
           description: |
             Service Unavailable. The email delivery service is temporarily unavailable or failed to send the magic link. The client may retry after a short delay.
           headers:
@@ -545,7 +524,6 @@ paths:
             type: string
       responses:
         "200":
-          summary: Magic link verified successfully
           description: |
             Magic link verified successfully. The user's email has been confirmed (for signup verification) 
             or the user has been signed in (for passwordless authentication). 
@@ -560,7 +538,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/LoginSuccessResponse"
         "401":
-          $ref: '#/components/responses/InvalidMagicLinkJwtToken'
+          $ref: "#/components/responses/InvalidMagicLinkJwtToken"
   /mfa/setup:
     get:
       security:
@@ -574,7 +552,6 @@ paths:
         This endpoint requires the user to be authenticated via a valid access token cookie.
       responses:
         "200":
-          summary: MFA verification successful
           description: >
             MFA setup initiated successfully. Returns a temporary TOTP secret and a Base64-encoded QR code image. 
             The client should display the QR code to the user for scanning in their authenticator app.
@@ -586,7 +563,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/MfaSetupResponse"
         "409":
-          summary: MFA already enabled for user
           description: >
             Conflict. MFA is already enabled for this user. No new temporary secret is generated. 
             The user should proceed to login with MFA or disable MFA before attempting to setup again.
@@ -600,7 +576,6 @@ paths:
         "401":
           $ref: "#/components/responses/InvalidAccessJwtToken"
         "403":
-          summary: User not allowed to perform MFA setup
           description: >
             Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
             This typically occurs when the user does not have a password-based login method configured, 
@@ -646,7 +621,6 @@ paths:
                   example: "482913"
       responses:
         "200":
-          summary: MFA verification successful
           description: >
             The provided MFA code was valid. The user's MFA setup is confirmed
             or the login session is authenticated. No further action is required.
@@ -658,7 +632,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/MFAVerifySetupSuccessResponse"
         "400":
-          summary: Invalid MFA code or temporary secret expired
           description: >
             The MFA verification failed due to an invalid or expired code, or because the temporary secret generated during setup has expired. The user should request a new code or restart the MFA setup process.
           headers:
@@ -678,7 +651,6 @@ paths:
         "401":
           $ref: "#/components/responses/InvalidAccessJwtToken"
         "403":
-          summary: Action not allowed
           description: >
             Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
             This typically occurs when the user does not have a password-based login method configured, 
@@ -693,7 +665,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/MFAForbiddenError"
         "409":
-          summary: MFA already enabled
           description: >
             The user has already enabled MFA for their account. A new MFA setup cannot be created until the existing one is disabled.
           headers:
@@ -724,22 +695,15 @@ paths:
               type: object
               required:
                 - code
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    required:
-                      - code
-                    properties:
-                      code:
-                        type: string
-                        description: >
-                          The 6-digit one-time password (OTP) generated by the user's authenticator app.  
-                          Must be valid at the time of request.
-                        example: "481293"
+              properties:
+                code:
+                  type: string
+                  description: >
+                    The 6-digit one-time password (OTP) generated by the user's authenticator app.  
+                    Must be valid at the time of request.
+                  example: "481293"
       responses:
-        '200':
-          summary: MFA disabled successfully
+        "200":
           description: >
             Two-Factor Authentication (2FA) has been successfully disabled for the authenticated user.  
             The user's account no longer requires MFA verification during login.
@@ -749,9 +713,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MFARevokeSuccessReponse'
-        '400':
-          summary: Invalid code
+                $ref: "#/components/schemas/MFARevokeSuccessReponse"
+        "400":
           description: >
             Bad Request — The provided MFA verification code is invalid or expired.  
             The client should request a new code from the authenticator app and try again.
@@ -761,11 +724,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MfaInvalidVerificationCodeError'
+                $ref: "#/components/schemas/MfaInvalidVerificationCodeError"
         "401":
           $ref: "#/components/responses/InvalidAccessJwtToken"
         "403":
-          summary: Action not allowed
           description: >
             Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
             This typically occurs when the user does not have a password-based login method configured, 
@@ -779,8 +741,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MFAForbiddenError"
-        '404':
-          summary: User not found
+        "404":
           description: >
             Not Found — The authenticated user does not exist in the system or could not be retrieved.  
             This may indicate that the user was deleted or the JWT token references an invalid account.
@@ -790,9 +751,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserNotFoundError'
-        '409':
-          summary: MFA already disabled
+                $ref: "#/components/schemas/UserNotFoundError"
+        "409":
           description: >
             Conflict — Two-Factor Authentication is already disabled for this account.  
             No further action is required.
@@ -802,7 +762,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MfaAlreadyDisabledError'
+                $ref: "#/components/schemas/MfaAlreadyDisabledError"
   /mfa/backup-code/consume:
     post:
       security:
@@ -822,17 +782,15 @@ paths:
           application/json:
             schema:
               type: object
-              required: 
+              required:
                 - backupCode
-              properties: 
+              properties:
                 backupCode:
-                  type: string  
+                  type: string
                   description: The valid unused backup code associated with the user's account.
                   example: "3F9A2B7QK"
       responses:
-        responses:
-        '200':
-          summary: MFA disabled successfully
+        "200":
           description: >
             Two-factor authentication has been successfully disabled for the user's account.  
             All existing backup codes and the MFA secret have been removed.
@@ -842,9 +800,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MFARevokeSuccessReponse'
-        '400':
-          summary: Invalid or expired backup code
+                $ref: "#/components/schemas/MFARevokeSuccessReponse"
+        "400":
           description: >
             The provided backup code is invalid, has already been used, or does not match any active codes associated with the user's account.  
             The user should try a different valid backup code.
@@ -854,11 +811,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InvalidBackupCodeError'
+                $ref: "#/components/schemas/InvalidBackupCodeError"
         "401":
           $ref: "#/components/responses/InvalidAccessJwtToken"
         "403":
-          summary: Action not allowed
           description: >
             Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
             This typically occurs when the user does not have a password-based login method configured, 
@@ -872,8 +828,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MFAForbiddenError"
-        '404':
-          summary: User not found
+        "404":
           description: >
             Not Found — The authenticated user does not exist in the system or could not be retrieved.  
             This may indicate that the user was deleted or the JWT token references an invalid account.
@@ -883,9 +838,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserNotFoundError'
-        '409':
-          summary: MFA already disabled
+                $ref: "#/components/schemas/UserNotFoundError"
+        "409":
           description: >
             Conflict — Two-Factor Authentication is already disabled for this account.  
             No further action is required.
@@ -895,7 +849,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MfaAlreadyDisabledError'
+                $ref: "#/components/schemas/MfaAlreadyDisabledError"
   /mfa/backup-code/login:
     post:
       security:
@@ -916,16 +870,15 @@ paths:
           application/json:
             schema:
               type: object
-              required: 
+              required:
                 - backupCode
-              properties: 
+              properties:
                 backupCode:
-                  type: string  
+                  type: string
                   description: The valid unused backup code associated with the user's account.
                   example: "3F9A2B7QK"
       responses:
         "200":
-          summary: MFA backup code login successful
           description: >
             The user has been successfully authenticated using a valid backup code.  
             A new session is created, and both access and refresh tokens are returned and set as cookies.  
@@ -939,8 +892,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LoginSuccessResponse"
-        '400':
-          summary: Invalid or expired backup code
+        "400":
           description: >
             The provided backup code is invalid, has already been used, or does not match any active codes associated with the user's account.  
             The user should try a different valid backup code.
@@ -950,11 +902,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InvalidBackupCodeError'
+                $ref: "#/components/schemas/InvalidBackupCodeError"
         "401":
           $ref: "#/components/responses/InvalidMFAJwtToken"
         "403":
-          summary: Action not allowed
           description: >
             Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
             This typically occurs when the user does not have a password-based login method configured, 
@@ -968,8 +919,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MFAForbiddenError"
-        '404':
-          summary: User not found
+        "404":
           description: >
             Not Found — The authenticated user does not exist in the system or could not be retrieved.  
             This may indicate that the user was deleted or the JWT token references an invalid account.
@@ -979,9 +929,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserNotFoundError'
+                $ref: "#/components/schemas/UserNotFoundError"
   /mfa/verify/login:
-    post: 
+    post:
       security:
         - MfaTokenCokie: []
       tags: [🕹️Multi Factor Authentication Endpoints]
@@ -993,29 +943,23 @@ paths:
       requestBody:
         required: true
         description: >
-          Contains the one-time MFA code generated by the user's authenticator app.  
+          Contains the one-time MFA code generated by the user's authenticator app.
         content:
           application/json:
             schema:
               type: object
               required:
                 - code
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    required:
-                      - code
-                    properties:
-                      code:
-                        type: string
-                        description: >
-                          The 6-digit one-time password (OTP) generated by the user's authenticator app.  
-                          Must be valid at the time of request.
-                        example: "481293"
+              properties:
+                code:
+                  type: string
+                  description: >
+                    The 6-digit one-time password (OTP) generated by the user's authenticator app.  
+                    Must be valid at the time of request.
+                  example: "481293"
+
       responses:
         "200":
-          summary: MFA verification successful
           description: >
             The provided MFA code has been successfully verified.  
             A new user session is created, and both access and refresh tokens are set as cookies.  
@@ -1029,8 +973,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LoginSuccessResponse"
-        '400':
-          summary: Invalid MFA code or MFA not enabled
+        "400":
           description: >
             The provided MFA code is invalid, expired, or the user does not have MFA enabled.  
             This can occur if:
@@ -1049,12 +992,11 @@ paths:
                   $ref: "#/components/examples/MfaInvalidVerificationCodeErrorExample"
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/MfaNotEnabledError'
-                  - $ref: '#/components/schemas/MfaInvalidVerificationCodeError'
+                  - $ref: "#/components/schemas/MfaNotEnabledError"
+                  - $ref: "#/components/schemas/MfaInvalidVerificationCodeError"
         "401":
           $ref: "#/components/responses/InvalidMFAJwtToken"
         "403":
-          summary: Action not allowed
           description: >
             Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
             This typically occurs when the user does not have a password-based login method configured, 
@@ -1068,8 +1010,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MFAForbiddenError"
-        '404':
-          summary: User not found
+        "404":
           description: >
             Not Found — The authenticated user does not exist in the system or could not be retrieved.  
             This may indicate that the user was deleted or the JWT token references an invalid account.
@@ -1079,10 +1020,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserNotFoundError'
+                $ref: "#/components/schemas/UserNotFoundError"
   /mfa/verify/forgot-password:
     post:
-      post: 
       security:
         - MfaTokenCokie: []
       tags: [🕹️Multi Factor Authentication Endpoints]
@@ -1094,38 +1034,30 @@ paths:
       requestBody:
         required: true
         description: >
-          Contains the one-time MFA code generated by the user's authenticator app.  
+          Contains the one-time MFA code generated by the user's authenticator app.
         content:
           application/json:
             schema:
               type: object
               required:
                 - code
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    required:
-                      - code
-                    properties:
-                      code:
-                        type: string
-                        description: >
-                          The 6-digit one-time password (OTP) generated by the user's authenticator app.  
-                          Must be valid at the time of request.
-                        example: "481293"
+              properties:
+                code:
+                  type: string
+                  description: >
+                    The 6-digit one-time password (OTP) generated by the user's authenticator app.  
+                    Must be valid at the time of request.
+                  example: "481293"
       responses:
-        '200':
-          summary: MFA code verified successfully
+        "200":
           description: >
             The provided MFA code was valid. A password reset email has been sent to the user's registered email address, and the user should follow the link to complete the password change.  
             The temporary MFA token cookie has been cleared to prevent reuse.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MFARequestChangePasswordSuccessReponse'
-        '400':
-          summary: Invalid MFA code or MFA not enabled
+                $ref: "#/components/schemas/MFARequestChangePasswordSuccessReponse"
+        "400":
           description: >
             The provided MFA code is invalid, expired, or the user does not have MFA enabled.  
             This can occur if:
@@ -1144,12 +1076,11 @@ paths:
                   $ref: "#/components/examples/MfaInvalidVerificationCodeErrorExample"
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/MfaNotEnabledError'
-                  - $ref: '#/components/schemas/MfaInvalidVerificationCodeError'
+                  - $ref: "#/components/schemas/MfaNotEnabledError"
+                  - $ref: "#/components/schemas/MfaInvalidVerificationCodeError"
         "401":
           $ref: "#/components/responses/InvalidMFAJwtToken"
         "403":
-          summary: Action not allowed
           description: >
             Forbidden. The user is authenticated but is not allowed to perform the requested MFA action. 
             This typically occurs when the user does not have a password-based login method configured, 
@@ -1163,8 +1094,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MFAForbiddenError"
-        '404':
-          summary: User not found
+        "404":
           description: >
             Not Found — The authenticated user does not exist in the system or could not be retrieved.  
             This may indicate that the user was deleted or the JWT token references an invalid account.
@@ -1174,9 +1104,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserNotFoundError'
+                $ref: "#/components/schemas/UserNotFoundError"
         "503":
-          summary: Email service unavailable
           description: >
             The password reset email could not be sent because the email delivery service is temporarily unavailable or failed.  
             The client may retry the request after a short delay.
@@ -1195,7 +1124,7 @@ paths:
         Starts the registration process for a new user using passwordless passkey authentication. 
         The client provides the user's name and email address. If the email is not already registered, the server generates a **PublicKeyCredentialCreationOptions** object required by the WebAuthn API.
         This object includes a challenge, relying party information, user details, allowed algorithms, and authenticator selection criteria. It must be sent back to the client to complete the registration on the authenticator (device or platform). The server also stores a temporary PasskeyChallengeSession to track the challenge for later verification.
-      requestBody: 
+      requestBody:
         required: true
         description: >
           Contains the user's registration information:
@@ -1218,8 +1147,7 @@ paths:
                   description: The email address of the user registering a passkey.
                   example: "john.doe@gmail.com"
       responses:
-        '201':
-          summary: Passkey registration session created
+        "201":
           description: >
             The server successfully generated a **PublicKeyCredentialCreationOptions** object for passkey registration.
             This object contains all necessary information for the client to complete registration on the user's device.
@@ -1230,9 +1158,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse'
-        '404':  
-          summary: Email already registered
+                $ref: "#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse"
+        "404":
           description: >
             Registration failed because the provided email address is already associated with an existing account.
             The client should prompt the user to log in or use a different email for registration.
@@ -1242,7 +1169,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmailAlreadyExistsError'
+                $ref: "#/components/schemas/EmailAlreadyExistsError"
   /passkey/register/verify:
     post:
       tags: [🎭 Passkey Authentication]
@@ -1257,10 +1184,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasskeyCompletRegistrationRequestBody'
+              $ref: "#/components/schemas/PasskeyCompletRegistrationRequestBody"
       responses:
-        '200':
-          summary: Passkey registration verified and user created successfully
+        "200":
           description: |
             The passkey registration was successfully verified. 
             A new user account has been created and a verification email has been sent to the provided email address.
@@ -1274,9 +1200,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegistrationSuccessReponse'
-        '401':
-          summary: Passkey verification failed or session expired
+                $ref: "#/components/schemas/RegistrationSuccessReponse"
+        "401":
           description: |
             The authentication failed due to one of the following reasons:
               - Passkey registration session not found
@@ -1290,18 +1215,17 @@ paths:
             application/json:
               examples:
                 PasskeyChallengeSessionExpired:
-                  $ref: '#/components/examples/PasskeyChallengeSessionExpiredErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionExpiredErrorExample"
                 PasskeyChallengeSessionNotFound:
-                  $ref: '#/components/examples/PasskeyChallengeSessionNotFoundErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionNotFoundErrorExample"
                 PasskeyChallengeVerification:
-                  $ref: '#/components/examples/PasskeyChallengeVerificationErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeVerificationErrorExample"
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionNotFoundError'
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionExpiredError'
-                  - $ref: '#/components/schemas/PasskeyChallengeVerificationError'
-        '400':
-          summary: Invalid passkey session purpose
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionNotFoundError"
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionExpiredError"
+                  - $ref: "#/components/schemas/PasskeyChallengeVerificationError"
+        "400":
           description: |
             The passkey registration session exists but the purpose does not match "signup". 
             This can occur if a session intended for a different operation is reused.
@@ -1311,9 +1235,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionInvalidPurposeError'
-        '409':
-          summary: Passkey session already consumed
+                $ref: "#/components/schemas/PasskeyChallengeSessionInvalidPurposeError"
+        "409":
           description: |
             The passkey registration session has already been used for verification. 
             This ensures that a registration session cannot be reused ( prevent replay attacks).
@@ -1323,7 +1246,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
+                $ref: "#/components/schemas/PasskeyChallengeSessionConsumedError"
   /passkey/authenticate/init:
     post:
       tags: [🎭 Passkey Authentication]
@@ -1331,12 +1254,12 @@ paths:
       description: >
         Initializes a new **WebAuthn passkey authentication session** for a user who wants to sign in using a registered passkey.  
         The endpoint generates a new WebAuthn **authentication challenge** and returns a set of `PublicKeyCredentialRequestOptions` that the frontend must pass to the browser's WebAuthn API (`navigator.credentials.get`).  
-        
+
         The generated challenge is stored securely in the backend and will later be verified during the `/passkey/authenticate/verify` step.  
         No user identifier is required at this stage, as the passkey authenticator handles user identification during the authentication process.
-        
+
         This endpoint should be called from the frontend **before** invoking the browser WebAuthn API.
-        
+
         ---
         **Typical flow:**
         1. Frontend calls `POST /passkey/authenticate/init`
@@ -1345,15 +1268,14 @@ paths:
         4. Frontend calls `navigator.credentials.get(options)` with those options
         5. The result is sent to `/passkey/authenticate/verify` for final verification
       responses:
-        '201':
-          summary: Passkey sign-in session successfully created
+        "201":
           description: >
             The passkey sign-in session has been created successfully.  
             The response contains the `PublicKeyCredentialRequestOptions` object required by the browser’s WebAuthn API to initiate user authentication.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyGenerateSignInSessionSuccessResponse'
+                $ref: "#/components/schemas/PasskeyGenerateSignInSessionSuccessResponse"
   /passkey/authenticate/verify:
     post:
       tags: [🎭 Passkey Authentication]
@@ -1361,7 +1283,7 @@ paths:
       description: |
         Completes the **passkey-based sign-in process** by verifying the WebAuthn authentication response 
         returned by the browser after calling `navigator.credentials.get()`.  
-        
+
         This endpoint:
           - Validates the cryptographic response (challenge, signature, authenticator data)
           - Ensures the passkey session is still valid and not consumed
@@ -1379,9 +1301,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasskeyCompletAuthenticationRequestBody'
+              $ref: "#/components/schemas/PasskeyCompletAuthenticationRequestBody"
       responses:
-        '200':
+        "200":
           description: |
             The passkey authentication response has been verified and the user successfully logged in.  
             Depending on the user's verification status, one of the following responses is returned:
@@ -1412,7 +1334,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserNotFoundError"
-        '401':
+        "401":
           description: |
             The authentication failed due to one of the following reasons:
               - Passkey registration session not found
@@ -1426,21 +1348,20 @@ paths:
             application/json:
               examples:
                 PasskeyChallengeSessionExpired:
-                  $ref: '#/components/examples/PasskeyChallengeSessionExpiredErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionExpiredErrorExample"
                 PasskeyChallengeSessionNotFound:
-                  $ref: '#/components/examples/PasskeyChallengeSessionNotFoundErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionNotFoundErrorExample"
                 PasskeyChallengeVerification:
-                  $ref: '#/components/examples/PasskeyChallengeVerificationErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeVerificationErrorExample"
                 PasskeyNotFound:
-                  $ref: '#/components/examples/PasskeyNotFoundErrorExample'
+                  $ref: "#/components/examples/PasskeyNotFoundErrorExample"
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionNotFoundError'
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionExpiredError'
-                  - $ref: '#/components/schemas/PasskeyChallengeVerificationError'
-                  - $ref: '#/components/schemas/PasskeyNotFoundError'
-        '400':
-          summary: Invalid passkey session purpose
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionNotFoundError"
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionExpiredError"
+                  - $ref: "#/components/schemas/PasskeyChallengeVerificationError"
+                  - $ref: "#/components/schemas/PasskeyNotFoundError"
+        "400":
           description: |
             The passkey registration session exists but the purpose does not match "signup". 
             This can occur if a session intended for a different operation is reused.
@@ -1450,9 +1371,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionInvalidPurposeError'
-        '409':
-          summary: Passkey session already consumed
+                $ref: "#/components/schemas/PasskeyChallengeSessionInvalidPurposeError"
+        "409":
           description: |
             The passkey registration session has already been used for verification. 
             This ensures that a registration session cannot be reused ( prevent replay attacks).
@@ -1462,7 +1382,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
+                $ref: "#/components/schemas/PasskeyChallengeSessionConsumedError"
   /passkey/add-passkey/init/{userid}:
     post:
       security:
@@ -1482,32 +1402,32 @@ paths:
 
         This route requires a valid **access token cookie** for authentication.
       parameters:
-      - name: userid
-        in: path
-        required: true
-        description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
-        schema:
-          type: string
-          example: "64f2d2ab8e2e1b03b6f3cd44"
+        - name: userid
+          in: path
+          required: true
+          description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
+          schema:
+            type: string
+            example: "64f2d2ab8e2e1b03b6f3cd44"
       responses:
-        '201':
+        "201":
           description: |
             Returns the WebAuthn registration challenge and configuration parameters required for the browser to begin passkey registration.
             The frontend should use this response to call `navigator.credentials.create()` and generate a new credential.
-          content:  
+          content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse'
-        '401':
-          $ref: '#/components/responses/InvalidAccessJwtToken'
-        '403':
+                $ref: "#/components/schemas/PasskeyGenerateSignUpSessionSuccessResponse"
+        "401":
+          $ref: "#/components/responses/InvalidAccessJwtToken"
+        "403":
           description: |
             Returned when the `{userid}` path parameter does not match the authenticated user.
             This ensures that users cannot create passkeys for other accounts.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ForbiddenError'
+                $ref: "#/components/schemas/ForbiddenError"
   /passkey/add-passkey/verify/{userid}:
     post:
       security:
@@ -1517,21 +1437,21 @@ paths:
       description: |
         Completes the registration of a new **Passkey** for the currently authenticated user.  
         This endpoint verifies the passkey attestation response generated by the client after initiating the "Add new passkey" process.  
-        
+
         Once verification succeeds:
           - The passkey is securely registered and linked to the user’s account.
           - The corresponding challenge session is marked as consumed.
           - A success response containing the stored passkey details is returned.
-        
+
         Access to this endpoint requires a valid authenticated session and a matching user ID in the path parameter.
       parameters:
-      - name: userid
-        in: path
-        required: true
-        description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
-        schema:
-          type: string
-          example: "64f2d2ab8e2e1b03b6f3cd44"
+        - name: userid
+          in: path
+          required: true
+          description: The unique identifier of the user who is adding a new passkey. Must match the currently authenticated user.
+          schema:
+            type: string
+            example: "64f2d2ab8e2e1b03b6f3cd44"
       requestBody:
         required: true
         description: |
@@ -1540,10 +1460,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasskeyCompletRegistrationRequestBody'
+              $ref: "#/components/schemas/PasskeyCompletRegistrationRequestBody"
       responses:
-        '201':
-          summary: Passkey successfully verified and added
+        "201":
           description: >
             The provided passkey attestation response was successfully verified,  
             and a new passkey credential has been securely added to the user's account.  
@@ -1554,15 +1473,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyAddedSuccessResponse'
-        '401':
-          summary: Passkey verification failed or session expired
+                $ref: "#/components/schemas/PasskeyAddedSuccessResponse"
+        "401":
           description: |
             The verification of the passkey failed due to one of the following reasons:
               - The registration session was not found or has expired.
               - The provided credential is invalid or does not match the expected challenge.
               - The user's authentication token is missing or invalid.
-            
+
             The client should prompt the user to restart the passkey registration process.
           headers:
             X-Request-Id:
@@ -1571,13 +1489,13 @@ paths:
             application/json:
               examples:
                 PasskeyChallengeSessionExpired:
-                  $ref: '#/components/examples/PasskeyChallengeSessionExpiredErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionExpiredErrorExample"
                 PasskeyChallengeSessionNotFound:
-                  $ref: '#/components/examples/PasskeyChallengeSessionNotFoundErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionNotFoundErrorExample"
                 PasskeyChallengeVerification:
-                  $ref: '#/components/examples/PasskeyChallengeVerificationErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeVerificationErrorExample"
                 PasskeyNotFound:
-                  $ref: '#/components/examples/PasskeyNotFoundErrorExample'
+                  $ref: "#/components/examples/PasskeyNotFoundErrorExample"
                 AuthenticationTokenNotFound:
                   $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
                 AccessTokenType:
@@ -1594,10 +1512,10 @@ paths:
                   $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionNotFoundError'
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionExpiredError'
-                  - $ref: '#/components/schemas/PasskeyChallengeVerificationError'
-                  - $ref: '#/components/schemas/PasskeyNotFoundError'
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionNotFoundError"
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionExpiredError"
+                  - $ref: "#/components/schemas/PasskeyChallengeVerificationError"
+                  - $ref: "#/components/schemas/PasskeyNotFoundError"
                   - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
                   - $ref: "#/components/schemas/AccessTokenTypeError"
                   - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
@@ -1605,20 +1523,18 @@ paths:
                   - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
                   - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
                   - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
-        '400':
-          summary: Invalid passkey session purpose
+        "400":
           description: >
             The provided challenge session exists, but its purpose does not match `"add-new-key"`.  
             This can occur if a session intended for another purpose (e.g., login or signup) is reused.
           headers:
-              X-Request-Id:
-                $ref: "#/components/headers/XRequestId"
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionInvalidPurposeError'
-        '409':
-          summary: Passkey session already consumed
+                $ref: "#/components/schemas/PasskeyChallengeSessionInvalidPurposeError"
+        "409":
           description: >
             The passkey registration session has already been used.  
             This safeguard prevents replay attacks by ensuring a challenge session cannot be reused.
@@ -1628,9 +1544,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
+                $ref: "#/components/schemas/PasskeyChallengeSessionConsumedError"
         "403":
-          summary: Forbidden – user mismatch
           description: >
             The authenticated user does not match the user ID provided in the path parameter.  
             Users are only allowed to add passkeys to their own accounts.
@@ -1640,9 +1555,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ForbiddenError'
+                $ref: "#/components/schemas/ForbiddenError"
   /passkey/remove-key/init/{userid}/{credentialid}:
-    post: 
+    post:
       security:
         - AccessTokenCokie: []
       tags: [🎭 Passkey Management]
@@ -1652,33 +1567,32 @@ paths:
         The user must be authenticated and authorized to remove a specific passkey, identified by the `credentialid`.  
         Upon successful initiation, a passkey removal session is created, and options for the passkey removal request (such as challenge data) are returned.  
         The challenge session is created to ensure that the request is authentic, and no unauthorized changes can be made to the passkey list.
-        
+
         **Important:** 
         - The user must be authenticated using a valid access token (passed via cookies).
         - The `userid` and `credentialid` parameters must match the currently authenticated user and the passkey being removed.
       parameters:
-      - name: userid
-        in: path
-        required: true
-        description: >
-          The unique identifier of the user who is removing a passkey.  
-          This must match the authenticated user's ID. Only the user who owns the passkey can initiate the removal.
-        schema:
-          type: string
-          example: "64f2d2ab8e2e1b03b6f3cd44"
+        - name: userid
+          in: path
+          required: true
+          description: >
+            The unique identifier of the user who is removing a passkey.  
+            This must match the authenticated user's ID. Only the user who owns the passkey can initiate the removal.
+          schema:
+            type: string
+            example: "64f2d2ab8e2e1b03b6f3cd44"
 
-      - name: credentialid
-        in: path
-        required: true
-        description: >
-          The unique identifier of the passkey credential that is being removed.  
-          This should match the credential ID of the passkey to be deleted.
-        schema:
-          type: string
-          example: "a1b2c3d4e5f6789ghijk01234lm56789"
+        - name: credentialid
+          in: path
+          required: true
+          description: >
+            The unique identifier of the passkey credential that is being removed.  
+            This should match the credential ID of the passkey to be deleted.
+          schema:
+            type: string
+            example: "a1b2c3d4e5f6789ghijk01234lm56789"
       responses:
-        '201':
-          summary: Passkey removal session initiated successfully
+        "201":
           description: >
             The passkey removal session has been successfully created, and challenge options for removing the passkey are returned.  
             The user must complete the challenge to finalize the removal process.
@@ -1688,9 +1602,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyGenerateRemoveKeySuccessResponse'
+                $ref: "#/components/schemas/PasskeyGenerateRemoveKeySuccessResponse"
         "403":
-          summary: Forbidden – user mismatch
           description: >
             The authenticated user does not match the user ID provided in the path parameter.  
             Users are only allowed to add passkeys to their own accounts.
@@ -1700,9 +1613,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ForbiddenError'
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
-          summary: Passkey not found
           description: >
             The passkey specified by the `credentialid` was not found in the system.  
             This error occurs when the provided credential ID does not exist or is invalid.
@@ -1712,9 +1624,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyNotFoundError'
+                $ref: "#/components/schemas/PasskeyNotFoundError"
         "401":
-          $ref: '#/components/responses/InvalidAccessJwtToken'
+          $ref: "#/components/responses/InvalidAccessJwtToken"
   /passkey/remove-key/verify/{userid}/{credentialid}:
     delete:
       security:
@@ -1726,25 +1638,25 @@ paths:
         The request must include the user ID and the credential ID of the passkey to be removed.
         The user can only remove their own passkeys. This action requires authentication and the provided session must be valid. If successful, the passkey will be permanently deleted from the system, and the session used for verification will be marked as consumed.
       parameters:
-      - name: userid
-        in: path
-        required: true
-        description: >
-          The unique identifier of the user who is removing a passkey.  
-          This must match the authenticated user's ID. Only the user who owns the passkey can initiate the removal.
-        schema:
-          type: string
-          example: "64f2d2ab8e2e1b03b6f3cd44"
+        - name: userid
+          in: path
+          required: true
+          description: >
+            The unique identifier of the user who is removing a passkey.  
+            This must match the authenticated user's ID. Only the user who owns the passkey can initiate the removal.
+          schema:
+            type: string
+            example: "64f2d2ab8e2e1b03b6f3cd44"
 
-      - name: credentialid
-        in: path
-        required: true
-        description: >
-          The unique identifier of the passkey credential that is being removed.  
-          This should match the credential ID of the passkey to be deleted.
-        schema:
-          type: string
-          example: "a1b2c3d4e5f6789ghijk01234lm56789"
+        - name: credentialid
+          in: path
+          required: true
+          description: >
+            The unique identifier of the passkey credential that is being removed.  
+            This should match the credential ID of the passkey to be deleted.
+          schema:
+            type: string
+            example: "a1b2c3d4e5f6789ghijk01234lm56789"
       requestBody:
         description: >
           The authentication response containing the necessary data for validating the passkey removal.
@@ -1753,10 +1665,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasskeyCompletAuthenticationRequestBody'
+              $ref: "#/components/schemas/PasskeyCompletAuthenticationRequestBody"
       responses:
-        '204':
-          summary: Successfully removed the passkey
+        "204":
           description: >
             The passkey credential was successfully removed from the user's account.
             The associated session for verification has been marked as consumed.
@@ -1766,9 +1677,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyRemovedSuccessResponse'
-        '400':
-          summary: Invalid passkey session
+                $ref: "#/components/schemas/PasskeyRemovedSuccessResponse"
+        "400":
           description: >
             The passkey session is invalid, possibly due to incorrect purpose or expired session. 
             Please initiate the process again.
@@ -1778,9 +1688,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionInvalidPurposeError'
-        '403':
-          summary: Forbidden – user mismatch
+                $ref: "#/components/schemas/PasskeyChallengeSessionInvalidPurposeError"
+        "403":
           description: >
             The authenticated user does not match the user ID provided in the path parameter.  
             Users are only allowed to remove passkeys from their own accounts.
@@ -1790,9 +1699,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ForbiddenError'
-        '404':
-          summary: Passkey not found
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
           description: >
             The specified passkey credential could not be found or is no longer associated with the user.
             Please check the provided credential ID.
@@ -1802,9 +1710,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyNotFoundError'
-        '401':
-          summary: Unauthorized – Invalid or Expired Authentication Token or Passkey Challenge
+                $ref: "#/components/schemas/PasskeyNotFoundError"
+        "401":
           description: >
             The provided authentication token is either invalid, expired, or missing, or there is an issue with the passkey authentication challenge. This may occur for several reasons:
             - **Invalid Token**: The authentication token provided does not match any active session, or the user ID does not match the token's user.
@@ -1814,7 +1721,7 @@ paths:
             - **Passkey Challenge Session Not Found**: The passkey challenge session associated with the user was not found, or it may have been invalidated.
             - **Passkey Challenge Session Expired**: The passkey challenge session has expired, meaning it is no longer valid for completing the authentication.
             - **Passkey Verification Error**: The passkey verification failed, either due to incorrect credentials, an expired challenge, or a mismatch in the expected data (such as the challenge itself, or the origin/ID).
-            
+
             If you encounter this error, the following checks may help:
             - Ensure that the authentication token is valid and has not expired or been revoked.
             - Make sure the token corresponds to the correct user session.
@@ -1831,11 +1738,11 @@ paths:
             application/json:
               examples:
                 PasskeyChallengeSessionNotFound:
-                  $ref: '#/components/examples/PasskeyChallengeSessionNotFoundErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionNotFoundErrorExample"
                 PasskeyChallengeSessionExpired:
-                  $ref: '#/components/examples/PasskeyChallengeSessionExpiredErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeSessionExpiredErrorExample"
                 PasskeyChallengeVerification:
-                  $ref: '#/components/examples/PasskeyChallengeVerificationErrorExample'
+                  $ref: "#/components/examples/PasskeyChallengeVerificationErrorExample"
                 AuthenticationTokenNotFound:
                   $ref: "#/components/examples/AuthenticationTokenNotFoundErrorExample"
                 AccessTokenType:
@@ -1852,9 +1759,9 @@ paths:
                   $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionNotFoundError'
-                  - $ref: '#/components/schemas/PasskeyChallengeSessionExpiredError'
-                  - $ref: '#/components/schemas/PasskeyChallengeVerificationError'
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionNotFoundError"
+                  - $ref: "#/components/schemas/PasskeyChallengeSessionExpiredError"
+                  - $ref: "#/components/schemas/PasskeyChallengeVerificationError"
                   - $ref: "#/components/schemas/AuthenticationTokenNotFoundError"
                   - $ref: "#/components/schemas/AccessTokenTypeError"
                   - $ref: "#/components/schemas/AuthenticationTokenUserNotFoundError"
@@ -1862,8 +1769,7 @@ paths:
                   - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
                   - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
                   - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
-        '409':
-          summary: Passkey challenge session already consumed
+        "409":
           description: >
             The passkey challenge session has already been used to remove a passkey. Please restart the process.
           headers:
@@ -1872,7 +1778,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyChallengeSessionConsumedError'
+                $ref: "#/components/schemas/PasskeyChallengeSessionConsumedError"
   /passkey/all/{userid}:
     get:
       security:
@@ -1885,15 +1791,15 @@ paths:
         Each passkey returned will include essential details such as the credential ID, the associated provider (`aaguid`), the date it was created, 
         and the last time it was used. The response also includes metadata with the total count of passkeys retrieved.
       parameters:
-      - name: userId
-        in: path
-        required: true
-        description: The unique identifier of the user for whom the sessions are being retrieved.
-        schema:
-          type: string
-          example: "60c72b2f9f1b2c001c8a3e5f"
+        - name: userid
+          in: path
+          required: true
+          description: The unique identifier of the user for whom the sessions are being retrieved.
+          schema:
+            type: string
+            example: "60c72b2f9f1b2c001c8a3e5f"
       responses:
-        '200':
+        "200":
           description: >
             The passkeys for the authenticated user have been successfully retrieved. The response includes the details of each passkey,
             such as the credential ID, the associated provider (`aaguid`), and the creation date. The metadata includes the total count 
@@ -1904,19 +1810,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PasskeyGetAllPasskeyByUserIdSuccessResponse'
-        '401':
-          $ref: '#/components/responses/InvalidAccessJwtToken'
-        '403':
+                $ref: "#/components/schemas/PasskeyGetAllPasskeyByUserIdSuccessResponse"
+        "401":
+          $ref: "#/components/responses/InvalidAccessJwtToken"
+        "403":
           description: >
             The `userid` parameter does not match the authenticated user. Only the authenticated user can retrieve their own passkeys.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
           content:
-            application/json: 
-              schema: 
-                $ref: '#/components/schemas/ForbiddenError'
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
   /session/all:
     get:
       security:
@@ -1926,13 +1832,12 @@ paths:
       description: >
         Retrieves a list of all **active login sessions** associated with the authenticated user.  
         This endpoint allows a user to view all currently valid sessions across devices and browsers, helping with account activity monitoring and session management.  
-        
+
         Each returned session includes device information (`userAgent`), creation and expiration timestamps, and a boolean flag (`isCurrent`) indicating whether it corresponds to the current active session (the one used to make the request).  
-        
+
         Expired sessions are automatically filtered out and are **not included** in the response.
       responses:
-        '200':
-          summary: Active sessions retrieved successfully
+        "200":
           description: >
             The request was successful and returned a list of the user's active sessions.  
             Each session entry contains user agent details (browser, OS, platform), creation and expiration dates, and a flag marking the current session.
@@ -1942,33 +1847,32 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetAllSessionsSuccessResponse'
-        '401':
-          $ref: '#/components/responses/InvalidAccessJwtToken'
+                $ref: "#/components/schemas/GetAllSessionsSuccessResponse"
+        "401":
+          $ref: "#/components/responses/InvalidAccessJwtToken"
   /session/:
-      get:
-        tags: [🔒 Session Management]
-        security:
-          - AccessTokenCokie: []
-        summary: Retrieve the current user session
-        description: >
-          Retrieves the **current active session** for the authenticated user, based on the session ID stored in the request context.  
-          This endpoint is primarily used to identify the session associated with the current request and to retrieve minimal user information .
-        responses:
-          '200':
-            summary: Current user session retrieved successfully
-            description: >
-              The session corresponding to the current request has been found.  
-              Returns the user associated with this session along with metadata about the request.
-            headers:
-              X-Request-Id:
-                $ref: "#/components/headers/XRequestId"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/GetCurrentSessionSuccessResponse'
-          '401':
-            $ref: '#/components/responses/InvalidAccessJwtToken'
+    get:
+      tags: [🔒 Session Management]
+      security:
+        - AccessTokenCokie: []
+      summary: Retrieve the current user session
+      description: >
+        Retrieves the **current active session** for the authenticated user, based on the session ID stored in the request context.  
+        This endpoint is primarily used to identify the session associated with the current request and to retrieve minimal user information .
+      responses:
+        "200":
+          description: >
+            The session corresponding to the current request has been found.  
+            Returns the user associated with this session along with metadata about the request.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetCurrentSessionSuccessResponse"
+        "401":
+          $ref: "#/components/responses/InvalidAccessJwtToken"
   /session/{id}:
     delete:
       tags: [🔒 Session Management]
@@ -1979,23 +1883,22 @@ paths:
         Deletes a specific user session identified by its ID. 
         The operation validates that the session exists and that the authenticated user has permission to delete it. 
         If the deleted session is the current session of the user, authentication cookies will be cleared, effectively logging the user out.
-        
+
         Responses include a success message and, if the current session was deleted, a `nextStep` indicating that the user should be redirected to the login page.
-        
+
         Possible errors:
           - 403 Forbidden: If the user tries to delete a session that does not belong to them.
           - 404 Not Found: If the session ID does not exist.
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: The unique identifier of the session who will be deleted.
-        schema:
-          type: string
-          example: "60c72b2f9f1b2c001c8a3e5f"
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the session who will be deleted.
+          schema:
+            type: string
+            example: "60c72b2f9f1b2c001c8a3e5f"
       responses:
-        '200':
-          summary: User session successfully deleted
+        "200":
           description: >
             The session with the specified ID was successfully deleted. 
             If the deleted session was the current session of the authenticated user, authentication cookies are cleared,
@@ -2005,15 +1908,14 @@ paths:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
             Set-Cookie:
-              $ref: '#/components/headers/InvalidateAuthenticationCookies'
+              $ref: "#/components/headers/InvalidateAuthenticationCookies"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeleteSessionByIdSuccessResponse'
-        '401':
-          $ref: '#/components/responses/InvalidAccessJwtToken'
-        '403':  
-          summary: Forbidden - user cannot delete this session
+                $ref: "#/components/schemas/DeleteSessionByIdSuccessResponse"
+        "401":
+          $ref: "#/components/responses/InvalidAccessJwtToken"
+        "403":
           description: >
             The authenticated user attempted to delete a session that does not belong to them.
             The operation is denied to prevent unauthorized access to other users' sessions.
@@ -2024,7 +1926,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ForbiddenError'
+                $ref: "#/components/schemas/ForbiddenError"
   /oidc/google/auth-url:
     get:
       tags: [🤝 OIDC Authentication]
@@ -2032,7 +1934,7 @@ paths:
       description: >
         Initiates the OAuth 2.0 Authorization Code Flow with PKCE for Google sign-in.
         This endpoint generates a unique `state` and `code_challenge`, stores them in the database as an OIDC session, and redirects the client to the Google OAuth 2.0 authorization endpoint.
-        
+
         The `state` is used to prevent CSRF attacks, and `code_challenge` is part of PKCE to enhance security.
 
         **Behavior:**
@@ -2048,9 +1950,9 @@ paths:
         - `redirect_uri`: Callback URL registered in Google OAuth App
         - `state`: Randomly generated string to prevent CSRF
         - `code_challenge` and `code_challenge_method`: PKCE parameters (`S256`)
-        
+
       responses:
-        '307':
+        "307":
           description: Redirects the client to Google OAuth 2.0 authorization URL
           headers:
             Location:
@@ -2058,21 +1960,20 @@ paths:
               schema:
                 type: string
                 example: https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&response_type=code&client_id=YOUR_CLIENT_ID&scope=openid%20profile%20email&redirect_uri=https%3A%2F%2Fyourapp.com%2Fauth%2Fgoogle%2Fcallback&state=RANDOM_STATE&code_challenge=RANDOM_CODE_CHALLENGE&code_challenge_method=S256
-          content: {}
-        '500':
+        "500":
           description: Server error occurred while generating authorization URL
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
+                $ref: "#/components/schemas/InternalServerError"
   /oidc/google/callback:
-      get:
-        tags: [🤝 OIDC Authentication]
+    get:
+      tags: [🤝 OIDC Authentication]
       summary: Authenticate user via Google OIDC callback
       description: >
         Handles the callback from Google after user authorization.
         Expects `code` and `state` query parameters returned by Google. 
-        
+
         **Flow:**
         1. Verify that the `state` exists, has not expired, and has not been consumed.
         2. Exchange the authorization code for tokens (access token, refresh token, ID token).
@@ -2096,10 +1997,9 @@ paths:
             type: string
 
       responses:
-        '200':
-          summary: Authentication successful via Google OIDC
+        "200":
           description: >
-            The user has been successfully authenticated using Google as an OpenID Connect (OIDC) provider. 
+            The user has been successfully authenticated using Google as an OpenID Connect (OIDC) provider.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -2108,9 +2008,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginSuccessResponse'
-        '404':
-          summary: OIDC session not found
+                $ref: "#/components/schemas/LoginSuccessResponse"
+        "404":
           description: >
             No valid OIDC session was found for the provided `state` and provider. 
             This usually happens if the user attempts to reuse a session that does not exist or has already been removed.
@@ -2119,49 +2018,47 @@ paths:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
           content:
-            application/json: 
-              schema: 
-                $ref: '#/components/schemas/OIDCSessionNotFoundError'
-        '400':
-          summary: Invalid or expired OIDC session
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OIDCSessionNotFoundError"
+        "400":
           description: >
             The OIDC session is invalid. This can occur if:
             - The session has already been consumed (used previously for authentication).
             - The session has expired (passed the allowed time window).
-            
+
             In both cases, the user must restart the authentication flow.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
           content:
-            application/json: 
+            application/json:
               examples:
                 OIDCSessionExpired:
-                  $ref: '#/components/examples/OIDCSessionExpiredErrorExample'
+                  $ref: "#/components/examples/OIDCSessionExpiredErrorExample"
                 OIDCSessionConsumed:
-                  $ref: '#/components/examples/OIDCSessionConsumedErrorExample'
-              schema: 
+                  $ref: "#/components/examples/OIDCSessionConsumedErrorExample"
+              schema:
                 oneOf:
-                  - $ref: '#/components/schemas/OIDCSessionExpiredError'
-                  - $ref: '#/components/schemas/OIDCSessionConsumedError'
-        '401':
-          summary: Unauthorized - failed authentication with Google
+                  - $ref: "#/components/schemas/OIDCSessionExpiredError"
+                  - $ref: "#/components/schemas/OIDCSessionConsumedError"
+        "401":
           description: >
             Authentication with the OIDC provider (Google) failed. 
             This can happen if:
             - The authorization code is invalid.
             - The ID token fails validation.
             - Token exchange with Google was unsuccessful.
-            
+
             The user cannot be authenticated until a valid authorization code is provided.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
           content:
-            application/json: 
-              schema: 
+            application/json:
+              schema:
                 oneOf:
-                  - $ref: '#/components/schemas/OIDCFailedAuthenticationError'
+                  - $ref: "#/components/schemas/OIDCFailedAuthenticationError"
   /oidc/github/auth-url:
     get:
       tags: [🤝 OIDC Authentication]
@@ -2169,14 +2066,14 @@ paths:
       description: >
         Initiates the OAuth 2.0 Authorization Code Flow with PKCE for GitHub sign-in.
         This endpoint generates a unique `state` and `code_challenge`, stores them in the database as an OIDC session, and redirects the client to the GitHub OAuth 2.0 authorization endpoint.
-        
+
         The `state` is used to prevent CSRF attacks, and `code_challenge` is part of PKCE to enhance security.
 
         **Behavior:**
         - Returns an HTTP 307 redirect to the GitHub authorization URL.
         - Sets caching headers to prevent storing sensitive information.
         - No JSON body is returned.
-        
+
         **Authorization URL parameters sent to GitHub:**
         - `client_id`: GitHub OAuth App client ID
         - `redirect_uri`: Callback URI registered in GitHub OAuth App
@@ -2188,7 +2085,7 @@ paths:
         - `prompt`: Account selection prompt (`select_account`)
 
       responses:
-        '307':
+        "307":
           description: Redirects the client to GitHub OAuth 2.0 authorization URL
           headers:
             Location:
@@ -2197,21 +2094,21 @@ paths:
                 type: string
                 example: >
                   https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=https%3A%2F%2Fyourapp.com%2Fauth%2Fgithub%2Fcallback&scope=user%20read%3Auser%20user%3Aemail&state=RANDOM_STATE&code_challenge=RANDOM_CODE_CHALLENGE&code_challenge_method=S256&allow_signup=true&access_type=offline&prompt=select_account
-          content: {}
-        '500':
+        "500":
           description: Server error occurred while generating GitHub authorization URL
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InternalServerError'
+                $ref: "#/components/schemas/InternalServerError"
   /oidc/github/callback:
-      get:
-        tags: [🤝 OIDC Authentication]
+    get:
+      tags: [🤝 OIDC Authentication]
+      operationId: getGithubOidcAuthUrl
       summary: Authenticate user via Github OIDC callback
       description: >
         Handles the callback from Github after user authorization.
         Expects `code` and `state` query parameters returned by Github. 
-        
+
         **Flow:**
         1. Verify that the `state` exists, has not expired, and has not been consumed.
         2. Exchange the authorization code for tokens (access token, refresh token, ID token).
@@ -2235,10 +2132,9 @@ paths:
             type: string
 
       responses:
-        '200':
-          summary: Authentication successful via Github OIDC
+        "200":
           description: >
-            The user has been successfully authenticated using Github as an OpenID Connect (OIDC) provider. 
+            The user has been successfully authenticated using Github as an OpenID Connect (OIDC) provider.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -2247,9 +2143,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginSuccessResponse'
-        '404':
-          summary: OIDC session not found
+                $ref: "#/components/schemas/LoginSuccessResponse"
+        "404":
           description: >
             No valid OIDC session was found for the provided `state` and provider. 
             This usually happens if the user attempts to reuse a session that does not exist or has already been removed.
@@ -2258,56 +2153,53 @@ paths:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
           content:
-            application/json: 
-              schema: 
-                $ref: '#/components/schemas/OIDCSessionNotFoundError'
-        '400':
-          summary: Invalid or expired OIDC session
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OIDCSessionNotFoundError"
+        "400":
           description: >
             The OIDC session is invalid. This can occur if:
             - The session has already been consumed (used previously for authentication).
             - The session has expired (passed the allowed time window).
-            
+
             In both cases, the user must restart the authentication flow.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
           content:
-            application/json: 
+            application/json:
               examples:
                 OIDCSessionExpired:
-                  $ref: '#/components/examples/OIDCSessionExpiredErrorExample'
+                  $ref: "#/components/examples/OIDCSessionExpiredErrorExample"
                 OIDCSessionConsumed:
-                  $ref: '#/components/examples/OIDCSessionConsumedErrorExample'
-              schema: 
+                  $ref: "#/components/examples/OIDCSessionConsumedErrorExample"
+              schema:
                 oneOf:
-                  - $ref: '#/components/schemas/OIDCSessionExpiredError'
-                  - $ref: '#/components/schemas/OIDCSessionConsumedError'
-        '401':
-          summary: Unauthorized - failed authentication with Google
+                  - $ref: "#/components/schemas/OIDCSessionExpiredError"
+                  - $ref: "#/components/schemas/OIDCSessionConsumedError"
+        "401":
           description: >
             Authentication with the OIDC provider (Google) failed. 
             This can happen if:
             - The authorization code is invalid.
             - The ID token fails validation.
             - Token exchange with Google was unsuccessful.
-            
+
             The user cannot be authenticated until a valid authorization code is provided.
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
           content:
-            application/json: 
-              schema: 
+            application/json:
+              schema:
                 oneOf:
-                  - $ref: '#/components/schemas/OIDCFailedAuthenticationError'
+                  - $ref: "#/components/schemas/OIDCFailedAuthenticationError"
 
 components:
   # REPONSES
   responses:
     # TOKEN UNAUTHORIZED RESPONSES
     InvalidAccessJwtToken:
-      summary: Invalid or expired access token
       description: >
         Indicates that the access token provided in the request cookie (`accessToken`) 
         is missing, invalid, expired, or not associated with a valid user session.  
@@ -2391,33 +2283,33 @@ components:
         ### Validation logic
         The authentication middleware extracts and verifies the `mfaToken` cookie using a dedicated JWT strategy.
         During this process, several error conditions can occur:
-        
+
         1. **Missing Token** — The `mfaToken` cookie is not present in the request.  
           → `AuthenticationTokenNotFoundError`
-        
+
         2. **Invalid Token Type** — The decoded JWT does not represent a token of type `"mfa"`.  
           → `MFATokenTypeError`
-        
+
         3. **Invalid Endpoint** — The token is being used on an endpoint that does not match its allowed purpose  
           (e.g., a token intended for `"forgot_password"` is sent to `/mfa/verify-login`).  
           → `MFATokenInvalidEndpointError`
-        
+
         4. **Purpose Mismatch** — The token’s internal `purpose` field does not match the expected endpoint purpose.  
           → `MFATokenInvalidTokenPurposeError`
-        
+
         5. **User Not Found** — The user referenced in the token payload no longer exists in the system.  
           → `AuthenticationTokenUserNotFoundError`
-        
+
         6. **Invalid or Expired Session** — The MFA session record associated with the token (`mfaSessionId` or `jti`)  
           could not be found, was already consumed, or is expired.  
           → `AuthenticationTokenInvalidSessionError`
-        
+
         7. **Session Mismatch** — The user ID in the token does not match the user ID of the MFA session.  
         → `AuthenticationTokenSessionMismatchError`
-    
+
         8. **Invalid Token Format** — The JWT is malformed or fails signature verification.  
           → `AuthenticationTokenInvalidTokenErorr`
-        
+
         9. **Expired Token** — The JWT has passed its expiration time (`exp` claim).  
           → `AuthenticationTokenExpiredError`
 
@@ -2462,7 +2354,6 @@ components:
             AuthenticationTokenExpired:
               $ref: "#/components/examples/AuthenticationTokenExpiredErrorExample"
     InvalidMagicLinkJwtToken:
-      summary: Invalid or expired Magic Link token
       description: >
         Indicates that the Magic Link token provided in the request (`req.params.token`) 
         is missing, invalid, expired, or not associated with a valid Magic Link session.  
@@ -2536,9 +2427,8 @@ components:
               - $ref: "#/components/schemas/AuthenticationTokenInvalidSessionError"
               - $ref: "#/components/schemas/AuthenticationTokenSessionMismatchError"
               - $ref: "#/components/schemas/AuthenticationTokenInvalidTokenErorr"
-              - $ref: "#/components/schemas/AuthenticationTokenExpiredError"      
+              - $ref: "#/components/schemas/AuthenticationTokenExpiredError"
     InvalidRefreshJwtToken:
-      summary: Invalid or expired refresh token
       description: >
         Indicates that the refresh token provided in the request cookie (`refreshToken`) 
         is missing, invalid, expired, or not associated with a valid user session.  
@@ -2689,17 +2579,17 @@ components:
     PasskeyData:
       type: object
       required:
-      - _id
-      - userID
-      - credentialID
-      - credentialPublicKey
-      - credentialType
-      - publicKeyAlgorithm
-      - counter
-      - transports
-      - authenticatorAttachment
-      - aaguid
-      - createdAt
+        - _id
+        - userID
+        - credentialID
+        - credentialPublicKey
+        - credentialType
+        - publicKeyAlgorithm
+        - counter
+        - transports
+        - authenticatorAttachment
+        - aaguid
+        - createdAt
       description: >
         Represents a registered WebAuthn passkey credential associated with a user account.  
         Each passkey stores the credential’s unique identifiers, cryptographic parameters, and metadata about its usage and origin device.
@@ -2927,7 +2817,16 @@ components:
               description: Optional transport methods supported by the authenticator.
               items:
                 type: string
-                enum: ["ble", "cable", "hybrid", "internal", "nfc", "smart-card", "usb"]
+                enum:
+                  [
+                    "ble",
+                    "cable",
+                    "hybrid",
+                    "internal",
+                    "nfc",
+                    "smart-card",
+                    "usb",
+                  ]
         authenticatorAttachment:
           type: string
           description: Optional attachment modality of the authenticator.
@@ -3093,8 +2992,8 @@ components:
               type: string
               enum: ["CONFIRM_SIGN_UP"]
               example: CONFIRM_SIGN_UP
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     LoginSuccessResponse:
       type: object
       required:
@@ -3132,8 +3031,8 @@ components:
               type: boolean
               enum: [false]
               example: false
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     MFAPendingResponse:
       type: object
       required:
@@ -3168,8 +3067,8 @@ components:
               type: boolean
               enum: [true]
               example: true
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     EmailConfirmedSuccessResponse:
       type: object
       required:
@@ -3199,8 +3098,8 @@ components:
               type: string
               enum: ["CONFIRMED_EMAIL_RETURN_TO_LOGIN"]
               example: CONFIRMED_EMAIL_RETURN_TO_LOGIN
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     ForgotPasswordSuccessResponse:
       type: object
       required:
@@ -3235,8 +3134,8 @@ components:
               type: boolean
               enum: [false]
               example: false
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     ResetPasswordSuccessResponse:
       type: object
       required:
@@ -3266,8 +3165,8 @@ components:
               type: string
               enum: ["OK"]
               example: OK
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     RefreshTokenEndpointSuccessResponse:
       type: object
       required:
@@ -3297,8 +3196,8 @@ components:
               type: string
               enum: ["OK"]
               example: OK
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     LogoutSuccessResponse:
       type: object
       required:
@@ -3328,8 +3227,8 @@ components:
               type: string
               enum: ["LOGOUT"]
               example: LOGOUT
-          metadata:
-            $ref: "#/components/schemas/ResponseMetadata"
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     MagicLinkSignUpSuccessResponse:
       type: object
       required:
@@ -3474,14 +3373,14 @@ components:
                   items:
                     type: string
                     example:
-                    - "4F9K2M8Q1"
-                    - "A7B3C1D9E"
-                    - "X2Y5Z8W1Q"
-                    - "9G1H3J7K2"
-                    - "L4M6N8O2P"
-                    - "Q7R2S9T3V"
-                    - "3B8F1D6H2"
-                    - "Z5X9C2V7L"
+                      - "4F9K2M8Q1"
+                      - "A7B3C1D9E"
+                      - "X2Y5Z8W1Q"
+                      - "9G1H3J7K2"
+                      - "L4M6N8O2P"
+                      - "Q7R2S9T3V"
+                      - "3B8F1D6H2"
+                      - "Z5X9C2V7L"
         metadata:
           $ref: "#/components/schemas/ResponseMetadata"
     MFARevokeSuccessReponse:
@@ -3538,7 +3437,7 @@ components:
           properties:
             nextStep:
               type: string
-              enum: ['OK']
+              enum: ["OK"]
               example: OK
         metadata:
           $ref: "#/components/schemas/ResponseMetadata"
@@ -3624,7 +3523,7 @@ components:
                   description: Timeout for the operation in milliseconds
                 attestation:
                   type: string
-                  enum: ['direct']
+                  enum: ["direct"]
                   example: "direct"
                 excludeCredentials:
                   type: array
@@ -3635,7 +3534,7 @@ components:
                   properties:
                     residentKey:
                       type: string
-                      enum: ['required']
+                      enum: ["required"]
                       example: "required"
                     requireResidentKey:
                       type: boolean
@@ -3643,7 +3542,7 @@ components:
                       example: true
                     userVerification:
                       type: string
-                      enum: ['required']
+                      enum: ["required"]
                       example: "required"
                 extensions:
                   type: object
@@ -3716,7 +3615,16 @@ components:
                         type: array
                         items:
                           type: string
-                          enum: [ "ble", "cable", "hybrid", "internal", "nfc","smart-card", "usb" ]
+                          enum:
+                            [
+                              "ble",
+                              "cable",
+                              "hybrid",
+                              "internal",
+                              "nfc",
+                              "smart-card",
+                              "usb",
+                            ]
                           example: internal
                         description: Optional list of transports supported by this credential.
                 timeout:
@@ -3735,7 +3643,6 @@ components:
                 - timeout
                 - userVerification
         metadata:
-          metadata:
           $ref: "#/components/schemas/ResponseMetadata"
     PasskeyGenerateRemoveKeySuccessResponse:
       type: object
@@ -3795,7 +3702,16 @@ components:
                         type: array
                         items:
                           type: string
-                          enum: [ "ble", "cable", "hybrid", "internal", "nfc","smart-card", "usb" ]
+                          enum:
+                            [
+                              "ble",
+                              "cable",
+                              "hybrid",
+                              "internal",
+                              "nfc",
+                              "smart-card",
+                              "usb",
+                            ]
                           example: internal
                         description: Optional list of transports supported by this credential.
                 timeout:
@@ -3814,7 +3730,6 @@ components:
                 - timeout
                 - userVerification
         metadata:
-          metadata:
           $ref: "#/components/schemas/ResponseMetadata"
     PasskeyAddedSuccessResponse:
       type: object
@@ -3844,9 +3759,9 @@ components:
           description: Contains the newly added passkey details.
           properties:
             passkey:
-              $ref: '#/components/schemas/PasskeyData'
+              $ref: "#/components/schemas/PasskeyData"
         metadata:
-          $ref: '#/components/schemas/ResponseMetadata'
+          $ref: "#/components/schemas/ResponseMetadata"
     PasskeyRemovedSuccessResponse:
       type: object
       required:
@@ -3873,7 +3788,7 @@ components:
         data:
           type: object
         metadata:
-          $ref: '#/components/schemas/ResponseMetadata'
+          $ref: "#/components/schemas/ResponseMetadata"
     PasskeyGetAllPasskeyByUserIdSuccessResponse:
       type: object
       properties:
@@ -3998,7 +3913,7 @@ components:
                     description: Indicates if this is the current session.
                     example: true
         metadata:
-          $ref: '#/components/schemas/ResponseMetadata'
+          $ref: "#/components/schemas/ResponseMetadata"
     GetCurrentSessionSuccessResponse:
       type: object
       required:
@@ -4023,9 +3938,9 @@ components:
           type: object
           properties:
             user:
-              $ref: '#/components/schemas/UserData'
+              $ref: "#/components/schemas/UserData"
         metadata:
-          $ref: '#/components/schemas/ResponseMetadata'
+          $ref: "#/components/schemas/ResponseMetadata"
     DeleteSessionByIdSuccessResponse:
       type: object
       required:
@@ -4052,13 +3967,12 @@ components:
           properties:
             nextStep:
               type: string
-              nullable: true
               description: >
                 If the deleted session was the current session, indicates
                 the next action for the client (e.g., LOGIN.LOGOUT).
               example: "LOGOUT"
         metadata:
-          $ref: '#/components/schemas/ResponseMetadata'
+          $ref: "#/components/schemas/ResponseMetadata"
     # ERRORS
     # GENERAL ERRORS
     InternalServerError:
@@ -4454,41 +4368,41 @@ components:
         requestId:
           type: string
       examples:
-        jwtMalformed:
-          summary: Token is malformed
-          value:
-            success: false
-            message: "Authentication failed: jwt malformed"
-            errorCode: AUTH_TOKEN_INVALID
-            requestId: cc5065df0c6b4c19970d4e92f
-        invalidSignature:
-          summary: Token signature is invalid
-          value:
-            success: false
-            message: "Authentication failed: invalid signature"
-            errorCode: AUTH_TOKEN_INVALID
-            requestId: cc5065df0c6b4c19970d4e92f
-        tokenMissing:
-          summary: Token is missing
-          value:
-            success: false
-            message: "Authentication failed: jwt must be provided"
-            errorCode: AUTH_TOKEN_INVALID
-            requestId: cc5065df0c6b4c19970d4e92f
-        invalidAudience:
-          summary: Token audience does not match
-          value:
-            success: false
-            message: "Authentication failed: invalid audience"
-            errorCode: AUTH_TOKEN_INVALID
-            requestId: cc5065df0c6b4c19970d4e92f
-        invalidIssuer:
-          summary: Token issuer is invalid
-          value:
-            success: false
-            message: "Authentication failed: invalid issuer"
-            errorCode: AUTH_TOKEN_INVALID
-            requestId: cc5065df0c6b4c19970d4e92f
+        - jwtMalformed:
+            summary: Token is malformed
+            value:
+              success: false
+              message: "Authentication failed: jwt malformed"
+              errorCode: AUTH_TOKEN_INVALID
+              requestId: cc5065df0c6b4c19970d4e92f
+        - invalidSignature:
+            summary: Token signature is invalid
+            value:
+              success: false
+              message: "Authentication failed: invalid signature"
+              errorCode: AUTH_TOKEN_INVALID
+              requestId: cc5065df0c6b4c19970d4e92f
+        - tokenMissing:
+            summary: Token is missing
+            value:
+              success: false
+              message: "Authentication failed: jwt must be provided"
+              errorCode: AUTH_TOKEN_INVALID
+              requestId: cc5065df0c6b4c19970d4e92f
+        - invalidAudience:
+            summary: Token audience does not match
+            value:
+              success: false
+              message: "Authentication failed: invalid audience"
+              errorCode: AUTH_TOKEN_INVALID
+              requestId: cc5065df0c6b4c19970d4e92f
+        - invalidIssuer:
+            summary: Token issuer is invalid
+            value:
+              success: false
+              message: "Authentication failed: invalid issuer"
+              errorCode: AUTH_TOKEN_INVALID
+              requestId: cc5065df0c6b4c19970d4e92f
     AuthenticationTokenExpiredError:
       type: object
       required:
