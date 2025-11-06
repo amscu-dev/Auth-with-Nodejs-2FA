@@ -1,0 +1,166 @@
+import { AxiosErrorRes } from "@/config/axios.config";
+import {
+  useMutation,
+  UseMutationOptions,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
+import {
+  mfaBackupCodeConsumeMutationFn,
+  MfaBackupCodeConsumeMutationFnResult,
+  mfaBackupCodeLoginMutationFn,
+  MfaBackupCodeLoginMutationFnResult,
+  mfaRevokeMutationFn,
+  MfaRevokeMutationFnResult,
+  mfaSetupQueryFn,
+  MfaSetupQueryFnResult,
+  mfaVerifyForgotPasswordMutationFn,
+  MfaVerifyForgotPasswordMutationFnResult,
+  mfaVerifyLoginMutationFn,
+  MfaVerifyLoginMutationFnResult,
+  mfaVerifyMutationFn,
+  MfaVerifyMutationFnResult,
+} from "../client/mfa-module";
+import {
+  MfaBackupCodeConsumeMutationFnBody,
+  MfaBackupCodeLoginMutationFnBody,
+  MfaRevokeMutationFnBody,
+  MfaVerifyForgotPasswordMutationFnBody,
+  MfaVerifyLoginMutationFnBody,
+  MfaVerifyMutationFnBody,
+} from "../client/client.schemas";
+
+const Mfa = {
+  Setup: {
+    useQuery: (
+      options?: UseQueryOptions<MfaSetupQueryFnResult, AxiosErrorRes>
+    ) => {
+      return useQuery<MfaSetupQueryFnResult, AxiosErrorRes>({
+        ...options,
+        queryKey: ["mfa-setup"],
+        queryFn: () => mfaSetupQueryFn(),
+      });
+    },
+  },
+  VerifySetup: {
+    useMutation: (
+      options?: UseMutationOptions<
+        MfaVerifyMutationFnResult,
+        AxiosErrorRes,
+        MfaVerifyMutationFnBody
+      >
+    ) => {
+      return useMutation<
+        MfaVerifyMutationFnResult,
+        AxiosErrorRes,
+        MfaVerifyMutationFnBody
+      >({
+        ...options,
+        mutationKey: ["mfa-verify"],
+        mutationFn: (data: MfaVerifyMutationFnBody) =>
+          mfaVerifyMutationFn(data),
+      });
+    },
+  },
+  Revoke: {
+    useMutation: (
+      options?: UseMutationOptions<
+        MfaRevokeMutationFnResult,
+        AxiosErrorRes,
+        MfaRevokeMutationFnBody
+      >
+    ) => {
+      return useMutation<
+        MfaRevokeMutationFnResult,
+        AxiosErrorRes,
+        MfaRevokeMutationFnBody
+      >({
+        ...options,
+        mutationKey: ["mfa-verify"],
+        mutationFn: (data: MfaRevokeMutationFnBody) =>
+          mfaRevokeMutationFn(data),
+      });
+    },
+  },
+  BackUpCodeConsume: {
+    useMutation: (
+      options?: UseMutationOptions<
+        MfaBackupCodeConsumeMutationFnResult,
+        AxiosErrorRes,
+        MfaBackupCodeConsumeMutationFnBody
+      >
+    ) => {
+      return useMutation<
+        MfaBackupCodeConsumeMutationFnResult,
+        AxiosErrorRes,
+        MfaBackupCodeConsumeMutationFnBody
+      >({
+        ...options,
+        mutationKey: ["backup-code-consume"],
+        mutationFn: (data: MfaBackupCodeConsumeMutationFnBody) =>
+          mfaBackupCodeConsumeMutationFn(data),
+      });
+    },
+  },
+  BackUpCodeLogin: {
+    useMutation: (
+      options?: UseMutationOptions<
+        MfaBackupCodeLoginMutationFnResult,
+        AxiosErrorRes,
+        MfaBackupCodeLoginMutationFnBody
+      >
+    ) => {
+      return useMutation<
+        MfaBackupCodeLoginMutationFnResult,
+        AxiosErrorRes,
+        MfaBackupCodeLoginMutationFnBody
+      >({
+        ...options,
+        mutationKey: ["backup-code-consume"],
+        mutationFn: (data: MfaBackupCodeLoginMutationFnBody) =>
+          mfaBackupCodeLoginMutationFn(data),
+      });
+    },
+  },
+  VerifyLogin: {
+    useMutation: (
+      options?: UseMutationOptions<
+        MfaVerifyLoginMutationFnResult,
+        AxiosErrorRes,
+        MfaVerifyLoginMutationFnBody
+      >
+    ) => {
+      return useMutation<
+        MfaVerifyLoginMutationFnResult,
+        AxiosErrorRes,
+        MfaVerifyLoginMutationFnBody
+      >({
+        ...options,
+        mutationKey: ["backup-code-consume"],
+        mutationFn: (data: MfaVerifyLoginMutationFnBody) =>
+          mfaVerifyLoginMutationFn(data),
+      });
+    },
+  },
+  VerifyForgotPassword: {
+    useMutation: (
+      options?: UseMutationOptions<
+        MfaVerifyForgotPasswordMutationFnResult,
+        AxiosErrorRes,
+        MfaVerifyForgotPasswordMutationFnBody
+      >
+    ) => {
+      return useMutation<
+        MfaVerifyForgotPasswordMutationFnResult,
+        AxiosErrorRes,
+        MfaVerifyForgotPasswordMutationFnBody
+      >({
+        ...options,
+        mutationKey: ["backup-code-consume"],
+        mutationFn: (data: MfaVerifyForgotPasswordMutationFnBody) =>
+          mfaVerifyForgotPasswordMutationFn(data),
+      });
+    },
+  },
+};
+export default Mfa;
