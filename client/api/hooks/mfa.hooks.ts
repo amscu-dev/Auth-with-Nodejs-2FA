@@ -76,7 +76,7 @@ const Mfa = {
         MfaRevokeMutationFnBody
       >({
         ...options,
-        mutationKey: ["mfa-verify"],
+        mutationKey: ["mfa-revoke"],
         mutationFn: (data: MfaRevokeMutationFnBody) =>
           mfaRevokeMutationFn(data),
       });
@@ -116,7 +116,7 @@ const Mfa = {
         MfaBackupCodeLoginMutationFnBody
       >({
         ...options,
-        mutationKey: ["backup-code-consume"],
+        mutationKey: ["backup-code-login"],
         mutationFn: (data: MfaBackupCodeLoginMutationFnBody) =>
           mfaBackupCodeLoginMutationFn(data),
       });
@@ -136,7 +136,7 @@ const Mfa = {
         MfaVerifyLoginMutationFnBody
       >({
         ...options,
-        mutationKey: ["backup-code-consume"],
+        mutationKey: ["verify-login"],
         mutationFn: (data: MfaVerifyLoginMutationFnBody) =>
           mfaVerifyLoginMutationFn(data),
       });
@@ -156,7 +156,7 @@ const Mfa = {
         MfaVerifyForgotPasswordMutationFnBody
       >({
         ...options,
-        mutationKey: ["backup-code-consume"],
+        mutationKey: ["varify-forgot-password"],
         mutationFn: (data: MfaVerifyForgotPasswordMutationFnBody) =>
           mfaVerifyForgotPasswordMutationFn(data),
       });

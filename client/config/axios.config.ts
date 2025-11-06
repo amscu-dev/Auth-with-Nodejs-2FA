@@ -34,7 +34,12 @@ const AXIOS_INSTANCE: AxiosInstance = axios.create({
 });
 
 AXIOS_INSTANCE.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.status === 307 && response.headers.location) {
+      window.location.replace(response.headers.location);
+    }
+    return response;
+  },
   (error) => {
     const { data, status } = error.response;
     if (data === "Unauthorized" && status === 401) {
