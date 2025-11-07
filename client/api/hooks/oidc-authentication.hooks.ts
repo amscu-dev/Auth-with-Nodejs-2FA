@@ -22,8 +22,13 @@ import {
 
 const OIDC = {
   GoogleAuth: {
-    useMutation: (options?: UseMutationOptions<unknown, AxiosErrorRes>) => {
-      return useMutation<unknown, AxiosErrorRes>({
+    useMutation: (
+      options?: UseMutationOptions<
+        OidcGoogleAuthUrlGetQueryFnResult,
+        AxiosErrorRes
+      >
+    ) => {
+      return useMutation<OidcGoogleAuthUrlGetQueryFnResult, AxiosErrorRes>({
         ...options,
         mutationKey: ["google-auth-url"],
         mutationFn: () => oidcGoogleAuthUrlGetQueryFn(),
@@ -46,8 +51,13 @@ const OIDC = {
     },
   },
   GithubAuth: {
-    useMutation: (options?: UseMutationOptions<unknown, AxiosErrorRes>) => {
-      return useMutation<unknown, AxiosErrorRes>({
+    useMutation: (
+      options?: UseMutationOptions<
+        OidcGithubAuthUrlGetQueryFnResult,
+        AxiosErrorRes
+      >
+    ) => {
+      return useMutation<OidcGithubAuthUrlGetQueryFnResult, AxiosErrorRes>({
         ...options,
         mutationKey: ["github-auth-url"],
         mutationFn: () => oidcGithubAuthUrlGetQueryFn(),

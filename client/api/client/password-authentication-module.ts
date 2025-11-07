@@ -7,10 +7,14 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  AuthCheckEmailMutationFnBody,
   AuthEmailVerifyMutationFnBody,
   AuthPasswordForgotMutationFn200,
+  AuthResendEmailMutationFnBody,
   AuthSignInMutationFn200,
+  EmailCheckSuccessResponse,
   EmailConfirmedSuccessResponse,
+  EmailResendSuccessResponse,
   ForgotPasswordRequestBody,
   LogoutSuccessResponse,
   RefreshTokenEndpointSuccessResponse,
@@ -54,21 +58,6 @@ export const authSignInMutationFn = (
       {url: `/auth/signin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: userLoginRequestBody
-    },
-      options);
-    }
-  /**
- * Verifies a user's email address using a verification token sent via email. Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
-
- * @summary Authenticate a user with email and password
- */
-export const authEmailVerifyMutationFn = (
-    authEmailVerifyMutationFnBody: AuthEmailVerifyMutationFnBody,
- options?: SecondParameter<typeof customAxiosInstance<EmailConfirmedSuccessResponse>>,) => {
-      return customAxiosInstance<EmailConfirmedSuccessResponse>(
-      {url: `/auth/email/verify`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: authEmailVerifyMutationFnBody
     },
       options);
     }
@@ -128,10 +117,57 @@ export const authLogoutMutationFn = (
     },
       options);
     }
+  /**
+ * Sends a new verification email to a registered user who has not yet verified their email address.   This endpoint is typically used when a user requests to receive another confirmation link after registration.
+
+ * @summary Resend verification email
+ */
+export const authResendEmailMutationFn = (
+    authResendEmailMutationFnBody: AuthResendEmailMutationFnBody,
+ options?: SecondParameter<typeof customAxiosInstance<EmailResendSuccessResponse>>,) => {
+      return customAxiosInstance<EmailResendSuccessResponse>(
+      {url: `/auth/email/resend`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: authResendEmailMutationFnBody
+    },
+      options);
+    }
+  /**
+ * Checks whether a given email address is already registered in the system.   This endpoint is typically used during the registration process to prevent duplicate accounts.
+
+ * @summary Check if email is available
+ */
+export const authCheckEmailMutationFn = (
+    authCheckEmailMutationFnBody: AuthCheckEmailMutationFnBody,
+ options?: SecondParameter<typeof customAxiosInstance<EmailCheckSuccessResponse>>,) => {
+      return customAxiosInstance<EmailCheckSuccessResponse>(
+      {url: `/auth/email/check`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: authCheckEmailMutationFnBody
+    },
+      options);
+    }
+  /**
+ * Verifies a user's email address using a verification token sent via email. Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
+
+ * @summary Authenticate a user with email and password
+ */
+export const authEmailVerifyMutationFn = (
+    authEmailVerifyMutationFnBody: AuthEmailVerifyMutationFnBody,
+ options?: SecondParameter<typeof customAxiosInstance<EmailConfirmedSuccessResponse>>,) => {
+      return customAxiosInstance<EmailConfirmedSuccessResponse>(
+      {url: `/auth/email/verify`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: authEmailVerifyMutationFnBody
+    },
+      options);
+    }
   export type AuthSignUpMutationFnResult = NonNullable<Awaited<ReturnType<typeof authSignUpMutationFn>>>
 export type AuthSignInMutationFnResult = NonNullable<Awaited<ReturnType<typeof authSignInMutationFn>>>
-export type AuthEmailVerifyMutationFnResult = NonNullable<Awaited<ReturnType<typeof authEmailVerifyMutationFn>>>
 export type AuthPasswordForgotMutationFnResult = NonNullable<Awaited<ReturnType<typeof authPasswordForgotMutationFn>>>
 export type AuthPasswordResetMutationFnResult = NonNullable<Awaited<ReturnType<typeof authPasswordResetMutationFn>>>
 export type AuthRefreshTokenQueryFnResult = NonNullable<Awaited<ReturnType<typeof authRefreshTokenQueryFn>>>
 export type AuthLogoutMutationFnResult = NonNullable<Awaited<ReturnType<typeof authLogoutMutationFn>>>
+export type AuthResendEmailMutationFnResult = NonNullable<Awaited<ReturnType<typeof authResendEmailMutationFn>>>
+export type AuthCheckEmailMutationFnResult = NonNullable<Awaited<ReturnType<typeof authCheckEmailMutationFn>>>
+export type AuthEmailVerifyMutationFnResult = NonNullable<Awaited<ReturnType<typeof authEmailVerifyMutationFn>>>

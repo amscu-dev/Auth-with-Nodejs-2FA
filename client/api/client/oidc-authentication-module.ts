@@ -7,6 +7,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  GetOIDCAuthUrlSuccessResponse,
   LoginSuccessResponse,
   OidcGithubCallbackGetQueryFnParams,
   OidcGoogleCallbackGetQueryFnParams
@@ -29,8 +30,8 @@ The `state` is used to prevent CSRF attacks, and `code_challenge` is part of PKC
  */
 export const oidcGoogleAuthUrlGetQueryFn = (
     
- options?: SecondParameter<typeof customAxiosInstance<unknown>>,) => {
-      return customAxiosInstance<unknown>(
+ options?: SecondParameter<typeof customAxiosInstance<GetOIDCAuthUrlSuccessResponse>>,) => {
+      return customAxiosInstance<GetOIDCAuthUrlSuccessResponse>(
       {url: `/oidc/google/auth-url`, method: 'GET'
     },
       options);
@@ -60,8 +61,8 @@ The `state` is used to prevent CSRF attacks, and `code_challenge` is part of PKC
  */
 export const oidcGithubAuthUrlGetQueryFn = (
     
- options?: SecondParameter<typeof customAxiosInstance<unknown>>,) => {
-      return customAxiosInstance<unknown>(
+ options?: SecondParameter<typeof customAxiosInstance<GetOIDCAuthUrlSuccessResponse>>,) => {
+      return customAxiosInstance<GetOIDCAuthUrlSuccessResponse>(
       {url: `/oidc/github/auth-url`, method: 'GET'
     },
       options);

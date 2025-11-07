@@ -106,29 +106,6 @@ export const authSignInMutationFnResponse = zod.union([zod.object({
 })])
 
 /**
- * Verifies a user's email address using a verification token sent via email. Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
-
- * @summary Authenticate a user with email and password
- */
-export const authEmailVerifyMutationFnBody = zod.object({
-  "code": zod.string()
-})
-
-export const authEmailVerifyMutationFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['CONFIRMED_EMAIL_RETURN_TO_LOGIN'])
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
-
-/**
  * Initiates the password reset process for a user by submitting their email address.  If the user has two-factor authentication (MFA) enabled, an MFA verification step will be required before sending the password reset instructions. Otherwise, a password reset email will be sent directly.
 
  * @summary Request a password reset for a user account
@@ -227,6 +204,77 @@ export const authLogoutMutationFnResponse = zod.object({
   "message": zod.string(),
   "data": zod.object({
   "nextStep": zod.enum(['LOGOUT'])
+}),
+  "metadata": zod.object({
+  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
+  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
+  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
+}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
+})
+
+/**
+ * Sends a new verification email to a registered user who has not yet verified their email address.   This endpoint is typically used when a user requests to receive another confirmation link after registration.
+
+ * @summary Resend verification email
+ */
+export const authResendEmailMutationFnBody = zod.object({
+  "email": zod.email()
+})
+
+export const authResendEmailMutationFnResponse = zod.object({
+  "success": zod.boolean().describe('Indicates whether the operation was successful'),
+  "statusCode": zod.number().describe('HTTP status code of the response'),
+  "message": zod.string(),
+  "data": zod.object({
+  "email": zod.string().describe('User email address.'),
+  "isEmailSuccessfullySend": zod.boolean().describe('Boolean value validating if mail was successfully send to user.')
+}),
+  "metadata": zod.object({
+  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
+  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
+  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
+}).optional().describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
+})
+
+/**
+ * Checks whether a given email address is already registered in the system.   This endpoint is typically used during the registration process to prevent duplicate accounts.
+
+ * @summary Check if email is available
+ */
+export const authCheckEmailMutationFnBody = zod.object({
+  "email": zod.email()
+})
+
+export const authCheckEmailMutationFnResponse = zod.object({
+  "success": zod.boolean().describe('Indicates whether the operation was successful'),
+  "statusCode": zod.number().describe('HTTP status code of the response'),
+  "message": zod.string(),
+  "data": zod.object({
+  "email": zod.string().describe('User email address.'),
+  "isNewEmail": zod.boolean().describe('Boolean value validating if email address is not registered in database.')
+}),
+  "metadata": zod.object({
+  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
+  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
+  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
+}).optional().describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
+})
+
+/**
+ * Verifies a user's email address using a verification token sent via email. Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
+
+ * @summary Authenticate a user with email and password
+ */
+export const authEmailVerifyMutationFnBody = zod.object({
+  "code": zod.string()
+})
+
+export const authEmailVerifyMutationFnResponse = zod.object({
+  "success": zod.literal(true),
+  "statusCode": zod.literal(200),
+  "message": zod.string(),
+  "data": zod.object({
+  "nextStep": zod.enum(['CONFIRMED_EMAIL_RETURN_TO_LOGIN'])
 }),
   "metadata": zod.object({
   "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),

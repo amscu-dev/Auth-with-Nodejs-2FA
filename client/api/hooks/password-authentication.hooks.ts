@@ -1,6 +1,13 @@
-import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import {
+  useMutation,
+  UseMutationOptions,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
+import {
+  AuthCheckEmailMutationFnBody,
   AuthEmailVerifyMutationFnBody,
+  AuthResendEmailMutationFnBody,
   ForgotPasswordRequestBody,
   ResetPasswordRequestBody,
   UserLoginRequestBody,
@@ -8,6 +15,8 @@ import {
 } from "../client/client.schemas";
 import { AxiosErrorRes } from "@/config/axios.config";
 import {
+  authCheckEmailMutationFn,
+  AuthCheckEmailMutationFnResult,
   authEmailVerifyMutationFn,
   AuthEmailVerifyMutationFnResult,
   authLogoutMutationFn,
@@ -16,6 +25,8 @@ import {
   AuthPasswordForgotMutationFnResult,
   authPasswordResetMutationFn,
   AuthPasswordResetMutationFnResult,
+  authResendEmailMutationFn,
+  AuthResendEmailMutationFnResult,
   authSignInMutationFn,
   AuthSignInMutationFnResult,
   authSignUpMutationFn,
@@ -79,6 +90,39 @@ export const PasswordAuth = {
         mutationKey: ["email-verified"],
         mutationFn: (data: AuthEmailVerifyMutationFnBody) =>
           authEmailVerifyMutationFn(data),
+      });
+    },
+  },
+  ResendEmail: {
+    useMutation: (
+      options?: UseMutationOptions<
+        AuthResendEmailMutationFnResult,
+        AxiosErrorRes,
+        AuthResendEmailMutationFnBody
+      >
+    ) => {
+      return useMutation<
+        AuthResendEmailMutationFnResult,
+        AxiosErrorRes,
+        AuthResendEmailMutationFnBody
+      >({
+        ...options,
+        mutationKey: ["email-resend"],
+        mutationFn: (data: AuthResendEmailMutationFnBody) =>
+          authResendEmailMutationFn(data),
+      });
+    },
+  },
+  CheckEmail: {
+    useQuery: (
+      email: string,
+      options?: UseQueryOptions<AuthCheckEmailMutationFnResult, AxiosErrorRes>
+    ) => {
+      return useQuery<AuthCheckEmailMutationFnResult, AxiosErrorRes>({
+        ...options,
+        queryKey: ["auth", "email-existence", email] as const,
+        enabled: !!email,
+        queryFn: () => authCheckEmailMutationFn({ email }),
       });
     },
   },
