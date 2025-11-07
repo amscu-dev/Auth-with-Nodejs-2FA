@@ -21,14 +21,17 @@ export class OIDCSessionController {
       const { state, codeChallenge } =
         await this.oidcSessionService.createOIDCSession("google");
       const url = getGoogleAuthorizationURL({ state, codeChallenge });
-      res.setHeader(
-        "Cache-Control",
-        "no-store, no-cache, must-revalidate, proxy-revalidate"
+      res.status(HTTPSTATUS.CREATED).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.CREATED,
+          message: "Successfully genereated an OIDC session!",
+          data: { url },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
       );
-      res.setHeader("Pragma", "no-cache");
-      res.setHeader("Expires", "0");
-      res.setHeader("Surrogate-Control", "no-store");
-      res.redirect(307, url);
     }
   );
   public getGithubAuthorizationURL = asyncHandler(
@@ -36,14 +39,18 @@ export class OIDCSessionController {
       const { state, codeChallenge } =
         await this.oidcSessionService.createOIDCSession("github");
       const url = getGithubAuthorizationURL({ state, codeChallenge });
-      res.setHeader(
-        "Cache-Control",
-        "no-store, no-cache, must-revalidate, proxy-revalidate"
+
+      res.status(HTTPSTATUS.CREATED).json(
+        new ApiResponse({
+          success: true,
+          statusCode: HTTPSTATUS.CREATED,
+          message: "Successfully genereated an OIDC session!",
+          data: { url },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
       );
-      res.setHeader("Pragma", "no-cache");
-      res.setHeader("Expires", "0");
-      res.setHeader("Surrogate-Control", "no-store");
-      res.redirect(307, url);
     }
   );
   public authenticateGoogleUser = asyncHandler(

@@ -43,7 +43,7 @@ const app = express();
 // ! Library Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ credentials: true, origin: config.APP_ORIGIN }));
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(cookieParser());
 app.use(passport.initialize());
 

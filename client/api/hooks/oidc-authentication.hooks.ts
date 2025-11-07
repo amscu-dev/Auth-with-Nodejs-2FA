@@ -1,4 +1,9 @@
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  useMutation,
+  UseMutationOptions,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import {
   oidcGithubAuthUrlGetQueryFn,
   OidcGithubAuthUrlGetQueryFnResult,
@@ -17,16 +22,11 @@ import {
 
 const OIDC = {
   GoogleAuth: {
-    useQuery: (
-      options?: UseQueryOptions<
-        OidcGoogleAuthUrlGetQueryFnResult,
-        AxiosErrorRes
-      >
-    ) => {
-      return useQuery<OidcGoogleAuthUrlGetQueryFnResult, AxiosErrorRes>({
+    useMutation: (options?: UseMutationOptions<unknown, AxiosErrorRes>) => {
+      return useMutation<unknown, AxiosErrorRes>({
         ...options,
-        queryKey: ["google-auth-url"],
-        queryFn: () => oidcGoogleAuthUrlGetQueryFn(),
+        mutationKey: ["google-auth-url"],
+        mutationFn: () => oidcGoogleAuthUrlGetQueryFn(),
       });
     },
   },
@@ -46,16 +46,11 @@ const OIDC = {
     },
   },
   GithubAuth: {
-    useQuery: (
-      options?: UseQueryOptions<
-        OidcGithubAuthUrlGetQueryFnResult,
-        AxiosErrorRes
-      >
-    ) => {
-      return useQuery<OidcGithubAuthUrlGetQueryFnResult, AxiosErrorRes>({
+    useMutation: (options?: UseMutationOptions<unknown, AxiosErrorRes>) => {
+      return useMutation<unknown, AxiosErrorRes>({
         ...options,
-        queryKey: ["github-auth-url"],
-        queryFn: () => oidcGithubAuthUrlGetQueryFn(),
+        mutationKey: ["github-auth-url"],
+        mutationFn: () => oidcGithubAuthUrlGetQueryFn(),
       });
     },
   },

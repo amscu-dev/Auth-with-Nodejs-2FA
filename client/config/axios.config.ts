@@ -35,8 +35,12 @@ const AXIOS_INSTANCE: AxiosInstance = axios.create({
 
 AXIOS_INSTANCE.interceptors.response.use(
   (response) => {
-    if (response.status === 307 && response.headers.location) {
-      window.location.replace(response.headers.location);
+    console.log(response);
+    console.log(response.data);
+    console.log(response.headers);
+    console.log(response.status);
+    if (response.status === 201 && response.data.data.url) {
+      window.location.href = response.data.data.url;
     }
     return response;
   },

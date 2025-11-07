@@ -21,7 +21,7 @@ export default function RootLayout({
     <>
       <html lang="en" suppressHydrationWarning>
         <head />
-        <body className={`bg-background ${dm_sans.className} antialiased  `}>
+        <body className={`bg-background   ${dm_sans.className} antialiased  `}>
           <QueryProvider>
             <ThemeProvider
               attribute="class"

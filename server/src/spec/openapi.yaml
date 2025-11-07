@@ -112,68 +112,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InvalidCredentialsError"
-  /auth/email/verify:
-    post:
-      tags: [Password Authentication Module]
-      operationId: authEmailVerifyMutationFn
-      summary: Authenticate a user with email and password
-      description: >
-        Verifies a user's email address using a verification token sent via email.
-        Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
-      requestBody:
-        required: true
-        description: Verify a user's email address
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - code
-              properties:
-                code:
-                  type: string
-                  example: n3910310n013912310sa
-      responses:
-        "200":
-          description: >
-            Email verification successful. The user's email address has been confirmed, enabling them to complete the login process and access protected resources.
-          headers:
-            X-Request-Id:
-              $ref: "#/components/headers/XRequestId"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EmailConfirmedSuccessResponse"
-        "400":
-          description: >
-            Verification failed due to an invalid verification code state:
-            1. The code has expired — the user must request a new verification code.
-            2. The code has already been consumed — the user must request a new verification code.
-          headers:
-            X-Request-Id:
-              $ref: "#/components/headers/XRequestId"
-          content:
-            application/json:
-              examples:
-                VerificationCodeExpiredError:
-                  $ref: "#/components/examples/VerificationCodeExpiredErrorExample"
-                VerificationCodeConsumedError:
-                  $ref: "#/components/examples/VerificationCodeConsumedErrorExample"
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/VerificationCodeExpiredError"
-                  - $ref: "#/components/schemas/VerificationCodeConsumedError"
-        "404":
-          description: >
-            Verification failed, the provided verification code was not found.
-            This may happen if the code is invalid or never issued. The user should request a new verification code.
-          headers:
-            X-Request-Id:
-              $ref: "#/components/headers/XRequestId"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/VerificationCodeNotFoundError"
   /auth/password/forgot:
     post:
       tags: [Password Authentication Module]
@@ -366,6 +304,175 @@ paths:
                 $ref: "#/components/schemas/LogoutSuccessResponse"
         "401":
           $ref: "#/components/responses/InvalidAccessJwtToken"
+  /auth/email/resend:
+    post:
+      tags: [Password Authentication Module]
+      operationId: authResendEmailMutationFn
+      summary: Resend verification email
+      description: >
+        Sends a new verification email to a registered user who has not yet verified their email address.  
+        This endpoint is typically used when a user requests to receive another confirmation link after registration.
+      requestBody:
+        required: true
+        description: Verify a user's email address
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john.doe@gmail.com
+      responses:
+        "200":
+          description: Verification email successfully resent.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailResendSuccessResponse"
+        "400":
+          description: Invalid request body — missing or malformed email address.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidRequestBodyValidationError"
+        "404":
+          description: No user account found with the specified email address.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailNotFoundError"
+        "503":
+          description: Email service unavailable — failed to send verification email.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailServiceError"
+  /auth/email/check:
+    post:
+      tags: [Password Authentication Module]
+      operationId: authCheckEmailMutationFn
+      summary: Check if email is available
+      description: >
+        Checks whether a given email address is already registered in the system.  
+        This endpoint is typically used during the registration process to prevent duplicate accounts.
+      requestBody:
+        required: true
+        description: Verify a user's email address
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john.doe@gmail.com
+      responses:
+        "200":
+          description: The email address is valid and available for registration.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailCheckSuccessResponse"
+        "400":
+          description: Invalid request body or email already exists in the system.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                InvalidRequestBodyValidationError:
+                  $ref: '#/components/examples/InvalidRequestBodyValidationErrorExample'
+                EmailAlreadyExistsError:
+                  $ref: '#/components/examples/EmailAlreadyExistsErrorExample'
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/InvalidRequestBodyValidationError"
+                  - $ref: "#/components/schemas/EmailAlreadyExistsError"
+  /auth/email/verify:
+    post:
+      tags: [Password Authentication Module]
+      operationId: authEmailVerifyMutationFn
+      summary: Authenticate a user with email and password
+      description: >
+        Verifies a user's email address using a verification token sent via email.
+        Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
+      requestBody:
+        required: true
+        description: Verify a user's email address
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  example: n3910310n013912310sa
+      responses:
+        "200":
+          description: >
+            Email verification successful. The user's email address has been confirmed, enabling them to complete the login process and access protected resources.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailConfirmedSuccessResponse"
+        "400":
+          description: >
+            Verification failed due to an invalid verification code state:
+            1. The code has expired — the user must request a new verification code.
+            2. The code has already been consumed — the user must request a new verification code.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              examples:
+                VerificationCodeExpiredError:
+                  $ref: "#/components/examples/VerificationCodeExpiredErrorExample"
+                VerificationCodeConsumedError:
+                  $ref: "#/components/examples/VerificationCodeConsumedErrorExample"
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/VerificationCodeExpiredError"
+                  - $ref: "#/components/schemas/VerificationCodeConsumedError"
+        "404":
+          description: >
+            Verification failed, the provided verification code was not found.
+            This may happen if the code is invalid or never issued. The user should request a new verification code.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationCodeNotFoundError"
   /magic-link/signup:
     post:
       tags: [Magic Link Authentication Module]
@@ -1983,14 +2090,15 @@ paths:
         - `code_challenge` and `code_challenge_method`: PKCE parameters (`S256`)
 
       responses:
-        "307":
+        "201":
           description: Redirects the client to Google OAuth 2.0 authorization URL
           headers:
-            Location:
-              description: The Google authorization URL
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
               schema:
-                type: string
-                example: https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&response_type=code&client_id=YOUR_CLIENT_ID&scope=openid%20profile%20email&redirect_uri=https%3A%2F%2Fyourapp.com%2Fauth%2Fgoogle%2Fcallback&state=RANDOM_STATE&code_challenge=RANDOM_CODE_CHALLENGE&code_challenge_method=S256
+                $ref: '#/components/schemas/GetOIDCAuthUrlSuccessResponse'
         "500":
           description: Server error occurred while generating authorization URL
           content:
@@ -2118,15 +2226,15 @@ paths:
         - `prompt`: Account selection prompt (`select_account`)
 
       responses:
-        "307":
-          description: Redirects the client to GitHub OAuth 2.0 authorization URL
+        "201":
+          description: Redirects the client to Github OAuth 2.0 authorization URL
           headers:
-            Location:
-              description: The GitHub authorization URL
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
               schema:
-                type: string
-                example: >
-                  https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=https%3A%2F%2Fyourapp.com%2Fauth%2Fgithub%2Fcallback&scope=user%20read%3Auser%20user%3Aemail&state=RANDOM_STATE&code_challenge=RANDOM_CODE_CHALLENGE&code_challenge_method=S256&allow_signup=true&access_type=offline&prompt=select_account
+                $ref: '#/components/schemas/GetOIDCAuthUrlSuccessResponse'
         "500":
           description: Server error occurred while generating GitHub authorization URL
           content:
@@ -2227,7 +2335,7 @@ paths:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/OIDCFailedAuthenticationError"
-
+ 
 components:
   # REPONSES
   responses:
@@ -4006,6 +4114,111 @@ components:
               example: "LOGOUT"
         metadata:
           $ref: "#/components/schemas/ResponseMetadata"
+    # OIDC
+    GetOIDCAuthUrlSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data 
+        - metatada
+      properties:
+        success:
+          type: boolean
+          description: Indicates whether the operation was successful
+          example: true
+        statusCode:
+          type: integer
+          description: HTTP status code of the response
+          example: 200
+        message:
+          type: string
+          example: "User sessions retrieved successfully."
+        data: 
+          type: object
+          required: 
+            - url
+          properties:
+            url:
+              type: string
+              description: URL that is used to call OIDC provider.
+              example: https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&response_type=code&client_id=YOUR_CLIENT_ID&scope=openid%20profile%20email&redirect_uri=https%3A%2F%2Fyourapp.com%2Fauth%2Fgoogle%2Fcallback&state=RANDOM_STATE&code_challenge=RANDOM_CODE_CHALLENGE&code_challenge_method=S256
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
+    # EMAIL
+    EmailResendSuccessResponse:
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data 
+        - metatada
+      properties:
+        success:
+          type: boolean
+          description: Indicates whether the operation was successful
+          example: true
+        statusCode:
+          type: integer
+          description: HTTP status code of the response
+          example: 200
+        message:
+          type: string
+          example: "User sessions retrieved successfully."
+        data: 
+          type: object
+          required: 
+            - email
+            - isEmailSuccessfullySend
+          properties:
+            email:
+              type: string
+              description: User email address.
+              example: john.doe@gmail.com
+            isEmailSuccessfullySend:
+              type: boolean
+              description: Boolean value validating if mail was successfully send to user.
+              example: true
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
+    EmailCheckSuccessResponse:    
+      type: object
+      required:
+        - success
+        - statusCode
+        - message
+        - data 
+        - metatada
+      properties:
+        success:
+          type: boolean
+          description: Indicates whether the operation was successful
+          example: true
+        statusCode:
+          type: integer
+          description: HTTP status code of the response
+          example: 200
+        message:
+          type: string
+          example: "User sessions retrieved successfully."
+        data: 
+          type: object
+          required: 
+            - email
+            - isNewEmail
+          properties:
+            email:
+              type: string
+              description: User email address.
+              example: john.doe@gmail.com
+            isEmailSuccessfullySend:
+              type: boolean
+              description: Boolean value validating if email address is not registered in database.
+              example: true
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
     # ERRORS
     # GENERAL ERRORS
     InternalServerError:
@@ -4179,6 +4392,28 @@ components:
           type: string
           enum: ["AUTH_USER_NOT_FOUND"]
           example: AUTH_USER_NOT_FOUND
+        requestId:
+          type: string
+          example: cc5065df0c6b4c19970d4e92f
+    EmailNotFoundError:
+      type: object
+      required:
+        - success
+        - message
+        - errorCode
+        - requestId
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          example: false
+        message:
+          type: string
+          example: Specified email was not found in database. Please register your account.
+        errorCode:
+          type: string
+          enum: ["AUTH_EMAIL_NOT_FOUND"]
+          example: AUTH_EMAIL_NOT_FOUND
         requestId:
           type: string
           example: cc5065df0c6b4c19970d4e92f
