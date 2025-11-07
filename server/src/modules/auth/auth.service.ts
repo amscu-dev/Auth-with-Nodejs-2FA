@@ -302,9 +302,26 @@ export class AuthService {
         ...verifyEmailTemplate(verificationURL),
       });
     });
+    if (!isEmailSuccessfullySend) {
+      throw new ServiceUnavaibleException(
+        "Failed to send the email. Please try again later.",
+        ErrorCode.EMAIL_SERVICE_ERROR
+      );
+    }
     return {
       email,
       isEmailSuccessfullySend,
+    };
+  }
+  public async checkEmail(email: string) {
+    const userid = await UserModel.exists({ email });
+    if (!userid) {
+      return {
+        isNewEmail: false,
+      };
+    }
+    return {
+      isNewEmail: true,
     };
   }
   public async forgotPassword(email: string, ip: string) {

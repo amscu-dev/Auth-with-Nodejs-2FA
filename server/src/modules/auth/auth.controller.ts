@@ -156,34 +156,64 @@ export class AuthController {
       );
     }
   );
-  public resendEmail = asyncHandler(async (req: Request, res: Response) => {
-    // ! 01. Validate input
-    const { email } = z
-      .object({
-        email: z.email().trim(),
-      })
-      .parse(req.body);
-    // ! 02. Call service
-    const { isEmailSuccessfullySend } = await this.authService.resendEmail(
-      email
-    );
-    // ! 03. Return response
-    return res.status(HTTPSTATUS.OK).json(
-      new ApiResponse({
-        statusCode: HTTPSTATUS.OK,
-        success: true,
-        message:
-          "Verification code was resended to email, please check your inbox!",
-        data: {
-          isEmailSuccessfullySend,
-          email,
-        },
-        metadata: {
-          requestId: req.requestId,
-        },
-      })
-    );
-  });
+  public resendEmail = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
+      const { email } = z
+        .object({
+          email: z.email().trim(),
+        })
+        .parse(req.body);
+      // ! 02. Call service
+      const { isEmailSuccessfullySend } = await this.authService.resendEmail(
+        email
+      );
+      // ! 03. Return response
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          statusCode: HTTPSTATUS.OK,
+          success: true,
+          message:
+            "Verification code was resended to email, please check your inbox!",
+          data: {
+            isEmailSuccessfullySend,
+            email,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
+    }
+  );
+  public checkEmail = asyncHandler(
+    async (req: Request, res: Response): Promise<any> => {
+      // ! 01. Validate input
+      const { email } = z
+        .object({
+          email: z.email().trim(),
+        })
+        .parse(req.body);
+      // ! 02. Call service
+      const { isNewEmail } = await this.authService.checkEmail(email);
+      // ! 03. Return response
+      return res.status(HTTPSTATUS.OK).json(
+        new ApiResponse({
+          statusCode: HTTPSTATUS.OK,
+          success: true,
+          message:
+            "Email does not exists in our database. Please register a new account !",
+          data: {
+            isNewEmail,
+            email,
+          },
+          metadata: {
+            requestId: req.requestId,
+          },
+        })
+      );
+    }
+  );
   public forgotPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
