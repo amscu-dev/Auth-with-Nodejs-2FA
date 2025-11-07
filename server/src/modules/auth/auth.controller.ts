@@ -19,6 +19,8 @@ import {
 import { NotFoundException } from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
+import e from "cors";
+import z from "zod";
 
 export class AuthController {
   private authService: AuthService;
@@ -154,6 +156,34 @@ export class AuthController {
       );
     }
   );
+  public resendEmail = asyncHandler(async (req: Request, res: Response) => {
+    // ! 01. Validate input
+    const { email } = z
+      .object({
+        email: z.email().trim(),
+      })
+      .parse(req.body);
+    // ! 02. Call service
+    const { isEmailSuccessfullySend } = await this.authService.resendEmail(
+      email
+    );
+    // ! 03. Return response
+    return res.status(HTTPSTATUS.OK).json(
+      new ApiResponse({
+        statusCode: HTTPSTATUS.OK,
+        success: true,
+        message:
+          "Verification code was resended to email, please check your inbox!",
+        data: {
+          isEmailSuccessfullySend,
+          email,
+        },
+        metadata: {
+          requestId: req.requestId,
+        },
+      })
+    );
+  });
   public forgotPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input

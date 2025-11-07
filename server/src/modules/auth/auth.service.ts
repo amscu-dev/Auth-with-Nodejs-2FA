@@ -5,6 +5,7 @@ import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { LoginData, RegisterData } from "@/common/interface/auth.interface";
 import {
   BadRequestException,
+  ConflictException,
   NotFoundException,
   ServiceUnavaibleException,
   TooManyRequestsException,
@@ -268,6 +269,43 @@ export class AuthService {
     } finally {
       await mongoSession.endSession();
     }
+  }
+  public async resendEmail(email: string) {
+    // ! 01. Check if email exists
+    const user = await UserModel.findOne({
+      email,
+    });
+    // ! 02. If not send error
+    if (!user) {
+      throw new NotFoundException(
+        "Specified email was not found in database. Please register your account.",
+        ErrorCode.AUTH_EMAIL_NOT_FOUND
+      );
+    }
+    if (user.isEmailVerified) {
+      throw new ConflictException(
+        "This email address is already verified. Please proceed to login.",
+        ErrorCode.AUTH_EMAIL_ALREADY_VERIFIED
+      );
+    }
+    // ! 03. Create new verification code
+    const verificationCode = new VerificationCodeModel({
+      userId: user._id,
+      type: VerificationEnum.EMAIL_VERIFICATION,
+      expiresAt: fortyFiveMinutesFromNow(),
+    });
+    // ! 04. Send Verification Code Email
+    const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}&email=${email}`;
+    const isEmailSuccessfullySend = await apiRequestWithRetry(() => {
+      return sendEmail({
+        to: user.email,
+        ...verifyEmailTemplate(verificationURL),
+      });
+    });
+    return {
+      email,
+      isEmailSuccessfullySend,
+    };
   }
   public async forgotPassword(email: string, ip: string) {
     // ! 01. Check for user existance

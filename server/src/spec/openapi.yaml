@@ -354,6 +354,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmailNotFoundError"
+        "409":
+          description: The user's email address has already been verified and cannot be reverified.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailAlreadyVerifiedError"
         "503":
           description: Email service unavailable — failed to send verification email.
           headers:
@@ -2335,7 +2344,6 @@ paths:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/OIDCFailedAuthenticationError"
- 
 components:
   # REPONSES
   responses:
@@ -4166,7 +4174,7 @@ components:
           example: 200
         message:
           type: string
-          example: "User sessions retrieved successfully."
+          example: "Verification code was resended to email, please check your inbox!"
         data: 
           type: object
           required: 
@@ -4410,6 +4418,28 @@ components:
         message:
           type: string
           example: Specified email was not found in database. Please register your account.
+        errorCode:
+          type: string
+          enum: ["AUTH_EMAIL_NOT_FOUND"]
+          example: AUTH_EMAIL_NOT_FOUND
+        requestId:
+          type: string
+          example: cc5065df0c6b4c19970d4e92f
+    EmailAlreadyVerifiedError:
+      type: object
+      required:
+        - success
+        - message
+        - errorCode
+        - requestId
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+          example: false
+        message:
+          type: string
+          example: This email address is already verified. Please proceed to login.
         errorCode:
           type: string
           enum: ["AUTH_EMAIL_NOT_FOUND"]
