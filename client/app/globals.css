@@ -140,3 +140,19 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes slide-in {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(125%);
+    opacity: 1;
+  }
+}
+
+.show-error {
+  display: block;
+  animation: slide-in 500ms forwards;
+}

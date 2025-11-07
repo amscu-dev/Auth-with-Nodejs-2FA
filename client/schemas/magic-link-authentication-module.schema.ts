@@ -6,9 +6,7 @@
 
  * OpenAPI spec version: 1.0.0
  */
-import * as zod from 'zod';
-
-
+import * as zod from "zod";
 
 /**
  * Registers a new user account by sending a **magic link** to the provided email address. 
@@ -22,39 +20,69 @@ export const magicLinkSignUpMutationFnBodyNameMax = 64;
 
 export const magicLinkSignUpMutationFnBodyEmailMax = 64;
 
-
-
 export const magicLinkSignUpMutationFnBody = zod.object({
-  "name": zod.string().min(1).max(magicLinkSignUpMutationFnBodyNameMax).describe('The user\'s full name'),
-  "email": zod.email().min(1).max(magicLinkSignUpMutationFnBodyEmailMax)
-})
+  name: zod
+    .string()
+    .min(1, { message: "Full name is required" })
+    .max(magicLinkSignUpMutationFnBodyNameMax, {
+      message: `Full name must be at most ${magicLinkSignUpMutationFnBodyNameMax} characters`,
+    })
+    .describe("The user's full name"),
+
+  email: zod
+    .string()
+    .min(1, { message: "Email is required" })
+    .max(magicLinkSignUpMutationFnBodyEmailMax, {
+      message: `Email must be at most ${magicLinkSignUpMutationFnBodyEmailMax} characters`,
+    })
+    .email({ message: "Please enter a valid email address" }),
+});
 
 export const magicLinkSignUpMutationFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(201),
-  "message": zod.string(),
-  "data": zod.object({
-  "user": zod.object({
-  "_id": zod.string(),
-  "name": zod.string(),
-  "email": zod.string(),
-  "isEmailVerified": zod.boolean(),
-  "userPreferences": zod.object({
-  "enable2FA": zod.boolean(),
-  "emailNotification": zod.boolean()
-}),
-  "createdAt": zod.iso.datetime({}),
-  "updatedAt": zod.iso.datetime({})
-}).optional(),
-  "isMagicLinkEmailSend": zod.boolean().optional(),
-  "nextStep": zod.enum(['CHECK_EMAIL_FOR_MAGIC_LINK']).optional()
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod.literal(true),
+  statusCode: zod.literal(201),
+  message: zod.string(),
+  data: zod.object({
+    user: zod
+      .object({
+        _id: zod.string(),
+        name: zod.string(),
+        email: zod.string(),
+        isEmailVerified: zod.boolean(),
+        userPreferences: zod.object({
+          enable2FA: zod.boolean(),
+          emailNotification: zod.boolean(),
+        }),
+        createdAt: zod.iso.datetime({}),
+        updatedAt: zod.iso.datetime({}),
+      })
+      .optional(),
+    isMagicLinkEmailSend: zod.boolean().optional(),
+    nextStep: zod.enum(["CHECK_EMAIL_FOR_MAGIC_LINK"]).optional(),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Initiates a passwordless sign-in flow by sending a magic link to the user email address. 
@@ -66,26 +94,41 @@ This endpoint is typically used in passwordless authentication systems.
  */
 export const magicLinkSignInMutationFnBodyEmailMax = 64;
 
-
-
 export const magicLinkSignInMutationFnBody = zod.object({
-  "email": zod.email().min(1).max(magicLinkSignInMutationFnBodyEmailMax)
-})
+  email: zod.email().min(1).max(magicLinkSignInMutationFnBodyEmailMax),
+});
 
 export const magicLinkSignInMutationFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "isMagicLinkEmailSend": zod.boolean().optional(),
-  "nextStep": zod.enum(['CHECK_EMAIL_FOR_MAGIC_LINK']).optional()
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod.literal(true),
+  statusCode: zod.literal(200),
+  message: zod.string(),
+  data: zod.object({
+    isMagicLinkEmailSend: zod.boolean().optional(),
+    nextStep: zod.enum(["CHECK_EMAIL_FOR_MAGIC_LINK"]).optional(),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Resends a new generated magic link to the user's email address. 
@@ -98,26 +141,41 @@ This operation is commonly used in passwordless authentication systems to handle
  */
 export const magicLinkResendMutationFnBodyEmailMax = 64;
 
-
-
 export const magicLinkResendMutationFnBody = zod.object({
-  "email": zod.email().min(1).max(magicLinkResendMutationFnBodyEmailMax)
-})
+  email: zod.email().min(1).max(magicLinkResendMutationFnBodyEmailMax),
+});
 
 export const magicLinkResendMutationFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "isMagicLinkEmailSend": zod.boolean().optional(),
-  "nextStep": zod.enum(['CHECK_EMAIL_FOR_MAGIC_LINK']).optional()
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod.literal(true),
+  statusCode: zod.literal(200),
+  message: zod.string(),
+  data: zod.object({
+    isMagicLinkEmailSend: zod.boolean().optional(),
+    nextStep: zod.enum(["CHECK_EMAIL_FOR_MAGIC_LINK"]).optional(),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Verifies a user's email or signs them in by validating the provided magic link token. 
@@ -127,33 +185,53 @@ Upon successful verification, authentication cookies or tokens are issued to est
  * @summary Verify a user's email using a magic link token
  */
 export const magicLinkAuthenticateQueryFnParams = zod.object({
-  "token": zod.string().describe('A unique, single-use token included in the magic link sent to the user\'s email.  It is used to verify the user\'s email ownership and complete the sign-in process.\n')
-})
+  token: zod
+    .string()
+    .describe(
+      "A unique, single-use token included in the magic link sent to the user's email.  It is used to verify the user's email ownership and complete the sign-in process.\n"
+    ),
+});
 
 export const magicLinkAuthenticateQueryFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "user": zod.object({
-  "_id": zod.string(),
-  "name": zod.string(),
-  "email": zod.string(),
-  "isEmailVerified": zod.boolean(),
-  "userPreferences": zod.object({
-  "enable2FA": zod.boolean(),
-  "emailNotification": zod.boolean()
-}),
-  "createdAt": zod.iso.datetime({}),
-  "updatedAt": zod.iso.datetime({})
-}),
-  "nextStep": zod.enum(['OK']),
-  "mfaRequired": zod.literal(false)
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
-
+  success: zod.literal(true),
+  statusCode: zod.literal(200),
+  message: zod.string(),
+  data: zod.object({
+    user: zod.object({
+      _id: zod.string(),
+      name: zod.string(),
+      email: zod.string(),
+      isEmailVerified: zod.boolean(),
+      userPreferences: zod.object({
+        enable2FA: zod.boolean(),
+        emailNotification: zod.boolean(),
+      }),
+      createdAt: zod.iso.datetime({}),
+      updatedAt: zod.iso.datetime({}),
+    }),
+    nextStep: zod.enum(["OK"]),
+    mfaRequired: zod.literal(false),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});

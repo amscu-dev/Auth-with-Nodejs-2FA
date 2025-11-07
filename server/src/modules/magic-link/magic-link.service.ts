@@ -47,7 +47,7 @@ export class MagicLinkService {
       { ...magicLinkTokenOptions, algorithm: "HS256" }
     );
     // * TODO : Modificare hardcodare link
-    const magicLink = `http://localhost:8000/api/v1/magic-link/verify/${magicToken}`;
+    const magicLink = `http://localhost:8000/api/v1/magic-link/authenticate/${magicToken}`;
 
     const isMagicLinkEmailSend = await apiRequestWithRetry(() => {
       return sendEmail({

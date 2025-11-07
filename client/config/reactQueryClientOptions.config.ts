@@ -22,7 +22,7 @@ const queryClientConfig: QueryClientConfig = {
     onError: (error) => {
       if (isAxiosError<AxiosErrorRes>(error)) {
         const msg = error.response?.data?.message || error.message;
-        toast.error(`Axios error: ${msg}`);
+        toast.error(`${msg}`);
       } else {
         toast.error(`Unknown error: ${(error as Error).message}`);
       }
@@ -32,7 +32,7 @@ const queryClientConfig: QueryClientConfig = {
     onError: (error) => {
       if (isAxiosError<AxiosErrorRes>(error)) {
         const msg = error.response?.data?.message || error.message;
-        toast.error(`Axios error: ${msg}`);
+        toast.error(`${msg}`);
       } else {
         toast.error(`Unknown error: ${(error as Error).message}`);
       }
@@ -52,6 +52,7 @@ const queryClientConfig: QueryClientConfig = {
     },
     mutations: {
       retry: (failureCount, error) => {
+        console.log(error);
         if (isAxiosError<AxiosErrorRes>(error)) {
           const status = error.response?.status;
           if (status && status >= 400 && status < 500) return false;

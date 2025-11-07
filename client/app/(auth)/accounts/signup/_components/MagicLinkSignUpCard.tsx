@@ -18,7 +18,12 @@ import Link from "next/link";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
 import { FaWandMagicSparkles } from "react-icons/fa6";
-
+import z from "zod";
+import { magicLinkSignUpMutationFnBody } from "@/schemas/magic-link-authentication-module.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import client from "@/api/index";
+import { RotatingLines } from "react-loader-spinner";
+import { useRouter } from "next/navigation";
 interface MagicLinkSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
 }
@@ -26,8 +31,28 @@ interface MagicLinkSignUpCardProps {
 const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
   handleSignUpMethod,
 }) => {
-  const form = useForm();
-  const onSubmit = () => {};
+  const router = useRouter();
+  const { mutate: signUp, isPending: isPendingSignUp } =
+    client.MagicLink.SignUp.useMutation();
+  const form = useForm<z.infer<typeof magicLinkSignUpMutationFnBody>>({
+    resolver: zodResolver(magicLinkSignUpMutationFnBody),
+    defaultValues: {
+      name: "",
+      email: "",
+    },
+    mode: "onTouched",
+  });
+  const onSubmit = async (
+    data: z.infer<typeof magicLinkSignUpMutationFnBody>
+  ) => {
+    await signUp(data, {
+      onSuccess: (data) => {
+        router.push(
+          `/accounts/signup/verify-email?email=${encodeURIComponent(data.data.user?.email || "")}&name=${encodeURIComponent(data.data.user?.name || "")}`
+        );
+      },
+    });
+  };
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -51,6 +76,9 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
                 placeholder="Please enter your email"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
+                type="email"
+                disabled={isPendingSignUp}
+                autoComplete="off"
               />
               <FormInput
                 name="name"
@@ -58,6 +86,8 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
+                autoComplete="off"
+                disabled={isPendingSignUp}
               />
             </div>
             <div>
@@ -71,6 +101,7 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
                 <Button
                   variant="link"
                   className="px-0 group text-[10px] font-light text-end"
+                  disabled={isPendingSignUp}
                   onClick={() => handleSignUpMethod("general")}
                 >
                   <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
@@ -79,8 +110,20 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
               </div>
             </div>
             <div className="flex w-full items-center justify-center my-6 mt-4">
-              <Button className="w-full" size="lg">
-                <FaWandMagicSparkles /> Register with Magic Link
+              <Button
+                className="w-full"
+                size="lg"
+                type="submit"
+                disabled={isPendingSignUp}
+              >
+                <FaWandMagicSparkles /> Register with Magic Link{" "}
+                <RotatingLines
+                  visible={isPendingSignUp}
+                  height="20"
+                  width="20"
+                  color="#ffffff"
+                  ariaLabel="mutating-dots-loading"
+                />
               </Button>
             </div>
             <div className="flex items-start gap-3">
@@ -106,6 +149,7 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
           <Button
             variant="link"
             className="px-0 group font-semibold sm:text-[12px]"
+            disabled={isPendingSignUp}
           >
             <Link href="/accounts/signin">Sign In</Link>
             <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />

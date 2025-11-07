@@ -5,6 +5,8 @@ import { createJiti } from "jiti";
 const jiti = createJiti(fileURLToPath(import.meta.url));
 
 jiti("./env");
-const nextConfig = {};
+const nextConfig = {
+  reactStrictMode: false,
+};
 
 export default nextConfig;

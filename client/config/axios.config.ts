@@ -35,10 +35,6 @@ const AXIOS_INSTANCE: AxiosInstance = axios.create({
 
 AXIOS_INSTANCE.interceptors.response.use(
   (response) => {
-    console.log(response);
-    console.log(response.data);
-    console.log(response.headers);
-    console.log(response.status);
     if (response.status === 201 && response.data.data.url) {
       window.location.href = response.data.data.url;
     }
@@ -49,7 +45,7 @@ AXIOS_INSTANCE.interceptors.response.use(
     if (data === "Unauthorized" && status === 401) {
       // aici poți implementa retry pe /refresh
     }
-    return Promise.reject({ ...data });
+    return Promise.reject(error);
   }
 );
 export const customAxiosInstance = <T>(

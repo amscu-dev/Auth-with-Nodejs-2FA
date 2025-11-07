@@ -42,7 +42,9 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
   const handleGithubAuth = () => {
     authenticateGithub();
   };
-  const onSubmit = () => {};
+  const onSubmit = () => {
+    handleSignUpMethod("password");
+  };
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -57,76 +59,80 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-2">
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="outline"
+            className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
+            size="lg"
+            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            onClick={handleGoogleAuth}
+          >
+            <FaGoogle /> Register with Google{" "}
+            <RotatingLines
+              visible={isPendingGoogleAuth}
+              height="20"
+              width="20"
+              color="#ffffff"
+              ariaLabel="mutating-dots-loading"
+            />
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
+            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            size="lg"
+            onClick={handleGithubAuth}
+          >
+            <FaGithub /> Register with Github{" "}
+            <RotatingLines
+              visible={isPendingGithubAuth}
+              height="20"
+              width="20"
+              color="#ffffff"
+              ariaLabel="mutating-dots-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
+            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            size="lg"
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.preventDefault();
+              handleSignUpMethod("magic-link");
+            }}
+          >
+            <FaWandMagicSparkles /> Register with Magic Link
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
+            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            size="lg"
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.preventDefault();
+              handleSignUpMethod("passkey");
+            }}
+          >
+            <GoPasskeyFill /> Register with Passkey
+          </Button>
+        </div>
+        <div className="w-full flex items-center justify-center gap-2 my-6">
+          <div className="w-full h-[0.5px] bg-border" />
+          <span className="text-muted-foreground text-[10px] text-nowrap">
+            OR CONTINUE WITH
+          </span>
+          <div className="w-full h-[0.5px] bg-border" />
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
-                size="lg"
-                disabled={isPendingGoogleAuth || isPendingGithubAuth}
-                onClick={handleGoogleAuth}
-              >
-                <FaGoogle /> Register with Google{" "}
-                <RotatingLines
-                  visible={isPendingGoogleAuth}
-                  height="20"
-                  width="20"
-                  color="#ffffff"
-                  ariaLabel="mutating-dots-loading"
-                  wrapperStyle={{}}
-                  wrapperClass=""
-                />
-              </Button>
-              <div></div>
-              <Button
-                variant="outline"
-                className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
-                disabled={isPendingGoogleAuth || isPendingGithubAuth}
-                size="lg"
-                onClick={handleGithubAuth}
-              >
-                <FaGithub /> Register with Github{" "}
-                <RotatingLines
-                  visible={isPendingGithubAuth}
-                  height="20"
-                  width="20"
-                  color="#ffffff"
-                  ariaLabel="mutating-dots-loading"
-                  wrapperStyle={{}}
-                  wrapperClass=""
-                />
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
-                disabled={isPendingGoogleAuth || isPendingGithubAuth}
-                size="lg"
-                onClick={() => handleSignUpMethod("magic-link")}
-              >
-                <FaWandMagicSparkles /> Register with Magic Link
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
-                disabled={isPendingGoogleAuth || isPendingGithubAuth}
-                size="lg"
-                onClick={() => handleSignUpMethod("passkey")}
-              >
-                <GoPasskeyFill /> Register with Passkey
-              </Button>
-            </div>
-            <div className="w-full flex items-center justify-center gap-2 my-6">
-              <div className="w-full h-[0.5px] bg-border" />
-              <span className="text-muted-foreground text-[10px] text-nowrap">
-                OR CONTINUE WITH
-              </span>
-              <div className="w-full h-[0.5px] bg-border" />
-            </div>
             <div className="flex items-center justify-center flex-col w-full gap-4">
               <FormInput
                 name="email"
                 label="Email"
+                disabled={isPendingGoogleAuth || isPendingGithubAuth}
                 placeholder="Enter your email"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -136,8 +142,8 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
               <Button
                 className="w-full"
                 size="lg"
+                type="submit"
                 disabled={isPendingGoogleAuth || isPendingGithubAuth}
-                onClick={() => handleSignUpMethod("password")}
               >
                 Create an account
               </Button>
