@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import FormInput from "@/components/form/FormInput";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +18,17 @@ import Link from "next/link";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { BsQrCodeScan } from "react-icons/bs";
 import { HiViewGridAdd } from "react-icons/hi";
+import z from "zod";
+import {
+  passkeySignUpInitMutationFnBody,
+  passkeySignUpInitResponseBody,
+} from "@/schemas/passkey-authentication-module.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import client from "@/api/index";
+import { ErrorCode } from "@/types/enums/error-code.enum";
+import { startRegistration, WebAuthnError } from "@simplewebauthn/browser";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface PasskeySignUpCardProps {
   handleSignUpMethod: (method: string) => void;
@@ -26,8 +37,88 @@ interface PasskeySignUpCardProps {
 const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
   handleSignUpMethod,
 }) => {
-  const form = useForm();
-  const onSubmit = () => {};
+  const { mutate: signUpInit, isPending: isPendingSignUpInit } =
+    client.Passkey.SignUpInit.useMutation();
+  const { mutate: signUpVerify, isPending: isPendingSignUpVerify } =
+    client.Passkey.SignUpVerify.useMutation();
+  const [isCreatingPasskey, setIsCreatingPasskey] = useState<boolean>(false);
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+  const router = useRouter();
+  const disableState =
+    isPendingSignUpInit ||
+    isPendingSignUpVerify ||
+    isCreatingPasskey ||
+    isRedirecting;
+
+  const form = useForm<z.infer<typeof passkeySignUpInitMutationFnBody>>({
+    resolver: zodResolver(passkeySignUpInitMutationFnBody),
+    mode: "onTouched",
+    defaultValues: {
+      email: "",
+      name: "",
+    },
+  });
+  const onSubmit = async (
+    data: z.infer<typeof passkeySignUpInitMutationFnBody>
+  ) => {
+    await signUpInit(data, {
+      onError: (err) => {
+        if (err.response) {
+          if (
+            err.response.data.errorCode === ErrorCode.AUTH_EMAIL_ALREADY_EXISTS
+          ) {
+            form.setError("email", {
+              type: "validate",
+              message: "An account with this email already exists.",
+            });
+            requestAnimationFrame(() => {
+              form.setFocus("email");
+            });
+          }
+        }
+      },
+      onSuccess: async (data) => {
+        try {
+          const {
+            data: { publicKeyOpts },
+          } = passkeySignUpInitResponseBody.parse(data);
+          try {
+            setIsCreatingPasskey(true);
+            const credential = await startRegistration({
+              optionsJSON: {
+                ...publicKeyOpts,
+              },
+            });
+
+            await signUpVerify(credential, {
+              onSuccess: (data) => {
+                setIsRedirecting(true);
+                router.push(
+                  `/accounts/signup/verify-email?email=${encodeURIComponent(data.data.user?.email || "")}&name=${encodeURIComponent(data.data.user?.name || "")}`
+                );
+              },
+            });
+          } catch (error) {
+            setIsRedirecting(false);
+            setIsCreatingPasskey(false);
+            if (error instanceof WebAuthnError) {
+              toast.error(error.message);
+              console.error(error);
+            } else {
+              toast.error(
+                "There was an error processing your request please try again later"
+              );
+            }
+          }
+        } catch (error) {
+          toast.error(
+            "There was an error processing your request please try again later"
+          );
+          console.error(error);
+        }
+      },
+    });
+  };
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -48,6 +139,8 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
               <FormInput
                 name="email"
                 label="Email"
+                type="email"
+                disabled={disableState}
                 placeholder="Please enter your email"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -55,6 +148,8 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
               <FormInput
                 name="name"
                 label="Full name"
+                type="text"
+                disabled={disableState}
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -71,6 +166,7 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
                 <Button
                   variant="link"
                   className="px-0 group text-[10px] font-light text-end"
+                  disabled={disableState}
                   onClick={() => handleSignUpMethod("general")}
                 >
                   <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
@@ -79,12 +175,12 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
               </div>
             </div>
             <div className="flex w-full items-center justify-center my-6 mt-4">
-              <Button className="w-full" size="lg">
+              <Button className="w-full" size="lg" disabled={disableState}>
                 <BsQrCodeScan /> Register with Passkey
               </Button>
             </div>
             <div className="flex items-start gap-3">
-              <Checkbox id="terms-2" defaultChecked />
+              <Checkbox id="terms-2" defaultChecked disabled={disableState} />
               <div className="grid gap-1">
                 <Label htmlFor="terms-2" className="text-sm">
                   Accept terms and conditions
@@ -106,6 +202,7 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
           <Button
             variant="link"
             className="px-0 group font-semibold sm:text-[12px]"
+            disabled={disableState}
           >
             <Link href="/accounts/signin">Sign In</Link>
             <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />

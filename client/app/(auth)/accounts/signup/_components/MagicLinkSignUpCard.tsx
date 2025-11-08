@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import client from "@/api/index";
 import { RotatingLines } from "react-loader-spinner";
 import { useRouter } from "next/navigation";
+import { ErrorCode } from "@/types/enums/error-code.enum";
 interface MagicLinkSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
 }
@@ -50,6 +51,21 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
         router.push(
           `/accounts/signup/verify-email?email=${encodeURIComponent(data.data.user?.email || "")}&name=${encodeURIComponent(data.data.user?.name || "")}`
         );
+      },
+      onError: (err) => {
+        if (err.response) {
+          if (
+            err.response.data.errorCode === ErrorCode.AUTH_EMAIL_ALREADY_EXISTS
+          ) {
+            form.setError("email", {
+              type: "validate",
+              message: "An account with this email already exists.",
+            });
+            requestAnimationFrame(() => {
+              form.setFocus("email");
+            });
+          }
+        }
       },
     });
   };
