@@ -60,7 +60,7 @@ const EmailCard: React.FC<EmailCardProps> = () => {
         </p>
         <Button
           variant="link"
-          className="px-0 group font-semibold sm:text-base text-xs active:translate-x-0 active:translate-y-0 active:shadow-none disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-none"
+          className="px-0 group font-semibold sm:text-base text-xs"
           onClick={handleResend}
           disabled={isPending || isMailSent}
         >

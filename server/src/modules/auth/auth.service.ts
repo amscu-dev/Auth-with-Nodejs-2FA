@@ -6,6 +6,7 @@ import { LoginData, RegisterData } from "@/common/interface/auth.interface";
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
   ServiceUnavaibleException,
   TooManyRequestsException,
@@ -132,7 +133,15 @@ export class AuthService {
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
+    const supportsRegular =
+      user.userPreferences?.supportedAuthMethods?.includes("regular");
 
+    if (!supportsRegular) {
+      throw new ForbiddenException(
+        "You do not have permission to perform this action. To benefit of 2FA, please add a password-based login method in your account settings first. (choose forgot password)",
+        ErrorCode.ACCESS_FORBIDDEN
+      );
+    }
     // ! 03. Check password match
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {

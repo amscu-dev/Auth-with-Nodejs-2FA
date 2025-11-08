@@ -115,7 +115,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               <div className="flex items-center justify-end">
                 <Button
                   variant="link"
-                  className="px-0 group text-[10px] font-light text-end disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-none"
+                  className="px-0 group text-[10px] font-light text-end"
                   onClick={() => handleSignUpMethod("general")}
                   disabled={isPendingRegistration}
                 >
@@ -166,7 +166,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
           </p>
           <Button
             variant="link"
-            className="px-0 group font-semibold sm:text-[12px] disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-none"
+            className="px-0 group font-semibold sm:text-[12px]"
             disabled={isPendingRegistration}
           >
             <Link href="/accounts/signin">Sign In</Link>

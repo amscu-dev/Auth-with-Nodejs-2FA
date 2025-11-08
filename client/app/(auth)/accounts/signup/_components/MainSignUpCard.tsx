@@ -112,7 +112,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
       </CardHeader>
       <CardContent className="pb-2">
         {/* Button Stack */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <Button
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
