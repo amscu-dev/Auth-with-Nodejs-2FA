@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaGoogle } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa";
@@ -26,6 +26,7 @@ import { RotatingLines } from "react-loader-spinner";
 import { authCheckEmailMutationFnBody } from "@/schemas/password-authentication-module.schema";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 interface MainSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
@@ -36,15 +37,6 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
   handleSignUpMethod,
   handleEmailAddress,
 }) => {
-  const { mutate: authenticateGithub, isPending: isPendingGithubAuth } =
-    client.OIDC.GithubAuth.useMutation();
-  const { mutate: authenticateGoogle, isPending: isPendingGoogleAuth } =
-    client.OIDC.GoogleAuth.useMutation();
-  const { mutate: checkEmail, isPending: isPendingCheckEmail } =
-    client.PasswordAuth.CheckEmail.useMutation();
-  const disable =
-    isPendingGithubAuth || isPendingGoogleAuth || isPendingCheckEmail;
-
   const form = useForm<z.infer<typeof authCheckEmailMutationFnBody>>({
     resolver: zodResolver(authCheckEmailMutationFnBody),
     defaultValues: {
@@ -52,13 +44,38 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
     },
     mode: "onTouched",
   });
+
+  const { mutate: authenticateGithub, isPending: isPendingGithubAuth } =
+    client.OIDC.GithubAuth.useMutation();
+  const { mutate: authenticateGoogle, isPending: isPendingGoogleAuth } =
+    client.OIDC.GoogleAuth.useMutation();
+  const { mutate: checkEmail, isPending: isPendingCheckEmail } =
+    client.PasswordAuth.CheckEmail.useMutation();
+
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
   const refInput = useRef<HTMLInputElement>(null);
 
-  const handleGoogleAuth = () => {
-    authenticateGoogle();
+  const disable =
+    isPendingGithubAuth ||
+    isPendingGoogleAuth ||
+    isPendingCheckEmail ||
+    isRedirecting;
+
+  const handleGoogleAuth = async () => {
+    await authenticateGoogle(undefined, {
+      onSuccess: () => {
+        setIsRedirecting(true);
+        toast.loading("You will be redirected to Google for authentication…");
+      },
+    });
   };
-  const handleGithubAuth = () => {
-    authenticateGithub();
+  const handleGithubAuth = async () => {
+    await authenticateGithub(undefined, {
+      onSuccess: () => {
+        setIsRedirecting(true);
+        toast.loading("You will be redirected to Github for authentication…");
+      },
+    });
   };
   const onSubmit = async (
     data: z.infer<typeof authCheckEmailMutationFnBody>

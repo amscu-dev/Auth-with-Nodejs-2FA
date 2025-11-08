@@ -56,8 +56,14 @@ export class OIDCSessionController {
   public authenticateGoogleUser = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       const { code, state } = verifyOIDCParams.parse(req.query);
+
       const { user, accessToken, refreshToken, mfaRequired } =
         await this.oidcSessionService.authenticateGoogleUser(code, state, req);
+      await new Promise((res) => {
+        setTimeout(() => {
+          res("DONE");
+        }, 5000);
+      });
 
       return setAuthenticationCookies({
         res,

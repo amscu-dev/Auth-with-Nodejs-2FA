@@ -20,6 +20,7 @@ const queryClientConfig: QueryClientConfig = {
   queryCache: new QueryCache({
     // onError from the QueryCache is called only once when a query completely fails — meaning after all retries have been exhausted, not on each individual retry attempt.
     onError: (error) => {
+      console.log(error);
       if (isAxiosError<AxiosErrorRes>(error)) {
         const msg = error.response?.data?.message || error.message;
         toast.error(`${msg}`);
@@ -43,20 +44,45 @@ const queryClientConfig: QueryClientConfig = {
       staleTime: 0,
       retry: (failureCount, error) => {
         if (isAxiosError<AxiosErrorRes>(error)) {
+          const code = error.code;
           const status = error.response?.status;
-          if (status && status >= 400 && status < 500) return false;
+
+          if (
+            code === "ERR_NETWORK" ||
+            code === "ECONNABORTED" ||
+            !error.response
+          ) {
+            return false;
+          }
+
+          if (status && status >= 400 && status < 500) {
+            return false;
+          }
         }
+
         return failureCount < 3;
       },
       retryDelay: decorrelatedRetryDelay,
     },
     mutations: {
       retry: (failureCount, error) => {
-        console.log(error);
         if (isAxiosError<AxiosErrorRes>(error)) {
+          const code = error.code;
           const status = error.response?.status;
-          if (status && status >= 400 && status < 500) return false;
+
+          if (
+            code === "ERR_NETWORK" ||
+            code === "ECONNABORTED" ||
+            !error.response
+          ) {
+            return false;
+          }
+
+          if (status && status >= 400 && status < 500) {
+            return false;
+          }
         }
+
         return failureCount < 3;
       },
       retryDelay: decorrelatedRetryDelay,

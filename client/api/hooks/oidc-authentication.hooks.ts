@@ -36,17 +36,22 @@ const OIDC = {
     },
   },
   GoogleCallback: {
-    useQuery: (
-      params: OidcGoogleCallbackGetQueryFnParams,
-      options?: UseQueryOptions<
+    useMutation: (
+      options?: UseMutationOptions<
         OidcGoogleCallbackGetQueryFnResult,
-        AxiosErrorRes
+        AxiosErrorRes,
+        OidcGoogleCallbackGetQueryFnParams
       >
     ) => {
-      return useQuery<OidcGoogleCallbackGetQueryFnResult, AxiosErrorRes>({
+      return useMutation<
+        OidcGoogleCallbackGetQueryFnResult,
+        AxiosErrorRes,
+        OidcGoogleCallbackGetQueryFnParams
+      >({
         ...options,
-        queryKey: ["user"],
-        queryFn: () => oidcGoogleCallbackGetQueryFn(params),
+        mutationKey: ["user"],
+        mutationFn: (params: OidcGoogleCallbackGetQueryFnParams) =>
+          oidcGoogleCallbackGetQueryFn(params),
       });
     },
   },
@@ -65,17 +70,22 @@ const OIDC = {
     },
   },
   GithubCallback: {
-    useQuery: (
-      params: OidcGithubCallbackGetQueryFnParams,
-      options?: UseQueryOptions<
+    useMutation: (
+      options?: UseMutationOptions<
         OidcGithubCallbackGetQueryFnResult,
-        AxiosErrorRes
+        AxiosErrorRes,
+        OidcGithubCallbackGetQueryFnParams
       >
     ) => {
-      return useQuery<OidcGithubCallbackGetQueryFnResult, AxiosErrorRes>({
+      return useMutation<
+        OidcGithubCallbackGetQueryFnResult,
+        AxiosErrorRes,
+        OidcGithubCallbackGetQueryFnParams
+      >({
         ...options,
-        queryKey: ["user"],
-        queryFn: () => oidcGithubCallbackGetQueryFn(params),
+        mutationKey: ["user"],
+        mutationFn: (params: OidcGithubCallbackGetQueryFnParams) =>
+          oidcGithubCallbackGetQueryFn(params),
       });
     },
   },

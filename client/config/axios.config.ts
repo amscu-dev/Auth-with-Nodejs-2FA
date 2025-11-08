@@ -35,15 +35,18 @@ const AXIOS_INSTANCE: AxiosInstance = axios.create({
 
 AXIOS_INSTANCE.interceptors.response.use(
   (response) => {
+    console.log(response);
     if (response.status === 201 && response.data.data.url) {
       window.location.href = response.data.data.url;
     }
     return response;
   },
   (error) => {
-    const { data, status } = error.response;
-    if (data === "Unauthorized" && status === 401) {
-      // aici poți implementa retry pe /refresh
+    if (error.response) {
+      const { data, status } = error.response;
+      if (data === "Unauthorized" && status === 401) {
+        // aici poți implementa retry pe /refresh
+      }
     }
     return Promise.reject(error);
   }
@@ -66,5 +69,4 @@ export const customAxiosInstance = <T>(
   return promise;
 };
 
-// In some case with react-query and swr you want to be able to override the return error type so you can also do it here like this
 export type ErrorType<Error> = AxiosError<Error>;
