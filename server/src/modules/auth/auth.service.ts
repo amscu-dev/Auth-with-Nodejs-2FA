@@ -317,11 +317,11 @@ export class AuthService {
     const userid = await UserModel.exists({ email });
     if (!userid) {
       return {
-        isNewEmail: false,
+        isNewEmail: true,
       };
     }
     return {
-      isNewEmail: true,
+      isNewEmail: false,
     };
   }
   public async forgotPassword(email: string, ip: string) {

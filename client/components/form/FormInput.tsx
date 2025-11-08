@@ -33,7 +33,6 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   ) => {
     const { control } = useFormContext();
     const [isVisibleError, setIsVisibleError] = useState<boolean>(false);
-    console.log(`rendered ${name}`);
     return (
       <Controller
         control={control}
@@ -59,6 +58,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                   if (typeof ref === "function") ref(el);
                   else if (ref) ref.current = el;
                 }}
+                key={22}
                 onBlur={() => {
                   field.onBlur();
                   setIsVisibleError(false);
@@ -77,7 +77,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               <FieldError
                 id={`${field.name}-error`}
                 className={cn(
-                  "bg-card border rounded-[4px] px-4 py-2 text-xs absolute bottom-0 z-10",
+                  "bg-card border rounded-[4px] px-4 py-2 text-xs absolute bottom-0 z-50",
                   fieldState.invalid && isVisibleError
                     ? "show-error"
                     : "hidden opacity-0",

@@ -7,10 +7,14 @@ import PasswordSignUpCard from "./_components/PasswordSignUpCard";
 
 const SignUpPage = () => {
   const [signUpMethod, setSignUpMethod] = useState<string>("general");
+  const [userEmail, setUserEmail] = useState<string>("");
   return (
     <div className="flex items-center justify-center w-full h-full px-5">
       {signUpMethod === "general" ? (
-        <MainSignUpCard handleSignUpMethod={setSignUpMethod} />
+        <MainSignUpCard
+          handleSignUpMethod={setSignUpMethod}
+          handleEmailAddress={setUserEmail}
+        />
       ) : null}
       {signUpMethod === "passkey" ? (
         <PasskeySignUpCard handleSignUpMethod={setSignUpMethod} />
@@ -19,7 +23,10 @@ const SignUpPage = () => {
         <MagicLinkSignUpCard handleSignUpMethod={setSignUpMethod} />
       ) : null}
       {signUpMethod === "password" ? (
-        <PasswordSignUpCard handleSignUpMethod={setSignUpMethod} />
+        <PasswordSignUpCard
+          handleSignUpMethod={setSignUpMethod}
+          curentEmail={userEmail}
+        />
       ) : null}
     </div>
   );

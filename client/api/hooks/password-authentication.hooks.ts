@@ -1,9 +1,4 @@
-import {
-  useMutation,
-  UseMutationOptions,
-  useQuery,
-  UseQueryOptions,
-} from "@tanstack/react-query";
+import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import {
   AuthCheckEmailMutationFnBody,
   AuthEmailVerifyMutationFnBody,
@@ -114,15 +109,21 @@ export const PasswordAuth = {
     },
   },
   CheckEmail: {
-    useQuery: (
-      email: string,
-      options?: UseQueryOptions<AuthCheckEmailMutationFnResult, AxiosErrorRes>
+    useMutation: (
+      options?: UseMutationOptions<
+        AuthCheckEmailMutationFnResult,
+        AxiosErrorRes,
+        AuthCheckEmailMutationFnBody
+      >
     ) => {
-      return useQuery<AuthCheckEmailMutationFnResult, AxiosErrorRes>({
+      return useMutation<
+        AuthCheckEmailMutationFnResult,
+        AxiosErrorRes,
+        AuthCheckEmailMutationFnBody
+      >({
         ...options,
-        queryKey: ["auth", "email-existence", email] as const,
-        enabled: !!email,
-        queryFn: () => authCheckEmailMutationFn({ email }),
+        mutationKey: ["email-existence"],
+        mutationFn: (data) => authCheckEmailMutationFn(data),
       });
     },
   },

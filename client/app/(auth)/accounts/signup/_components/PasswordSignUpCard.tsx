@@ -18,15 +18,47 @@ import Link from "next/link";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
 import { FaUserShield } from "react-icons/fa";
+import z from "zod";
+import { authSignUpMutationFnBody } from "@/schemas/password-authentication-module.schema";
+import client from "@/api/index";
+import { RotatingLines } from "react-loader-spinner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 interface PasswordSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
+  curentEmail: string;
 }
 
 const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
+  curentEmail,
   handleSignUpMethod,
 }) => {
-  const form = useForm();
-  const onSubmit = () => {};
+  const router = useRouter();
+
+  const form = useForm<z.infer<typeof authSignUpMutationFnBody>>({
+    resolver: zodResolver(authSignUpMutationFnBody),
+    defaultValues: {
+      email: curentEmail,
+      name: "",
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onTouched",
+  });
+
+  const { mutate: signUp, isPending: isPendingRegistration } =
+    client.PasswordAuth.SignUp.useMutation();
+
+  const onSubmit = async (data: z.infer<typeof authSignUpMutationFnBody>) => {
+    await signUp(data, {
+      onSuccess: (data) => {
+        router.push(
+          `/accounts/signup/verify-email?email=${encodeURIComponent(data.data.user?.email || "")}&name=${encodeURIComponent(data.data.user?.name || "")}`
+        );
+      },
+    });
+  };
+
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -46,15 +78,16 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
             <div className="flex items-center justify-center flex-col w-full gap-4 mb-6">
               <FormInput
                 name="email"
-                label="Email"
+                disabled={true}
                 placeholder="Please enter your email"
                 formItemClass="w-full space-y-0"
                 type="email"
-                inputClass="text-sm"
+                inputClass="text-sm bg-accent shadow-none text-black disabled:opacity-100 disabled:bg-accent/50 border-none"
               />
               <FormInput
                 name="name"
                 label="Full name"
+                disabled={isPendingRegistration}
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -62,6 +95,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               <FormInput
                 name="password"
                 label="Password"
+                disabled={isPendingRegistration}
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 type="password"
@@ -70,6 +104,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               <FormInput
                 name="confirmPassword"
                 label="Confirm Password"
+                disabled={isPendingRegistration}
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -80,8 +115,9 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               <div className="flex items-center justify-end">
                 <Button
                   variant="link"
-                  className="px-0 group text-[10px] font-light text-end"
+                  className="px-0 group text-[10px] font-light text-end disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-none"
                   onClick={() => handleSignUpMethod("general")}
+                  disabled={isPendingRegistration}
                 >
                   <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
                   Choose another registration method
@@ -89,12 +125,27 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               </div>
             </div>
             <div className="flex w-full items-center justify-center mb-4">
-              <Button className="w-full" size="lg">
-                <FaUserShield /> Create an account
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={isPendingRegistration}
+              >
+                <FaUserShield /> Create an account{" "}
+                <RotatingLines
+                  visible={isPendingRegistration}
+                  height="20"
+                  width="20"
+                  color="#ffffff"
+                  ariaLabel="mutating-dots-loading"
+                />
               </Button>
             </div>
             <div className="flex items-start gap-3">
-              <Checkbox id="terms-2" defaultChecked />
+              <Checkbox
+                id="terms-2"
+                defaultChecked
+                disabled={isPendingRegistration}
+              />
               <div className="grid gap-1">
                 <Label htmlFor="terms-2" className="text-sm">
                   Accept terms and conditions
@@ -115,7 +166,8 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
           </p>
           <Button
             variant="link"
-            className="px-0 group font-semibold sm:text-[12px]"
+            className="px-0 group font-semibold sm:text-[12px] disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-none"
+            disabled={isPendingRegistration}
           >
             <Link href="/accounts/signin">Sign In</Link>
             <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />

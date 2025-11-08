@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { FaGoogle } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa";
@@ -23,18 +23,36 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
 import client from "@/api/index";
 import { RotatingLines } from "react-loader-spinner";
+import { authCheckEmailMutationFnBody } from "@/schemas/password-authentication-module.schema";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 interface MainSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
+  handleEmailAddress: (email: string) => void;
 }
 
 const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
   handleSignUpMethod,
+  handleEmailAddress,
 }) => {
   const { mutate: authenticateGithub, isPending: isPendingGithubAuth } =
     client.OIDC.GithubAuth.useMutation();
   const { mutate: authenticateGoogle, isPending: isPendingGoogleAuth } =
     client.OIDC.GoogleAuth.useMutation();
-  const form = useForm();
+  const { mutate: checkEmail, isPending: isPendingCheckEmail } =
+    client.PasswordAuth.CheckEmail.useMutation();
+  const disable =
+    isPendingGithubAuth || isPendingGoogleAuth || isPendingCheckEmail;
+
+  const form = useForm<z.infer<typeof authCheckEmailMutationFnBody>>({
+    resolver: zodResolver(authCheckEmailMutationFnBody),
+    defaultValues: {
+      email: "",
+    },
+    mode: "onTouched",
+  });
+  const refInput = useRef<HTMLInputElement>(null);
 
   const handleGoogleAuth = () => {
     authenticateGoogle();
@@ -42,8 +60,25 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
   const handleGithubAuth = () => {
     authenticateGithub();
   };
-  const onSubmit = () => {
-    handleSignUpMethod("password");
+  const onSubmit = async (
+    data: z.infer<typeof authCheckEmailMutationFnBody>
+  ) => {
+    await checkEmail(data, {
+      onSuccess: (data) => {
+        if (data.data.isNewEmail) {
+          handleEmailAddress(data.data.email);
+          handleSignUpMethod("password");
+        } else {
+          form.setError("email", {
+            type: "custom",
+            message: "An account with this email already exists.",
+          });
+          requestAnimationFrame(() => {
+            form.setFocus("email");
+          });
+        }
+      },
+    });
   };
   return (
     <Card className="w-full max-w-sm">
@@ -59,12 +94,13 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-2">
+        {/* Button Stack */}
         <div className="flex flex-col gap-2">
           <Button
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
             size="lg"
-            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            disabled={disable}
             onClick={handleGoogleAuth}
           >
             <FaGoogle /> Register with Google{" "}
@@ -79,7 +115,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
           <Button
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
-            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            disabled={disable}
             size="lg"
             onClick={handleGithubAuth}
           >
@@ -97,7 +133,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
           <Button
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
-            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            disabled={disable}
             size="lg"
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
@@ -109,7 +145,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
           <Button
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
-            disabled={isPendingGoogleAuth || isPendingGithubAuth}
+            disabled={disable}
             size="lg"
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
@@ -119,6 +155,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
             <GoPasskeyFill /> Register with Passkey
           </Button>
         </div>
+        {/* SEPARATOR */}
         <div className="w-full flex items-center justify-center gap-2 my-6">
           <div className="w-full h-[0.5px] bg-border" />
           <span className="text-muted-foreground text-[10px] text-nowrap">
@@ -126,13 +163,18 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
           </span>
           <div className="w-full h-[0.5px] bg-border" />
         </div>
+
+        {/* FORM */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex items-center justify-center flex-col w-full gap-4">
               <FormInput
                 name="email"
                 label="Email"
-                disabled={isPendingGoogleAuth || isPendingGithubAuth}
+                autoComplete="off"
+                disabled={disable}
+                type="email"
+                ref={refInput}
                 placeholder="Enter your email"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -143,7 +185,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
                 className="w-full"
                 size="lg"
                 type="submit"
-                disabled={isPendingGoogleAuth || isPendingGithubAuth}
+                disabled={disable}
               >
                 Create an account
               </Button>
@@ -171,6 +213,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
           <Button
             variant="link"
             className="px-0 group font-semibold sm:text-[12px]"
+            disabled={disable}
           >
             <Link href="/accounts/signin">Sign In</Link>
             <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />

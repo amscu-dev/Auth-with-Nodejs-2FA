@@ -6,9 +6,7 @@
 
  * OpenAPI spec version: 1.0.0
  */
-import * as zod from 'zod';
-
-
+import * as zod from "zod";
 
 /**
  * This endpoint allows a new user to create an account using their email and password. After registration, the user must verify their email to complete the registration process successfully.
@@ -20,20 +18,66 @@ export const authSignUpMutationFnBodyEmailMax = 64;
 
 export const authSignUpMutationFnBodyPasswordMin = 8;
 
-
-export const authSignUpMutationFnBodyPasswordRegExp = new RegExp('^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\\'\",.<>/?]).{8,}$');
+export const authSignUpMutationFnBodyPasswordRegExp = new RegExp(
+  "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\'\",.<>/?]).{8,}$"
+);
 export const authSignUpMutationFnBodyConfirmPasswordMin = 8;
 
+export const authSignUpMutationFnBodyConfirmPasswordRegExp = new RegExp(
+  "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\'\",.<>/?]).{8,}$"
+);
 
-export const authSignUpMutationFnBodyConfirmPasswordRegExp = new RegExp('^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\\'\",.<>/?]).{8,}$');
+export const authSignUpMutationFnBody = zod
+  .object({
+    name: zod
+      .string()
+      .min(1, { message: "Please enter your full name." })
+      .max(authSignUpMutationFnBodyNameMax, {
+        message: `Name cannot exceed ${authSignUpMutationFnBodyNameMax} characters.`,
+      })
+      .describe("The user's full name"),
 
+    email: zod
+      .string()
+      .min(1, { message: "Please enter your email address." })
+      .max(authSignUpMutationFnBodyEmailMax, {
+        message: `Email cannot exceed ${authSignUpMutationFnBodyEmailMax} characters.`,
+      })
+      .email({ message: "Please enter a valid email address." }),
 
-export const authSignUpMutationFnBody = zod.object({
-  "name": zod.string().min(1).max(authSignUpMutationFnBodyNameMax).describe('The user\'s full name'),
-  "email": zod.email().min(1).max(authSignUpMutationFnBodyEmailMax),
-  "password": zod.string().min(authSignUpMutationFnBodyPasswordMin).regex(authSignUpMutationFnBodyPasswordRegExp).describe('Must start with a capital letter and contain at least one special character'),
-  "confirmPassword": zod.string().min(authSignUpMutationFnBodyConfirmPasswordMin).regex(authSignUpMutationFnBodyConfirmPasswordRegExp).describe('Must match the password field')
-})
+    password: zod
+      .string()
+      .min(authSignUpMutationFnBodyPasswordMin, {
+        message: `Password must be at least ${authSignUpMutationFnBodyPasswordMin} characters long.`,
+      })
+      .regex(authSignUpMutationFnBodyPasswordRegExp, {
+        message:
+          "Password must contain a capital letter, contain at least one number and one special character.",
+      })
+      .describe(
+        "Must contain a capital letter and contain at least one special character"
+      ),
+
+    confirmPassword: zod
+      .string()
+      .min(authSignUpMutationFnBodyConfirmPasswordMin, {
+        message: `Confirm password must be at least ${authSignUpMutationFnBodyConfirmPasswordMin} characters long.`,
+      })
+      .regex(authSignUpMutationFnBodyConfirmPasswordRegExp, {
+        message:
+          "Confirm password must contain a capital letter, contain at least one number and one special character.",
+      })
+      .describe("Must match the password field"),
+  })
+  .superRefine((val, ctx) => {
+    if (val.password !== val.confirmPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Password does not match",
+        path: ["confirmPassword"],
+      });
+    }
+  });
 
 /**
  * This endpoint allows an existing user to log in using their email and password. Upon successful authentication, an access token (and optionally a refresh token) is returned. If the user has two-factor authentication enabled, additional steps may be required to complete the login process.
@@ -44,66 +88,127 @@ export const authSignInMutationFnBodyEmailMax = 64;
 
 export const authSignInMutationFnBodyPasswordMin = 8;
 
-
-export const authSignInMutationFnBodyPasswordRegExp = new RegExp('^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\\'\",.<>/?]).{8,}$');
-
+export const authSignInMutationFnBodyPasswordRegExp = new RegExp(
+  "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\'\",.<>/?]).{8,}$"
+);
 
 export const authSignInMutationFnBody = zod.object({
-  "email": zod.email().min(1).max(authSignInMutationFnBodyEmailMax),
-  "password": zod.string().min(authSignInMutationFnBodyPasswordMin).regex(authSignInMutationFnBodyPasswordRegExp).describe('Must start with a capital letter and contain at least one special character')
-})
+  email: zod.email().min(1).max(authSignInMutationFnBodyEmailMax),
+  password: zod
+    .string()
+    .min(authSignInMutationFnBodyPasswordMin)
+    .regex(authSignInMutationFnBodyPasswordRegExp)
+    .describe(
+      "Must start with a capital letter and contain at least one special character"
+    ),
+});
 
-export const authSignInMutationFnResponse = zod.union([zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['CONFIRM_SIGN_UP']).optional()
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-}),zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['MFA_REQUIRED']),
-  "mfaRequired": zod.literal(true)
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-}),zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "user": zod.object({
-  "_id": zod.string(),
-  "name": zod.string(),
-  "email": zod.string(),
-  "isEmailVerified": zod.boolean(),
-  "userPreferences": zod.object({
-  "enable2FA": zod.boolean(),
-  "emailNotification": zod.boolean()
-}),
-  "createdAt": zod.iso.datetime({}),
-  "updatedAt": zod.iso.datetime({})
-}),
-  "nextStep": zod.enum(['OK']),
-  "mfaRequired": zod.literal(false)
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})])
+export const authSignInMutationFnResponse = zod.union([
+  zod.object({
+    success: zod.literal(true),
+    statusCode: zod.literal(200),
+    message: zod.string(),
+    data: zod.object({
+      nextStep: zod.enum(["CONFIRM_SIGN_UP"]).optional(),
+    }),
+    metadata: zod
+      .object({
+        timestamp: zod.iso
+          .datetime({})
+          .describe(
+            "The exact server-side timestamp when the response was generated."
+          ),
+        requestId: zod
+          .string()
+          .describe(
+            "A unique identifier for the request, useful for tracing logs and debugging."
+          ),
+        count: zod
+          .number()
+          .optional()
+          .describe(
+            "The total number of items returned in the response (if applicable)."
+          ),
+      })
+      .describe(
+        "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+      ),
+  }),
+  zod.object({
+    success: zod.literal(true),
+    statusCode: zod.literal(200),
+    message: zod.string(),
+    data: zod.object({
+      nextStep: zod.enum(["MFA_REQUIRED"]),
+      mfaRequired: zod.literal(true),
+    }),
+    metadata: zod
+      .object({
+        timestamp: zod.iso
+          .datetime({})
+          .describe(
+            "The exact server-side timestamp when the response was generated."
+          ),
+        requestId: zod
+          .string()
+          .describe(
+            "A unique identifier for the request, useful for tracing logs and debugging."
+          ),
+        count: zod
+          .number()
+          .optional()
+          .describe(
+            "The total number of items returned in the response (if applicable)."
+          ),
+      })
+      .describe(
+        "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+      ),
+  }),
+  zod.object({
+    success: zod.literal(true),
+    statusCode: zod.literal(200),
+    message: zod.string(),
+    data: zod.object({
+      user: zod.object({
+        _id: zod.string(),
+        name: zod.string(),
+        email: zod.string(),
+        isEmailVerified: zod.boolean(),
+        userPreferences: zod.object({
+          enable2FA: zod.boolean(),
+          emailNotification: zod.boolean(),
+        }),
+        createdAt: zod.iso.datetime({}),
+        updatedAt: zod.iso.datetime({}),
+      }),
+      nextStep: zod.enum(["OK"]),
+      mfaRequired: zod.literal(false),
+    }),
+    metadata: zod
+      .object({
+        timestamp: zod.iso
+          .datetime({})
+          .describe(
+            "The exact server-side timestamp when the response was generated."
+          ),
+        requestId: zod
+          .string()
+          .describe(
+            "A unique identifier for the request, useful for tracing logs and debugging."
+          ),
+        count: zod
+          .number()
+          .optional()
+          .describe(
+            "The total number of items returned in the response (if applicable)."
+          ),
+      })
+      .describe(
+        "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+      ),
+  }),
+]);
 
 /**
  * Initiates the password reset process for a user by submitting their email address.  If the user has two-factor authentication (MFA) enabled, an MFA verification step will be required before sending the password reset instructions. Otherwise, a password reset email will be sent directly.
@@ -111,36 +216,73 @@ export const authSignInMutationFnResponse = zod.union([zod.object({
  * @summary Request a password reset for a user account
  */
 export const authPasswordForgotMutationFnBody = zod.object({
-  "email": zod.email()
-})
+  email: zod.email(),
+});
 
-export const authPasswordForgotMutationFnResponse = zod.union([zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['MFA_REQUIRED']),
-  "mfaRequired": zod.literal(true)
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-}),zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['OK']),
-  "mfaRequired": zod.literal(false)
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})])
+export const authPasswordForgotMutationFnResponse = zod.union([
+  zod.object({
+    success: zod.literal(true),
+    statusCode: zod.literal(200),
+    message: zod.string(),
+    data: zod.object({
+      nextStep: zod.enum(["MFA_REQUIRED"]),
+      mfaRequired: zod.literal(true),
+    }),
+    metadata: zod
+      .object({
+        timestamp: zod.iso
+          .datetime({})
+          .describe(
+            "The exact server-side timestamp when the response was generated."
+          ),
+        requestId: zod
+          .string()
+          .describe(
+            "A unique identifier for the request, useful for tracing logs and debugging."
+          ),
+        count: zod
+          .number()
+          .optional()
+          .describe(
+            "The total number of items returned in the response (if applicable)."
+          ),
+      })
+      .describe(
+        "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+      ),
+  }),
+  zod.object({
+    success: zod.literal(true),
+    statusCode: zod.literal(200),
+    message: zod.string(),
+    data: zod.object({
+      nextStep: zod.enum(["OK"]),
+      mfaRequired: zod.literal(false),
+    }),
+    metadata: zod
+      .object({
+        timestamp: zod.iso
+          .datetime({})
+          .describe(
+            "The exact server-side timestamp when the response was generated."
+          ),
+        requestId: zod
+          .string()
+          .describe(
+            "A unique identifier for the request, useful for tracing logs and debugging."
+          ),
+        count: zod
+          .number()
+          .optional()
+          .describe(
+            "The total number of items returned in the response (if applicable)."
+          ),
+      })
+      .describe(
+        "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+      ),
+  }),
+]);
 
 /**
  * Completes the password reset process for a user account using a valid verification code.   The request must include the verification code (typically received via email) and the new password.   Upon successful verification, the user's password is updated, existing authentication cookies are cleared,   and the user is advised to log in again. If the password reset was not initiated by the user, they are encouraged   to contact support immediately. The operation also records contextual information such as IP address and user agent   for security auditing purposes.
@@ -151,28 +293,54 @@ export const authPasswordResetMutationFnBodyVerificationCodeMax = 64;
 
 export const authPasswordResetMutationFnBodyPasswordMin = 8;
 
-
-export const authPasswordResetMutationFnBodyPasswordRegExp = new RegExp('^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\\'\",.<>/?]).{8,}$');
-
+export const authPasswordResetMutationFnBodyPasswordRegExp = new RegExp(
+  "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=\\[\\]{}|\\\\;:\\'\",.<>/?]).{8,}$"
+);
 
 export const authPasswordResetMutationFnBody = zod.object({
-  "verificationCode": zod.string().min(1).max(authPasswordResetMutationFnBodyVerificationCodeMax),
-  "password": zod.string().min(authPasswordResetMutationFnBodyPasswordMin).regex(authPasswordResetMutationFnBodyPasswordRegExp).describe('Must start with a capital letter and contain at least one special character')
-})
+  verificationCode: zod
+    .string()
+    .min(1)
+    .max(authPasswordResetMutationFnBodyVerificationCodeMax),
+  password: zod
+    .string()
+    .min(authPasswordResetMutationFnBodyPasswordMin)
+    .regex(authPasswordResetMutationFnBodyPasswordRegExp)
+    .describe(
+      "Must start with a capital letter and contain at least one special character"
+    ),
+});
 
 export const authPasswordResetMutationFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['OK'])
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod.literal(true),
+  statusCode: zod.literal(200),
+  message: zod.string(),
+  data: zod.object({
+    nextStep: zod.enum(["OK"]),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Issues a new access token (and optionally a new refresh token) for an authenticated session.   The request must include a valid **refresh token** stored in the user's HTTP-only cookie. If the refresh token is valid and the session is still active, a new access token will be returned and authentication cookies will be updated.   If the refresh token is expired, invalid, or mismatched, the session will be invalidated and all authentication cookies will be cleared to enforce re-authentication.   This endpoint ensures seamless session continuity while maintaining security best practices.
@@ -180,18 +348,35 @@ export const authPasswordResetMutationFnResponse = zod.object({
  * @summary Refresh the user's access token using a valid refresh token
  */
 export const authRefreshTokenQueryFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['OK'])
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod.literal(true),
+  statusCode: zod.literal(200),
+  message: zod.string(),
+  data: zod.object({
+    nextStep: zod.enum(["OK"]),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Terminates the current authenticated session by invalidating all active authentication tokens and clearing related cookies (`accessToken`, `refreshToken`).   This ensures that both the access token and any linked refresh token can no longer be used.   The endpoint is typically called when a user explicitly logs out or when a session needs to be forcefully closed for security reasons.   Requires a valid access token cookie for authentication and session validation.   After a successful logout, the client should remove any cached session state and redirect the user to a login page.
@@ -199,18 +384,35 @@ export const authRefreshTokenQueryFnResponse = zod.object({
  * @summary Log out the authenticated user and invalidate the current session
  */
 export const authLogoutMutationFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['LOGOUT'])
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod.literal(true),
+  statusCode: zod.literal(200),
+  message: zod.string(),
+  data: zod.object({
+    nextStep: zod.enum(["LOGOUT"]),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Sends a new verification email to a registered user who has not yet verified their email address.   This endpoint is typically used when a user requests to receive another confirmation link after registration.
@@ -218,23 +420,52 @@ export const authLogoutMutationFnResponse = zod.object({
  * @summary Resend verification email
  */
 export const authResendEmailMutationFnBody = zod.object({
-  "email": zod.email()
-})
+  email: zod
+    .email({ message: "Please enter a valid email address" })
+    .min(1, { message: "Email is required" })
+    .max(authPasswordResetMutationFnBodyVerificationCodeMax, {
+      message: `Email must be at most ${authPasswordResetMutationFnBodyVerificationCodeMax} characters`,
+    }),
+});
 
 export const authResendEmailMutationFnResponse = zod.object({
-  "success": zod.boolean().describe('Indicates whether the operation was successful'),
-  "statusCode": zod.number().describe('HTTP status code of the response'),
-  "message": zod.string(),
-  "data": zod.object({
-  "email": zod.string().describe('User email address.'),
-  "isEmailSuccessfullySend": zod.boolean().describe('Boolean value validating if mail was successfully send to user.')
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).optional().describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod
+    .boolean()
+    .describe("Indicates whether the operation was successful"),
+  statusCode: zod.number().describe("HTTP status code of the response"),
+  message: zod.string(),
+  data: zod.object({
+    email: zod.string().describe("User email address."),
+    isEmailSuccessfullySend: zod
+      .boolean()
+      .describe(
+        "Boolean value validating if mail was successfully send to user."
+      ),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .optional()
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Checks whether a given email address is already registered in the system.   This endpoint is typically used during the registration process to prevent duplicate accounts.
@@ -242,23 +473,53 @@ export const authResendEmailMutationFnResponse = zod.object({
  * @summary Check if email is available
  */
 export const authCheckEmailMutationFnBody = zod.object({
-  "email": zod.email()
-})
+  email: zod
+    .string()
+    .min(1, { message: "Email is required" })
+    .max(64, {
+      message: `Email must be at most 64 characters`,
+    })
+    .email({ message: "Please enter a valid email address" }),
+});
 
 export const authCheckEmailMutationFnResponse = zod.object({
-  "success": zod.boolean().describe('Indicates whether the operation was successful'),
-  "statusCode": zod.number().describe('HTTP status code of the response'),
-  "message": zod.string(),
-  "data": zod.object({
-  "email": zod.string().describe('User email address.'),
-  "isNewEmail": zod.boolean().describe('Boolean value validating if email address is not registered in database.')
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).optional().describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
+  success: zod
+    .boolean()
+    .describe("Indicates whether the operation was successful"),
+  statusCode: zod.number().describe("HTTP status code of the response"),
+  message: zod.string(),
+  data: zod.object({
+    email: zod.string().describe("User email address."),
+    isNewEmail: zod
+      .boolean()
+      .describe(
+        "Boolean value validating if email address is not registered in database."
+      ),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .optional()
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});
 
 /**
  * Verifies a user's email address using a verification token sent via email. Upon successful verification, the user's account is marked as confirmed, allowing them to complete the login process or other protected actions.
@@ -266,20 +527,36 @@ export const authCheckEmailMutationFnResponse = zod.object({
  * @summary Authenticate a user with email and password
  */
 export const authEmailVerifyMutationFnBody = zod.object({
-  "code": zod.string()
-})
+  code: zod.string(),
+});
 
 export const authEmailVerifyMutationFnResponse = zod.object({
-  "success": zod.literal(true),
-  "statusCode": zod.literal(200),
-  "message": zod.string(),
-  "data": zod.object({
-  "nextStep": zod.enum(['CONFIRMED_EMAIL_RETURN_TO_LOGIN'])
-}),
-  "metadata": zod.object({
-  "timestamp": zod.iso.datetime({}).describe('The exact server-side timestamp when the response was generated.'),
-  "requestId": zod.string().describe('A unique identifier for the request, useful for tracing logs and debugging.'),
-  "count": zod.number().optional().describe('The total number of items returned in the response (if applicable).')
-}).describe('Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n')
-})
-
+  success: zod.literal(true),
+  statusCode: zod.literal(200),
+  message: zod.string(),
+  data: zod.object({
+    nextStep: zod.enum(["CONFIRMED_EMAIL_RETURN_TO_LOGIN"]),
+  }),
+  metadata: zod
+    .object({
+      timestamp: zod.iso
+        .datetime({})
+        .describe(
+          "The exact server-side timestamp when the response was generated."
+        ),
+      requestId: zod
+        .string()
+        .describe(
+          "A unique identifier for the request, useful for tracing logs and debugging."
+        ),
+      count: zod
+        .number()
+        .optional()
+        .describe(
+          "The total number of items returned in the response (if applicable)."
+        ),
+    })
+    .describe(
+      "Contains metadata related to the request and response, such as timestamps, request tracking IDs, and result counts.\n"
+    ),
+});

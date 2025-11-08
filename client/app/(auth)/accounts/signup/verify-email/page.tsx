@@ -13,8 +13,8 @@ function EmailCardFallback() {
 
 const VerifyEmailPage = () => {
   return (
-    <div className="w-full h-full flex items-center justify-center px-4">
-      <Card className="aspect-video w-full max-w-xl flex items-center justify-center py-6">
+    <div className="w-full h-full flex items-center justify-center px-2">
+      <Card className="aspect-video w-full max-w-sm sm:max-w-xl flex items-center justify-center py-6 px-2">
         <Suspense fallback={<EmailCardFallback />}>
           <EmailCard />
         </Suspense>
