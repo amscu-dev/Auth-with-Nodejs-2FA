@@ -13,6 +13,7 @@ type FormInputProps = {
   label?: string;
   labelClass?: string;
   inputClass?: string;
+  inputContainerClass?: string;
   errorClass?: string;
   formItemClass?: string;
 } & React.InputHTMLAttributes<HTMLInputElement>;
@@ -25,6 +26,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       label,
       labelClass,
       inputClass,
+      inputContainerClass,
       errorClass,
       formItemClass,
       ...props
@@ -45,7 +47,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               </FieldLabel>
             ) : null}
 
-            <div className="relative">
+            <div className={cn("relative", inputContainerClass)}>
               <Input
                 id={field.name}
                 aria-describedby={`${field.name}-error`}

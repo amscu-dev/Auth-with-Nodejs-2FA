@@ -23,10 +23,10 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
 import client from "@/api/index";
 import { RotatingLines } from "react-loader-spinner";
-import { authCheckEmailMutationFnBody } from "@/schemas/password-authentication-module.schema";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { AuthRequestSchema } from "@/schemas/auth.validator";
 
 interface MainSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
@@ -37,8 +37,8 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
   handleSignUpMethod,
   handleEmailAddress,
 }) => {
-  const form = useForm<z.infer<typeof authCheckEmailMutationFnBody>>({
-    resolver: zodResolver(authCheckEmailMutationFnBody),
+  const form = useForm<z.infer<typeof AuthRequestSchema.checkEmail>>({
+    resolver: zodResolver(AuthRequestSchema.checkEmail),
     defaultValues: {
       email: "",
     },
@@ -78,7 +78,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
     });
   };
   const onSubmit = async (
-    data: z.infer<typeof authCheckEmailMutationFnBody>
+    data: z.infer<typeof AuthRequestSchema.checkEmail>
   ) => {
     await checkEmail(data, {
       onSuccess: (data) => {

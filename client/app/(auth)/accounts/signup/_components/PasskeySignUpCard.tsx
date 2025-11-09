@@ -19,16 +19,17 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { BsQrCodeScan } from "react-icons/bs";
 import { HiViewGridAdd } from "react-icons/hi";
 import z from "zod";
-import {
-  passkeySignUpInitMutationFnBody,
-  passkeySignUpInitResponseBody,
-} from "@/schemas/passkey-authentication-module.schema";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import client from "@/api/index";
 import { ErrorCode } from "@/types/enums/error-code.enum";
 import { startRegistration, WebAuthnError } from "@simplewebauthn/browser";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+  PasskeyRequestSchema,
+  PasskeyResponseSchema,
+} from "@/schemas/passkey.validator";
 
 interface PasskeySignUpCardProps {
   handleSignUpMethod: (method: string) => void;
@@ -50,8 +51,8 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
     isCreatingPasskey ||
     isRedirecting;
 
-  const form = useForm<z.infer<typeof passkeySignUpInitMutationFnBody>>({
-    resolver: zodResolver(passkeySignUpInitMutationFnBody),
+  const form = useForm<z.infer<typeof PasskeyRequestSchema.signUpInit>>({
+    resolver: zodResolver(PasskeyRequestSchema.signUpInit),
     mode: "onTouched",
     defaultValues: {
       email: "",
@@ -59,7 +60,7 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
     },
   });
   const onSubmit = async (
-    formData: z.infer<typeof passkeySignUpInitMutationFnBody>
+    formData: z.infer<typeof PasskeyRequestSchema.signUpInit>
   ) => {
     await signUpInit(formData, {
       onError: (err) => {
@@ -81,7 +82,7 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
         try {
           const {
             data: { publicKeyOpts },
-          } = passkeySignUpInitResponseBody.parse(data);
+          } = PasskeyResponseSchema.signUpInit.parse(data);
           try {
             setIsCreatingPasskey(true);
             const credential = await startRegistration({

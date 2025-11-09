@@ -1,4 +1,3 @@
-import { authCheckEmailMutationFnBody } from "@/schemas/password-authentication-module.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,9 +24,10 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { passkeySignInInitResponseBody } from "@/schemas/passkey-authentication-module.schema";
 import { startAuthentication, WebAuthnError } from "@simplewebauthn/browser";
 import { hasUserHandle } from "@/lib/helpers";
+import { PasskeyResponseSchema } from "@/schemas/passkey.validator";
+import { AuthRequestSchema } from "@/schemas/auth.validator";
 
 interface MainSignInCardProps {
   handleSignInMethod: (method: string) => void;
@@ -61,8 +61,8 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
   const [isAuthenticatingPasskey, setIsAuthenticatingPasskey] =
     useState<boolean>(false);
   // FORM STATE
-  const form = useForm<z.infer<typeof authCheckEmailMutationFnBody>>({
-    resolver: zodResolver(authCheckEmailMutationFnBody),
+  const form = useForm<z.infer<typeof AuthRequestSchema.checkEmail>>({
+    resolver: zodResolver(AuthRequestSchema.checkEmail),
     defaultValues: {
       email: "",
     },
@@ -82,7 +82,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
 
   // FORM SUBMISSION
   const onSubmit = async (
-    formData: z.infer<typeof authCheckEmailMutationFnBody>,
+    formData: z.infer<typeof AuthRequestSchema.checkEmail>,
     e: React.FormEvent<HTMLFormElement>
   ) => {
     // EVENT CAST
@@ -161,7 +161,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
         try {
           const {
             data: { publicKeyCredentialRequestOptions },
-          } = passkeySignInInitResponseBody.parse(data);
+          } = PasskeyResponseSchema.signInInit.parse(data);
           try {
             setIsAuthenticatingPasskey(true);
             const credential = await startAuthentication({
@@ -249,7 +249,6 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                 variant="link"
                 className="px-0 group text-[10px] font-light text-end"
                 disabled={disable}
-                onClick={() => {}}
               >
                 <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
                 <Link href="/accounts/forgot-password">Forgot password ?</Link>

@@ -19,11 +19,11 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
 import { FaUserShield } from "react-icons/fa";
 import z from "zod";
-import { authSignUpMutationFnBody } from "@/schemas/password-authentication-module.schema";
 import client from "@/api/index";
 import { RotatingLines } from "react-loader-spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { AuthRequestSchema } from "@/schemas/auth.validator";
 interface PasswordSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
   curentEmail: string;
@@ -35,8 +35,8 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
 }) => {
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof authSignUpMutationFnBody>>({
-    resolver: zodResolver(authSignUpMutationFnBody),
+  const form = useForm<z.infer<typeof AuthRequestSchema.signUp>>({
+    resolver: zodResolver(AuthRequestSchema.signUp),
     defaultValues: {
       email: curentEmail,
       name: "",
@@ -50,7 +50,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
     client.PasswordAuth.SignUp.useMutation();
 
   const onSubmit = async (
-    formData: z.infer<typeof authSignUpMutationFnBody>
+    formData: z.infer<typeof AuthRequestSchema.signUp>
   ) => {
     await signUp(formData, {
       onSuccess: () => {

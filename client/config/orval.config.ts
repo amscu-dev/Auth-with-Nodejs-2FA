@@ -15,13 +15,4 @@ export default defineConfig({
       },
     },
   },
-  "auth-zod": {
-    input: path.resolve(__dirname, "../../server/src/spec/openapi.yaml"),
-    output: {
-      mode: "tags",
-      client: "zod",
-      target: "../schemas",
-      fileExtension: ".schema.ts",
-    },
-  },
 });

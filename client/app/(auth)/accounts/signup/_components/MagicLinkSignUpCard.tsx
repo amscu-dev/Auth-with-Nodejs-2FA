@@ -19,12 +19,12 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import z from "zod";
-import { magicLinkSignUpMutationFnBody } from "@/schemas/magic-link-authentication-module.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import client from "@/api/index";
 import { RotatingLines } from "react-loader-spinner";
 import { useRouter } from "next/navigation";
 import { ErrorCode } from "@/types/enums/error-code.enum";
+import { MagicLinkRequestSchema } from "@/schemas/magic-link.validator";
 interface MagicLinkSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
 }
@@ -35,8 +35,8 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
   const router = useRouter();
   const { mutate: signUp, isPending: isPendingSignUp } =
     client.MagicLink.SignUp.useMutation();
-  const form = useForm<z.infer<typeof magicLinkSignUpMutationFnBody>>({
-    resolver: zodResolver(magicLinkSignUpMutationFnBody),
+  const form = useForm<z.infer<typeof MagicLinkRequestSchema.signUp>>({
+    resolver: zodResolver(MagicLinkRequestSchema.signUp),
     defaultValues: {
       name: "",
       email: "",
@@ -44,7 +44,7 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
     mode: "onTouched",
   });
   const onSubmit = async (
-    formData: z.infer<typeof magicLinkSignUpMutationFnBody>
+    formData: z.infer<typeof MagicLinkRequestSchema.signUp>
   ) => {
     await signUp(formData, {
       onSuccess: () => {

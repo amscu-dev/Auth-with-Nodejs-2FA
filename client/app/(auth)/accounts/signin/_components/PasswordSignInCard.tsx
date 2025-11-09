@@ -18,10 +18,10 @@ import { RotatingLines } from "react-loader-spinner";
 import client from "@/api/index";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { authSignInMutationFnBody } from "@/schemas/password-authentication-module.schema";
 import z from "zod";
 import { useRouter } from "next/navigation";
-import { Odibee_Sans } from "next/font/google";
+import { AuthRequestSchema } from "@/schemas/auth.validator";
+
 interface PasswordSignInCardProps {
   handleSignInMethod: (method: string) => void;
   userEmail: string;
@@ -36,8 +36,8 @@ const PasswordSignInCard: React.FC<PasswordSignInCardProps> = ({
   const { mutate: signIn, isPending: isPendingSignIn } =
     client.PasswordAuth.SignIn.useMutation();
   // FORM STATE
-  const form = useForm<z.infer<typeof authSignInMutationFnBody>>({
-    resolver: zodResolver(authSignInMutationFnBody),
+  const form = useForm<z.infer<typeof AuthRequestSchema.signIn>>({
+    resolver: zodResolver(AuthRequestSchema.signIn),
     defaultValues: {
       email: userEmail,
       password: "",
@@ -50,7 +50,7 @@ const PasswordSignInCard: React.FC<PasswordSignInCardProps> = ({
   // DISABLED STATE
   const disabled = isRedirecting || isPendingSignIn;
   const onSubmit = async (
-    formData: z.infer<typeof authSignInMutationFnBody>
+    formData: z.infer<typeof AuthRequestSchema.signIn>
   ) => {
     await signIn(formData, {
       onSuccess: ({ data: { nextStep } }) => {
