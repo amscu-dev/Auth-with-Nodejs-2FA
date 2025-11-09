@@ -1,7 +1,7 @@
 import { asyncHandler } from "@/middlewares/catchAsyncHandler";
 import { OIDCSessionService } from "./oidc-session.service";
 import { Request, Response } from "express";
-import { verifyOIDCParams } from "@/common/validators/oidc.validator";
+import { OIDCRequestSchema } from "@/validators/oidc.validator";
 import { setAuthenticationCookies } from "@/common/utils/cookie";
 import { HTTPSTATUS } from "@/config/http.config";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
@@ -55,7 +55,7 @@ export class OIDCSessionController {
   );
   public authenticateGoogleUser = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      const { code, state } = verifyOIDCParams.parse(req.query);
+      const { code, state } = OIDCRequestSchema.verifyParams.parse(req.query);
 
       const { user, accessToken, refreshToken, mfaRequired } =
         await this.oidcSessionService.authenticateGoogleUser(code, state, req);
@@ -86,7 +86,7 @@ export class OIDCSessionController {
   );
   public authenticateGithubUser = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
-      const { code, state } = verifyOIDCParams.parse(req.query);
+      const { code, state } = OIDCRequestSchema.verifyParams.parse(req.query);
       const { user, accessToken, refreshToken, mfaRequired } =
         await this.oidcSessionService.authenticateGithubUser(code, state, req);
 

@@ -21,7 +21,6 @@ import {
   signJwtToken,
 } from "@/common/utils/jwt";
 import { generateBackupCodes } from "@/common/utils/generate-backup-codes";
-import { BackupCodeType } from "@/common/validators/backup.validator";
 import { decrypt, encrypt } from "@/common/utils/encrypt-decrypt";
 import VerificationCodeModel from "@/database/models/verification.model";
 import { VerificationEnum } from "@/common/enums/verification-code.enum";
@@ -191,7 +190,7 @@ export class MfaService {
     return { updatedUser };
   }
 
-  public async disableMFAWithBackupCode(code: BackupCodeType, req: Request) {
+  public async disableMFAWithBackupCode(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
     // ! 02. Check if user have 2fa disabled
@@ -242,7 +241,7 @@ export class MfaService {
     return { updatedUser };
   }
 
-  public async loginWithBackupCode(code: BackupCodeType, req: Request) {
+  public async loginWithBackupCode(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
 
@@ -346,7 +345,7 @@ export class MfaService {
 
     if (!isValid) {
       throw new BadRequestException(
-        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
+        "Verification failed. Check the code in your authenticator app.",
         ErrorCode.MFA_INVALID_VERIFICATION_CODE
       );
     }
@@ -419,7 +418,7 @@ export class MfaService {
 
     if (!isValid) {
       throw new BadRequestException(
-        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
+        "The verification code you entered is invalid. Please check your authenticator app and try again.",
         ErrorCode.MFA_INVALID_VERIFICATION_CODE
       );
     }
@@ -434,7 +433,7 @@ export class MfaService {
     });
 
     // ! 06. Create reset Link
-    const resetLink = `${config.APP_ORIGIN}/reset-password?code=${
+    const resetLink = `${config.FRONTEND_ORIGIN}/accounts/reset-password?code=${
       validCode.code
     }&exp=${expiresAt.getTime()}`;
 

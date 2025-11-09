@@ -1,14 +1,7 @@
 import { asyncHandler } from "@/middlewares/catchAsyncHandler";
 import PasskeyService from "./passkey.service";
 import { Request, Response } from "express";
-import {
-  addPasskeyRequestSchema,
-  getAllPaskeySchema,
-  passkeyAuthenticationResponseJSONSchema,
-  passkeyRegisterSchema,
-  passkeyRegistrationResponseJSONSchema,
-  removePasskeyRequestSchema,
-} from "@/common/validators/passkey.validator";
+import { PasskeyRequestSchema } from "@/validators/passkey.validator";
 import { HTTPSTATUS } from "@/config/http.config";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
 import LOGIN from "@/common/enums/login-codes";
@@ -23,7 +16,7 @@ export class PasskeyController {
   public generatePasskeySignUpSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const body = passkeyRegisterSchema.parse(req.body);
+      const body = PasskeyRequestSchema.signUpInit.parse(req.body);
 
       // ! 02. Call service
       const publicKeyOpts =
@@ -50,7 +43,7 @@ export class PasskeyController {
   public verifyPasskeySignUpSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const registrationResponse = passkeyRegistrationResponseJSONSchema.parse(
+      const registrationResponse = PasskeyRequestSchema.signUpVerify.parse(
         req.body
       );
 
@@ -107,8 +100,9 @@ export class PasskeyController {
   public verifyPasskeySignInSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const authenticationResponse =
-        passkeyAuthenticationResponseJSONSchema.parse(req.body);
+      const authenticationResponse = PasskeyRequestSchema.signInVerify.parse(
+        req.body
+      );
 
       // ! 02. Confirm that user verified his email
       const { isCompletedSignUp, email } =
@@ -159,7 +153,7 @@ export class PasskeyController {
   public generatePasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Get user id
-      const { userid } = addPasskeyRequestSchema.parse(req.params);
+      const { userid } = PasskeyRequestSchema.addPasskey.parse(req.params);
 
       // ! 02. Call service
       const publicKeyOpts = await this.passkeyService.generatePasskeyAddSession(
@@ -188,10 +182,10 @@ export class PasskeyController {
   public verifyPasskeyAddSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Get userid from request
-      const { userid } = addPasskeyRequestSchema.parse(req.params);
+      const { userid } = PasskeyRequestSchema.addPasskey.parse(req.params);
 
       // ! 02. Validate input
-      const registrationResponse = passkeyRegistrationResponseJSONSchema.parse(
+      const registrationResponse = PasskeyRequestSchema.signUpVerify.parse(
         req.body
       );
 
@@ -223,7 +217,7 @@ export class PasskeyController {
   public generatePasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Get userid & credentialid
-      const { userid, credentialid } = removePasskeyRequestSchema.parse(
+      const { userid, credentialid } = PasskeyRequestSchema.removePasskey.parse(
         req.params
       );
 
@@ -255,12 +249,13 @@ export class PasskeyController {
   public verifyPasskeyRemoveSession = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Extract data from request
-      const { userid, credentialid } = removePasskeyRequestSchema.parse(
+      const { userid, credentialid } = PasskeyRequestSchema.removePasskey.parse(
         req.params
       );
       // ! 02. Validate data
-      const authenticationResponse =
-        passkeyAuthenticationResponseJSONSchema.parse(req.body);
+      const authenticationResponse = PasskeyRequestSchema.signInVerify.parse(
+        req.body
+      );
 
       // ! 03. Call service
       await this.passkeyService.verifyPasskeyRemoveSessionAndRemovePasskey(
@@ -288,7 +283,7 @@ export class PasskeyController {
   public getAllUserPasskeys = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 1. Extract user
-      const { userid } = getAllPaskeySchema.parse(req.params);
+      const { userid } = PasskeyRequestSchema.getAllPasskey.parse(req.params);
 
       // ! 2. Call service
       const mappedPasskeys = await this.passkeyService.getAllPaskeyByUserId(

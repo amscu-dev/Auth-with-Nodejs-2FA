@@ -1,6 +1,5 @@
 import { Document, Schema } from "mongoose";
 import { compareValue, hashValue } from "@/common/utils/bcrypt";
-import { BackupCodeType } from "@/common/validators/backup.validator";
 import { PasswordType } from "@/common/interface/auth.interface";
 import mongoose from "../mongoose/mongoose";
 import executionTimePlugin from "../plugins/dbLogger";
@@ -29,7 +28,7 @@ export interface UserDocument extends Document {
   comparePassword(value: PasswordType): Promise<boolean>;
   validateNewPassword(newPassword: PasswordType): Promise<boolean>;
   validateBackupCode(
-    string: BackupCodeType
+    code: string
   ): Promise<{ isValidBackupCode: boolean; matchedCode: string }>;
 }
 
@@ -96,9 +95,7 @@ userSchema.methods.validateNewPassword = async function (
   return true;
 };
 
-userSchema.methods.validateBackupCode = async function (
-  backupCode: BackupCodeType
-) {
+userSchema.methods.validateBackupCode = async function (backupCode: string) {
   for (const code of this.userPreferences.backupCodes) {
     const match = await compareValue(backupCode, code);
     if (match) {

@@ -3,10 +3,9 @@ import { MagicLinkService } from "./magic-link.service";
 import { Request, Response } from "express";
 import { HTTPSTATUS } from "@/config/http.config";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
-import { emailSchema } from "@/common/validators/auth.validator";
 import LOGIN from "@/common/enums/login-codes";
 import { setAuthenticationCookies } from "@/common/utils/cookie";
-import { magicLinkRegisterSchema } from "@/common/validators/magic-link.validator";
+import { MagicLinkRequestSchema } from "@/validators/magic-link.validator";
 
 export class MagicLinkController {
   private magicLinkService: MagicLinkService;
@@ -16,7 +15,7 @@ export class MagicLinkController {
   public signUpWithMagicLink = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate Input
-      const body = magicLinkRegisterSchema.parse(req.body);
+      const body = MagicLinkRequestSchema.signUp.parse(req.body);
 
       // ! 02. Call Service
       const { isMagicLinkEmailSend, user } =
@@ -44,7 +43,7 @@ export class MagicLinkController {
   public signInWithMagicLink = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const email = emailSchema.parse(req.body.email);
+      const { email } = MagicLinkRequestSchema.signIn.parse(req.body);
 
       // ! 02. Call Service
       const isMagicLinkEmailSend =
@@ -71,7 +70,7 @@ export class MagicLinkController {
   public resendMagicLink = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const email = emailSchema.parse(req.body.email);
+      const { email } = MagicLinkRequestSchema.resendLink.parse(req.body);
 
       // ! 02. Call service
       const isMagicLinkEmailSend = await this.magicLinkService.resendMagicLink(

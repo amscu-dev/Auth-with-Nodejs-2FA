@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import FormInput from "@/components/form/FormInput";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -49,11 +49,14 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
   const { mutate: signUp, isPending: isPendingRegistration } =
     client.PasswordAuth.SignUp.useMutation();
 
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+  const disabledState = isRedirecting || isPendingRegistration;
   const onSubmit = async (
     formData: z.infer<typeof AuthRequestSchema.signUp>
   ) => {
     await signUp(formData, {
       onSuccess: () => {
+        setIsRedirecting(true);
         router.push(
           `/accounts/signup/verify-email?email=${encodeURIComponent(formData.email)}`
         );
@@ -89,7 +92,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               <FormInput
                 name="name"
                 label="Full name"
-                disabled={isPendingRegistration}
+                disabled={disabledState}
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -97,7 +100,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               <FormInput
                 name="password"
                 label="Password"
-                disabled={isPendingRegistration}
+                disabled={disabledState}
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 type="password"
@@ -106,7 +109,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               <FormInput
                 name="confirmPassword"
                 label="Confirm Password"
-                disabled={isPendingRegistration}
+                disabled={disabledState}
                 placeholder="Please enter your full name"
                 formItemClass="w-full space-y-0"
                 inputClass="text-sm"
@@ -119,7 +122,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
                   variant="link"
                   className="px-0 group text-[10px] font-light text-end"
                   onClick={() => handleSignUpMethod("general")}
-                  disabled={isPendingRegistration}
+                  disabled={disabledState}
                 >
                   <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
                   Choose another registration method
@@ -127,11 +130,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               </div>
             </div>
             <div className="flex w-full items-center justify-center mb-4">
-              <Button
-                className="w-full"
-                size="lg"
-                disabled={isPendingRegistration}
-              >
+              <Button className="w-full" size="lg" disabled={disabledState}>
                 <FaUserShield /> Create an account{" "}
                 <RotatingLines
                   visible={isPendingRegistration}
@@ -143,11 +142,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
               </Button>
             </div>
             <div className="flex items-start gap-3">
-              <Checkbox
-                id="terms-2"
-                defaultChecked
-                disabled={isPendingRegistration}
-              />
+              <Checkbox id="terms-2" defaultChecked disabled={disabledState} />
               <div className="grid gap-1">
                 <Label htmlFor="terms-2" className="text-sm">
                   Accept terms and conditions
@@ -169,7 +164,7 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
           <Button
             variant="link"
             className="px-0 group font-semibold sm:text-[12px]"
-            disabled={isPendingRegistration}
+            disabled={disabledState}
           >
             <Link href="/accounts/signin">Sign In</Link>
             <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />

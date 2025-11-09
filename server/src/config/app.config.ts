@@ -3,7 +3,6 @@ import { getEnv } from "../common/utils/get-env";
 const appConfig = () => ({
   NODE_ENV: getEnv("NODE_ENV", "development"),
   APP_NAME: getEnv("APP_NAME", "MERN_AUTH_DEMO"),
-  APP_ORIGIN: getEnv("APP_ORIGIN", "localhost"),
   FRONTEND_HOST: getEnv("FRONTEND_HOST"),
   FRONTEND_ORIGIN: getEnv("FRONTEND_ORIGIN"),
   DB_URI: getEnv("DB_URI"),

@@ -2,11 +2,10 @@ import { asyncHandler } from "@/middlewares/catchAsyncHandler";
 import { MfaService } from "./mfa.service";
 import { Request, Response } from "express";
 import { HTTPSTATUS } from "@/config/http.config";
-import { verifyMfaSchema } from "@/common/validators/mfa.validator";
+import { MfaRequestSchema } from "@/validators/mfa.validator";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
 import LOGIN from "@/common/enums/login-codes";
 import { MFA_PATH, setAuthenticationCookies } from "@/common/utils/cookie";
-import { verifyBackupCodeSchema } from "@/common/validators/backup.validator";
 
 export class MfaController {
   private mfaService: MfaService;
@@ -41,7 +40,7 @@ export class MfaController {
   public verifyMFASetup = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { code } = verifyMfaSchema.parse({ ...req.body });
+      const { code } = MfaRequestSchema.verifySetup.parse(req.body);
 
       // ! 02. Call Service
       const { userPreferences } = await this.mfaService.verifyMFASetup(
@@ -67,7 +66,7 @@ export class MfaController {
   public revokeMFA = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { code } = verifyMfaSchema.parse({ ...req.body });
+      const { code } = MfaRequestSchema.revoke.parse(req.body);
 
       // ! 02. Call service
       const { updatedUser } = await this.mfaService.revokeMFA(code, req);
@@ -93,7 +92,9 @@ export class MfaController {
   public disableMFAWithBackupCode = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
+      const { backupCode } = MfaRequestSchema.disableWithBackupCode.parse(
+        req.body
+      );
 
       // ! 02. Call service
       const { updatedUser } = await this.mfaService.disableMFAWithBackupCode(
@@ -122,7 +123,9 @@ export class MfaController {
   public loginWithBackupCode = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate data
-      const { backupCode } = verifyBackupCodeSchema.parse({ ...req.body });
+      const { backupCode } = MfaRequestSchema.loginWithBackupCode.parse(
+        req.body
+      );
 
       // ! 02. Call service
       const { updatedUser, accessToken, refreshToken, mfaRequired } =
@@ -155,7 +158,7 @@ export class MfaController {
   public verifyMFAForLogin = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { code } = verifyMfaSchema.parse({ ...req.body });
+      const { code } = MfaRequestSchema.verifyCodeLogin.parse(req.body);
 
       // ! 02. Call service
       const { currentUser, accessToken, refreshToken, mfaRequired } =
@@ -188,7 +191,9 @@ export class MfaController {
   public verifyMFAForChangingPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { code } = verifyMfaSchema.parse({ ...req.body });
+      const { code } = MfaRequestSchema.verifyCodeForgotPassword.parse(
+        req.body
+      );
 
       // ! 02. Call service
       await this.mfaService.verifyMFAForChangingPassword(code, req);

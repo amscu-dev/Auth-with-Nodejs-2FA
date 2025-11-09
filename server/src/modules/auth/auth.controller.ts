@@ -2,13 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "@/middlewares/catchAsyncHandler";
 import { AuthService } from "./auth.service";
 import { HTTPSTATUS } from "@/config/http.config";
-import {
-  emailSchema,
-  loginSchema,
-  registerSchema,
-  resetPasswordSchema,
-  verificationEmailSchema,
-} from "@/common/validators/auth.validator";
+import { AuthRequestSchema } from "@/validators/auth.validator";
 import {
   clearAuthenticationCookies,
   getAccessTokenCookieOptions,
@@ -19,7 +13,6 @@ import {
 import { NotFoundException } from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
-import e from "cors";
 import z from "zod";
 
 export class AuthController {
@@ -30,7 +23,7 @@ export class AuthController {
   public register = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 1. Validate input
-      const body = registerSchema.parse({
+      const body = AuthRequestSchema.signUp.parse({
         ...req.body,
       });
 
@@ -62,10 +55,7 @@ export class AuthController {
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
       const uaSource = req.headers["user-agent"];
-      const body = loginSchema.parse({
-        ...req.body,
-        uaSource,
-      });
+      const body = AuthRequestSchema.signIn.parse(req.body);
 
       // ! 02. Check if user verified his email
       const isCompletedSignUP = await this.authService.confirmSignUp(
@@ -90,7 +80,7 @@ export class AuthController {
 
       // ! 04. Verify user credentials
       const { user, accessToken, refreshToken, mfaRequired, mfaToken } =
-        await this.authService.login(body, req.ip || "");
+        await this.authService.login(body, req.ip || "", uaSource || "");
 
       // ! 05. If Mfa Required send data with nextStep: MFA_REQUIRED
       if (mfaRequired && !accessToken && mfaToken) {
@@ -134,7 +124,7 @@ export class AuthController {
   public verifyEmail = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { code } = verificationEmailSchema.parse(req.body);
+      const { code } = AuthRequestSchema.verifyEmail.parse(req.body);
 
       // ! 02. Procees with code verification logic
       await this.authService.verifyEmail(code);
@@ -159,11 +149,7 @@ export class AuthController {
   public resendEmail = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { email } = z
-        .object({
-          email: z.email().trim(),
-        })
-        .parse(req.body);
+      const { email } = AuthRequestSchema.resendEmail.parse(req.body);
       // ! 02. Call service
       const { isEmailSuccessfullySend } = await this.authService.resendEmail(
         email
@@ -189,11 +175,7 @@ export class AuthController {
   public checkEmail = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { email } = z
-        .object({
-          email: z.email().trim(),
-        })
-        .parse(req.body);
+      const { email } = AuthRequestSchema.checkEmail.parse(req.body);
       // ! 02. Call service
       const { isNewEmail } = await this.authService.checkEmail(email);
       // ! 03. Return response
@@ -217,7 +199,7 @@ export class AuthController {
   public forgotPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const email = emailSchema.parse(req.body.email);
+      const { email } = AuthRequestSchema.forgotPassword.parse(req.body);
 
       // ! 02. Call service
       const { url, mfaRequired, mfaToken } =
@@ -257,9 +239,8 @@ export class AuthController {
   public resetPassword = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const { verificationCode, password } = resetPasswordSchema.parse(
-        req.body
-      );
+      const { verificationCode, password } =
+        AuthRequestSchema.resetPassword.parse(req.body);
 
       // ! 02. Collect ip & userAgent
       const ip = req.ip;

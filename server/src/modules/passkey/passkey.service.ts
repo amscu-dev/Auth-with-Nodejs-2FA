@@ -25,7 +25,7 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
 } from "@simplewebauthn/server";
 import type { RegistrationResponseJSON } from "@simplewebauthn/server";
-import { clientDataJSONSchema } from "@/common/validators/passkey.validator";
+import { clientDataJSONSchema } from "@/validators/passkey.validator";
 import decodeBase64 from "@/common/utils/decodeBase64";
 import { uint8ArrayToBase64 } from "@/common/utils/uint8ArrayToBase64";
 import {
@@ -236,7 +236,7 @@ export default class PasskeyService {
         }
       );
       // ! 08. Send verification code
-      const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}`;
+      const verificationURL = `${config.FRONTEND_ORIGIN}/accounts/confirm-email?code=${verificationCode.code}&email=${challengeSession.userEmail}`;
       const isVerificationEmailSend = await apiRequestWithRetry(() => {
         return sendEmail({
           to: newUser.email,

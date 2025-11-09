@@ -84,7 +84,7 @@ export class AuthService {
       );
 
       // ! 04. Send Verification Code Email
-      const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}&email=${email}`;
+      const verificationURL = `${config.FRONTEND_ORIGIN}/accounts/confirm-email?code=${verificationCode.code}&email=${email}`;
       const isVerificationEmailSend = await apiRequestWithRetry(() => {
         return sendEmail({
           to: newUser.email,
@@ -119,9 +119,9 @@ export class AuthService {
     if (user.isEmailVerified) return true;
     return false;
   }
-  public async login(loginData: LoginData, ip: string) {
+  public async login(loginData: LoginData, uaSource: string, ip: string) {
     // ! 01. Extract data
-    const { email, password, uaSource } = loginData;
+    const { email, password } = loginData;
 
     // ! 02. Check user existance
     const user = await UserModel.findOne({
@@ -303,8 +303,9 @@ export class AuthService {
       type: VerificationEnum.EMAIL_VERIFICATION,
       expiresAt: fortyFiveMinutesFromNow(),
     });
+    await verificationCode.save();
     // ! 04. Send Verification Code Email
-    const verificationURL = `${config.APP_ORIGIN}/confirm-account?code=${verificationCode.code}&email=${email}`;
+    const verificationURL = `${config.FRONTEND_ORIGIN}/accounts/confirm-email?code=${verificationCode.code}&email=${email}`;
     const isEmailSuccessfullySend = await apiRequestWithRetry(() => {
       return sendEmail({
         to: user.email,
@@ -392,7 +393,7 @@ export class AuthService {
     });
 
     // ! 05. Send email with newly verification code created
-    const resetLink = `${config.APP_ORIGIN}/reset-password?code=${
+    const resetLink = `${config.FRONTEND_ORIGIN}/accounts/reset-password?code=${
       validCode.code
     }&exp=${expiresAt.getTime()}`;
     const isResetPasswordEmailSend = await apiRequestWithRetry(() =>

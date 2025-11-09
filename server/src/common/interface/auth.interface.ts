@@ -1,10 +1,7 @@
+import { AuthRequestSchema } from "@/validators/auth.validator";
+import { passwordSchema } from "@/validators/reusable/password.schema";
 import z from "zod";
-import {
-  loginSchema,
-  passwordSchema,
-  registerSchema,
-} from "@/common/validators/auth.validator";
 
-export type RegisterData = z.infer<typeof registerSchema>;
-export type LoginData = z.infer<typeof loginSchema>;
+export type RegisterData = z.infer<typeof AuthRequestSchema.signUp>;
+export type LoginData = z.infer<typeof AuthRequestSchema.signIn>;
 export type PasswordType = z.infer<typeof passwordSchema>;
