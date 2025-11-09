@@ -44,12 +44,12 @@ const MagicLinkSignUpCard: React.FC<MagicLinkSignUpCardProps> = ({
     mode: "onTouched",
   });
   const onSubmit = async (
-    data: z.infer<typeof magicLinkSignUpMutationFnBody>
+    formData: z.infer<typeof magicLinkSignUpMutationFnBody>
   ) => {
-    await signUp(data, {
-      onSuccess: (data) => {
+    await signUp(formData, {
+      onSuccess: () => {
         router.push(
-          `/accounts/signup/verify-email?email=${encodeURIComponent(data.data.user?.email || "")}&name=${encodeURIComponent(data.data.user?.name || "")}`
+          `/accounts/magic/email-sent?email=${encodeURIComponent(formData.email)}`
         );
       },
       onError: (err) => {

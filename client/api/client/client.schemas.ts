@@ -37,37 +37,37 @@ export interface ResponseMetadata {
 /**
  * Type of WebAuthn credential. Always `"public-key"`.
  */
-export type PasskeyDataCredentialType = typeof PasskeyDataCredentialType[keyof typeof PasskeyDataCredentialType];
-
+export type PasskeyDataCredentialType =
+  (typeof PasskeyDataCredentialType)[keyof typeof PasskeyDataCredentialType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyDataCredentialType = {
-  'public-key': 'public-key',
+  "public-key": "public-key",
 } as const;
 
-export type PasskeyDataTransportsItem = typeof PasskeyDataTransportsItem[keyof typeof PasskeyDataTransportsItem];
-
+export type PasskeyDataTransportsItem =
+  (typeof PasskeyDataTransportsItem)[keyof typeof PasskeyDataTransportsItem];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyDataTransportsItem = {
-  usb: 'usb',
-  nfc: 'nfc',
-  ble: 'ble',
-  internal: 'internal',
-  hybrid: 'hybrid',
+  usb: "usb",
+  nfc: "nfc",
+  ble: "ble",
+  internal: "internal",
+  hybrid: "hybrid",
 } as const;
 
 /**
  * Describes the attachment modality of the authenticator.   `"platform"` means a device-integrated authenticator (e.g., Touch ID, Windows Hello).   `"cross-platform"` means an external authenticator (e.g., YubiKey, phone-based passkey).
 
  */
-export type PasskeyDataAuthenticatorAttachment = typeof PasskeyDataAuthenticatorAttachment[keyof typeof PasskeyDataAuthenticatorAttachment];
-
+export type PasskeyDataAuthenticatorAttachment =
+  (typeof PasskeyDataAuthenticatorAttachment)[keyof typeof PasskeyDataAuthenticatorAttachment];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyDataAuthenticatorAttachment = {
-  platform: 'platform',
-  'cross-platform': 'cross-platform',
+  platform: "platform",
+  "cross-platform": "cross-platform",
 } as const;
 
 /**
@@ -97,18 +97,18 @@ export interface PasskeyData {
   /** Type of WebAuthn credential. Always `"public-key"`. */
   credentialType: PasskeyDataCredentialType;
   /** COSE algorithm identifier used for the credential’s public key. Common values include `-7` (ES256), `-257` (RS256), or `-8` (EdDSA).
- */
+   */
   publicKeyAlgorithm: number;
   /** Monotonically increasing counter maintained by the authenticator to prevent replay attacks. */
   counter: number;
   /** List of supported authenticator transports that can be used to communicate with the credential. Examples include `["usb", "ble", "nfc", "internal"]`.
- */
+   */
   transports: PasskeyDataTransportsItem[];
   /** Describes the attachment modality of the authenticator.   `"platform"` means a device-integrated authenticator (e.g., Touch ID, Windows Hello).   `"cross-platform"` means an external authenticator (e.g., YubiKey, phone-based passkey).
- */
+   */
   authenticatorAttachment: PasskeyDataAuthenticatorAttachment;
   /** Information about the authenticator’s Attestation AAGUID and provider identity.
- */
+   */
   aaguid: PasskeyDataAaguid;
   /** Timestamp when the passkey was first registered. */
   createdAt: string;
@@ -199,26 +199,26 @@ export interface MagicLinkSignInRequestBody {
 /**
  * Must always be "public-key".
  */
-export type PasskeyCompletRegistrationRequestBodyType = typeof PasskeyCompletRegistrationRequestBodyType[keyof typeof PasskeyCompletRegistrationRequestBodyType];
-
+export type PasskeyCompletRegistrationRequestBodyType =
+  (typeof PasskeyCompletRegistrationRequestBodyType)[keyof typeof PasskeyCompletRegistrationRequestBodyType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyCompletRegistrationRequestBodyType = {
-  'public-key': 'public-key',
+  "public-key": "public-key",
 } as const;
 
-export type PasskeyCompletRegistrationRequestBodyResponseTransportsItem = typeof PasskeyCompletRegistrationRequestBodyResponseTransportsItem[keyof typeof PasskeyCompletRegistrationRequestBodyResponseTransportsItem];
-
+export type PasskeyCompletRegistrationRequestBodyResponseTransportsItem =
+  (typeof PasskeyCompletRegistrationRequestBodyResponseTransportsItem)[keyof typeof PasskeyCompletRegistrationRequestBodyResponseTransportsItem];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyCompletRegistrationRequestBodyResponseTransportsItem = {
-  ble: 'ble',
-  cable: 'cable',
-  hybrid: 'hybrid',
-  internal: 'internal',
-  nfc: 'nfc',
-  'smart-card': 'smart-card',
-  usb: 'usb',
+  ble: "ble",
+  cable: "cable",
+  hybrid: "hybrid",
+  internal: "internal",
+  nfc: "nfc",
+  "smart-card": "smart-card",
+  usb: "usb",
 } as const;
 
 export type PasskeyCompletRegistrationRequestBodyResponse = {
@@ -239,22 +239,23 @@ export type PasskeyCompletRegistrationRequestBodyResponse = {
 /**
  * Optional attachment modality of the authenticator.
  */
-export type PasskeyCompletRegistrationRequestBodyAuthenticatorAttachment = typeof PasskeyCompletRegistrationRequestBodyAuthenticatorAttachment[keyof typeof PasskeyCompletRegistrationRequestBodyAuthenticatorAttachment];
-
+export type PasskeyCompletRegistrationRequestBodyAuthenticatorAttachment =
+  (typeof PasskeyCompletRegistrationRequestBodyAuthenticatorAttachment)[keyof typeof PasskeyCompletRegistrationRequestBodyAuthenticatorAttachment];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyCompletRegistrationRequestBodyAuthenticatorAttachment = {
-  'cross-platform': 'cross-platform',
-  platform: 'platform',
+  "cross-platform": "cross-platform",
+  platform: "platform",
 } as const;
 
 /**
  * Credential properties returned by the client.
  */
-export type PasskeyCompletRegistrationRequestBodyClientExtensionResultsCredProps = {
-  /** Indicates if the credential is resident. */
-  rk?: boolean;
-};
+export type PasskeyCompletRegistrationRequestBodyClientExtensionResultsCredProps =
+  {
+    /** Indicates if the credential is resident. */
+    rk?: boolean;
+  };
 
 /**
  * Optional results of any WebAuthn client extensions.
@@ -285,12 +286,12 @@ export interface PasskeyCompletRegistrationRequestBody {
 /**
  * The credential type. For WebAuthn, always `"public-key"`.
  */
-export type PasskeyCompletAuthenticationRequestBodyType = typeof PasskeyCompletAuthenticationRequestBodyType[keyof typeof PasskeyCompletAuthenticationRequestBodyType];
-
+export type PasskeyCompletAuthenticationRequestBodyType =
+  (typeof PasskeyCompletAuthenticationRequestBodyType)[keyof typeof PasskeyCompletAuthenticationRequestBodyType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyCompletAuthenticationRequestBodyType = {
-  'public-key': 'public-key',
+  "public-key": "public-key",
 } as const;
 
 /**
@@ -299,22 +300,23 @@ export const PasskeyCompletAuthenticationRequestBodyType = {
 - `"cross-platform"`: external authenticator (e.g. security key)
 
  */
-export type PasskeyCompletAuthenticationRequestBodyAuthenticatorAttachment = typeof PasskeyCompletAuthenticationRequestBodyAuthenticatorAttachment[keyof typeof PasskeyCompletAuthenticationRequestBodyAuthenticatorAttachment];
-
+export type PasskeyCompletAuthenticationRequestBodyAuthenticatorAttachment =
+  (typeof PasskeyCompletAuthenticationRequestBodyAuthenticatorAttachment)[keyof typeof PasskeyCompletAuthenticationRequestBodyAuthenticatorAttachment];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyCompletAuthenticationRequestBodyAuthenticatorAttachment = {
-  'cross-platform': 'cross-platform',
-  platform: 'platform',
+  "cross-platform": "cross-platform",
+  platform: "platform",
 } as const;
 
 /**
  * Credential properties returned by the authenticator.
  */
-export type PasskeyCompletAuthenticationRequestBodyClientExtensionResultsCredProps = {
-  /** Whether the credential is a resident key. */
-  rk?: boolean;
-};
+export type PasskeyCompletAuthenticationRequestBodyClientExtensionResultsCredProps =
+  {
+    /** Whether the credential is a resident key. */
+    rk?: boolean;
+  };
 
 /**
  * Results from any WebAuthn extensions used during authentication.
@@ -349,10 +351,10 @@ export type PasskeyCompletAuthenticationRequestBodyResponse = {
  */
 export interface PasskeyCompletAuthenticationRequestBody {
   /** The base64url-encoded credential ID uniquely identifying the passkey credential.
- */
+   */
   id: string;
   /** The raw credential ID in base64url format. Usually identical to `id` but encoded differently.
- */
+   */
   rawId: string;
   /** The credential type. For WebAuthn, always `"public-key"`. */
   type: PasskeyCompletAuthenticationRequestBodyType;
@@ -364,24 +366,24 @@ export interface PasskeyCompletAuthenticationRequestBody {
   /** Results from any WebAuthn extensions used during authentication. */
   clientExtensionResults?: PasskeyCompletAuthenticationRequestBodyClientExtensionResults;
   /** Contains the raw cryptographic materials returned by the authenticator, required for verifying the authentication response.
- */
+   */
   response: PasskeyCompletAuthenticationRequestBodyResponse;
 }
 
-export type RegistrationSuccessReponseStatusCode = typeof RegistrationSuccessReponseStatusCode[keyof typeof RegistrationSuccessReponseStatusCode];
-
+export type RegistrationSuccessReponseStatusCode =
+  (typeof RegistrationSuccessReponseStatusCode)[keyof typeof RegistrationSuccessReponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RegistrationSuccessReponseStatusCode = {
   NUMBER_201: 201,
 } as const;
 
-export type RegistrationSuccessReponseDataNextStep = typeof RegistrationSuccessReponseDataNextStep[keyof typeof RegistrationSuccessReponseDataNextStep];
-
+export type RegistrationSuccessReponseDataNextStep =
+  (typeof RegistrationSuccessReponseDataNextStep)[keyof typeof RegistrationSuccessReponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RegistrationSuccessReponseDataNextStep = {
-  CONFIRM_SIGN_UP: 'CONFIRM_SIGN_UP',
+  CONFIRM_SIGN_UP: "CONFIRM_SIGN_UP",
 } as const;
 
 export type RegistrationSuccessReponseData = {
@@ -398,24 +400,25 @@ export interface RegistrationSuccessReponse {
   metadata: ResponseMetadata;
 }
 
-export type LoginEmailVerificationPendingResponseStatusCode = typeof LoginEmailVerificationPendingResponseStatusCode[keyof typeof LoginEmailVerificationPendingResponseStatusCode];
-
+export type LoginEmailVerificationPendingResponseStatusCode =
+  (typeof LoginEmailVerificationPendingResponseStatusCode)[keyof typeof LoginEmailVerificationPendingResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LoginEmailVerificationPendingResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type LoginEmailVerificationPendingResponseDataNextStep = typeof LoginEmailVerificationPendingResponseDataNextStep[keyof typeof LoginEmailVerificationPendingResponseDataNextStep];
-
+export type LoginEmailVerificationPendingResponseDataNextStep =
+  (typeof LoginEmailVerificationPendingResponseDataNextStep)[keyof typeof LoginEmailVerificationPendingResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LoginEmailVerificationPendingResponseDataNextStep = {
-  CONFIRM_SIGN_UP: 'CONFIRM_SIGN_UP',
+  CONFIRM_SIGN_UP: "CONFIRM_SIGN_UP",
 } as const;
 
 export type LoginEmailVerificationPendingResponseData = {
   nextStep?: LoginEmailVerificationPendingResponseDataNextStep;
+  email: string;
 };
 
 export interface LoginEmailVerificationPendingResponse {
@@ -426,20 +429,20 @@ export interface LoginEmailVerificationPendingResponse {
   metadata: ResponseMetadata;
 }
 
-export type LoginSuccessResponseStatusCode = typeof LoginSuccessResponseStatusCode[keyof typeof LoginSuccessResponseStatusCode];
-
+export type LoginSuccessResponseStatusCode =
+  (typeof LoginSuccessResponseStatusCode)[keyof typeof LoginSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LoginSuccessResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type LoginSuccessResponseDataNextStep = typeof LoginSuccessResponseDataNextStep[keyof typeof LoginSuccessResponseDataNextStep];
-
+export type LoginSuccessResponseDataNextStep =
+  (typeof LoginSuccessResponseDataNextStep)[keyof typeof LoginSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LoginSuccessResponseDataNextStep = {
-  OK: 'OK',
+  OK: "OK",
 } as const;
 
 export type LoginSuccessResponseData = {
@@ -456,20 +459,20 @@ export interface LoginSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type MFAPendingResponseStatusCode = typeof MFAPendingResponseStatusCode[keyof typeof MFAPendingResponseStatusCode];
-
+export type MFAPendingResponseStatusCode =
+  (typeof MFAPendingResponseStatusCode)[keyof typeof MFAPendingResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFAPendingResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type MFAPendingResponseDataNextStep = typeof MFAPendingResponseDataNextStep[keyof typeof MFAPendingResponseDataNextStep];
-
+export type MFAPendingResponseDataNextStep =
+  (typeof MFAPendingResponseDataNextStep)[keyof typeof MFAPendingResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFAPendingResponseDataNextStep = {
-  MFA_REQUIRED: 'MFA_REQUIRED',
+  MFA_REQUIRED: "MFA_REQUIRED",
 } as const;
 
 export type MFAPendingResponseData = {
@@ -485,20 +488,20 @@ export interface MFAPendingResponse {
   metadata: ResponseMetadata;
 }
 
-export type EmailConfirmedSuccessResponseStatusCode = typeof EmailConfirmedSuccessResponseStatusCode[keyof typeof EmailConfirmedSuccessResponseStatusCode];
-
+export type EmailConfirmedSuccessResponseStatusCode =
+  (typeof EmailConfirmedSuccessResponseStatusCode)[keyof typeof EmailConfirmedSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EmailConfirmedSuccessResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type EmailConfirmedSuccessResponseDataNextStep = typeof EmailConfirmedSuccessResponseDataNextStep[keyof typeof EmailConfirmedSuccessResponseDataNextStep];
-
+export type EmailConfirmedSuccessResponseDataNextStep =
+  (typeof EmailConfirmedSuccessResponseDataNextStep)[keyof typeof EmailConfirmedSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EmailConfirmedSuccessResponseDataNextStep = {
-  CONFIRMED_EMAIL_RETURN_TO_LOGIN: 'CONFIRMED_EMAIL_RETURN_TO_LOGIN',
+  CONFIRMED_EMAIL_RETURN_TO_LOGIN: "CONFIRMED_EMAIL_RETURN_TO_LOGIN",
 } as const;
 
 export type EmailConfirmedSuccessResponseData = {
@@ -513,20 +516,20 @@ export interface EmailConfirmedSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type ForgotPasswordSuccessResponseStatusCode = typeof ForgotPasswordSuccessResponseStatusCode[keyof typeof ForgotPasswordSuccessResponseStatusCode];
-
+export type ForgotPasswordSuccessResponseStatusCode =
+  (typeof ForgotPasswordSuccessResponseStatusCode)[keyof typeof ForgotPasswordSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ForgotPasswordSuccessResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type ForgotPasswordSuccessResponseDataNextStep = typeof ForgotPasswordSuccessResponseDataNextStep[keyof typeof ForgotPasswordSuccessResponseDataNextStep];
-
+export type ForgotPasswordSuccessResponseDataNextStep =
+  (typeof ForgotPasswordSuccessResponseDataNextStep)[keyof typeof ForgotPasswordSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ForgotPasswordSuccessResponseDataNextStep = {
-  OK: 'OK',
+  OK: "OK",
 } as const;
 
 export type ForgotPasswordSuccessResponseData = {
@@ -542,20 +545,20 @@ export interface ForgotPasswordSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type ResetPasswordSuccessResponseStatusCode = typeof ResetPasswordSuccessResponseStatusCode[keyof typeof ResetPasswordSuccessResponseStatusCode];
-
+export type ResetPasswordSuccessResponseStatusCode =
+  (typeof ResetPasswordSuccessResponseStatusCode)[keyof typeof ResetPasswordSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ResetPasswordSuccessResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type ResetPasswordSuccessResponseDataNextStep = typeof ResetPasswordSuccessResponseDataNextStep[keyof typeof ResetPasswordSuccessResponseDataNextStep];
-
+export type ResetPasswordSuccessResponseDataNextStep =
+  (typeof ResetPasswordSuccessResponseDataNextStep)[keyof typeof ResetPasswordSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ResetPasswordSuccessResponseDataNextStep = {
-  OK: 'OK',
+  OK: "OK",
 } as const;
 
 export type ResetPasswordSuccessResponseData = {
@@ -570,20 +573,20 @@ export interface ResetPasswordSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type RefreshTokenEndpointSuccessResponseStatusCode = typeof RefreshTokenEndpointSuccessResponseStatusCode[keyof typeof RefreshTokenEndpointSuccessResponseStatusCode];
-
+export type RefreshTokenEndpointSuccessResponseStatusCode =
+  (typeof RefreshTokenEndpointSuccessResponseStatusCode)[keyof typeof RefreshTokenEndpointSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RefreshTokenEndpointSuccessResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type RefreshTokenEndpointSuccessResponseDataNextStep = typeof RefreshTokenEndpointSuccessResponseDataNextStep[keyof typeof RefreshTokenEndpointSuccessResponseDataNextStep];
-
+export type RefreshTokenEndpointSuccessResponseDataNextStep =
+  (typeof RefreshTokenEndpointSuccessResponseDataNextStep)[keyof typeof RefreshTokenEndpointSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RefreshTokenEndpointSuccessResponseDataNextStep = {
-  OK: 'OK',
+  OK: "OK",
 } as const;
 
 export type RefreshTokenEndpointSuccessResponseData = {
@@ -598,20 +601,20 @@ export interface RefreshTokenEndpointSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type LogoutSuccessResponseStatusCode = typeof LogoutSuccessResponseStatusCode[keyof typeof LogoutSuccessResponseStatusCode];
-
+export type LogoutSuccessResponseStatusCode =
+  (typeof LogoutSuccessResponseStatusCode)[keyof typeof LogoutSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LogoutSuccessResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type LogoutSuccessResponseDataNextStep = typeof LogoutSuccessResponseDataNextStep[keyof typeof LogoutSuccessResponseDataNextStep];
-
+export type LogoutSuccessResponseDataNextStep =
+  (typeof LogoutSuccessResponseDataNextStep)[keyof typeof LogoutSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LogoutSuccessResponseDataNextStep = {
-  LOGOUT: 'LOGOUT',
+  LOGOUT: "LOGOUT",
 } as const;
 
 export type LogoutSuccessResponseData = {
@@ -626,20 +629,20 @@ export interface LogoutSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type MagicLinkSignUpSuccessResponseStatusCode = typeof MagicLinkSignUpSuccessResponseStatusCode[keyof typeof MagicLinkSignUpSuccessResponseStatusCode];
-
+export type MagicLinkSignUpSuccessResponseStatusCode =
+  (typeof MagicLinkSignUpSuccessResponseStatusCode)[keyof typeof MagicLinkSignUpSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MagicLinkSignUpSuccessResponseStatusCode = {
   NUMBER_201: 201,
 } as const;
 
-export type MagicLinkSignUpSuccessResponseDataNextStep = typeof MagicLinkSignUpSuccessResponseDataNextStep[keyof typeof MagicLinkSignUpSuccessResponseDataNextStep];
-
+export type MagicLinkSignUpSuccessResponseDataNextStep =
+  (typeof MagicLinkSignUpSuccessResponseDataNextStep)[keyof typeof MagicLinkSignUpSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MagicLinkSignUpSuccessResponseDataNextStep = {
-  CHECK_EMAIL_FOR_MAGIC_LINK: 'CHECK_EMAIL_FOR_MAGIC_LINK',
+  CHECK_EMAIL_FOR_MAGIC_LINK: "CHECK_EMAIL_FOR_MAGIC_LINK",
 } as const;
 
 export type MagicLinkSignUpSuccessResponseData = {
@@ -656,20 +659,20 @@ export interface MagicLinkSignUpSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type MagicLinkSignInSuccessResponseStatusCode = typeof MagicLinkSignInSuccessResponseStatusCode[keyof typeof MagicLinkSignInSuccessResponseStatusCode];
-
+export type MagicLinkSignInSuccessResponseStatusCode =
+  (typeof MagicLinkSignInSuccessResponseStatusCode)[keyof typeof MagicLinkSignInSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MagicLinkSignInSuccessResponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type MagicLinkSignInSuccessResponseDataNextStep = typeof MagicLinkSignInSuccessResponseDataNextStep[keyof typeof MagicLinkSignInSuccessResponseDataNextStep];
-
+export type MagicLinkSignInSuccessResponseDataNextStep =
+  (typeof MagicLinkSignInSuccessResponseDataNextStep)[keyof typeof MagicLinkSignInSuccessResponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MagicLinkSignInSuccessResponseDataNextStep = {
-  CHECK_EMAIL_FOR_MAGIC_LINK: 'CHECK_EMAIL_FOR_MAGIC_LINK',
+  CHECK_EMAIL_FOR_MAGIC_LINK: "CHECK_EMAIL_FOR_MAGIC_LINK",
 } as const;
 
 export type MagicLinkSignInSuccessResponseData = {
@@ -685,8 +688,8 @@ export interface MagicLinkSignInSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type MfaSetupResponseStatusCode = typeof MfaSetupResponseStatusCode[keyof typeof MfaSetupResponseStatusCode];
-
+export type MfaSetupResponseStatusCode =
+  (typeof MfaSetupResponseStatusCode)[keyof typeof MfaSetupResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MfaSetupResponseStatusCode = {
@@ -711,8 +714,8 @@ export interface MfaSetupResponse {
   metadata: ResponseMetadata;
 }
 
-export type MFAVerifySetupSuccessResponseStatusCode = typeof MFAVerifySetupSuccessResponseStatusCode[keyof typeof MFAVerifySetupSuccessResponseStatusCode];
-
+export type MFAVerifySetupSuccessResponseStatusCode =
+  (typeof MFAVerifySetupSuccessResponseStatusCode)[keyof typeof MFAVerifySetupSuccessResponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFAVerifySetupSuccessResponseStatusCode = {
@@ -736,8 +739,8 @@ export interface MFAVerifySetupSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type MFARevokeSuccessReponseStatusCode = typeof MFARevokeSuccessReponseStatusCode[keyof typeof MFARevokeSuccessReponseStatusCode];
-
+export type MFARevokeSuccessReponseStatusCode =
+  (typeof MFARevokeSuccessReponseStatusCode)[keyof typeof MFARevokeSuccessReponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFARevokeSuccessReponseStatusCode = {
@@ -756,20 +759,20 @@ export interface MFARevokeSuccessReponse {
   metadata: ResponseMetadata;
 }
 
-export type MFARequestChangePasswordSuccessReponseStatusCode = typeof MFARequestChangePasswordSuccessReponseStatusCode[keyof typeof MFARequestChangePasswordSuccessReponseStatusCode];
-
+export type MFARequestChangePasswordSuccessReponseStatusCode =
+  (typeof MFARequestChangePasswordSuccessReponseStatusCode)[keyof typeof MFARequestChangePasswordSuccessReponseStatusCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFARequestChangePasswordSuccessReponseStatusCode = {
   NUMBER_200: 200,
 } as const;
 
-export type MFARequestChangePasswordSuccessReponseDataNextStep = typeof MFARequestChangePasswordSuccessReponseDataNextStep[keyof typeof MFARequestChangePasswordSuccessReponseDataNextStep];
-
+export type MFARequestChangePasswordSuccessReponseDataNextStep =
+  (typeof MFARequestChangePasswordSuccessReponseDataNextStep)[keyof typeof MFARequestChangePasswordSuccessReponseDataNextStep];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFARequestChangePasswordSuccessReponseDataNextStep = {
-  OK: 'OK',
+  OK: "OK",
 } as const;
 
 export type MFARequestChangePasswordSuccessReponseData = {
@@ -786,10 +789,10 @@ export interface MFARequestChangePasswordSuccessReponse {
 
 export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsRp = {
   /** The display name of the application (Relying Party).  This is shown to the user during registration/authentication.
- */
+   */
   name?: string;
   /** The unique identifier of the Relying Party, usually the domain name.  Used by the browser to validate the registration request and prevent phishing.
- */
+   */
   id?: string;
 };
 
@@ -800,46 +803,53 @@ export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsUser = {
   displayName?: string;
 };
 
-export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsPubKeyCredParamsItem = {
-  alg: number;
-  type: string;
-};
+export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsPubKeyCredParamsItem =
+  {
+    alg: number;
+    type: string;
+  };
 
-export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation = typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation[keyof typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation = {
-  direct: 'direct',
-} as const;
-
-export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsExcludeCredentialsItem = { [key: string]: unknown };
-
-export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey = typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey[keyof typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey];
-
+export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation =
+  (typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation)[keyof typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey = {
-  required: 'required',
-} as const;
+export const PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAttestation =
+  {
+    direct: "direct",
+  } as const;
 
-export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification = typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification[keyof typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification];
+export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsExcludeCredentialsItem =
+  { [key: string]: unknown };
 
+export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey =
+  (typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey)[keyof typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification = {
-  required: 'required',
-} as const;
+export const PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey =
+  {
+    required: "required",
+  } as const;
 
-export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelection = {
-  residentKey?: PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey;
-  requireResidentKey?: boolean;
-  userVerification?: PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification;
-};
+export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification =
+  (typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification)[keyof typeof PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification];
 
-export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsExtensions = {
-  credProps?: boolean;
-};
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification =
+  {
+    required: "required",
+  } as const;
+
+export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelection =
+  {
+    residentKey?: PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionResidentKey;
+    requireResidentKey?: boolean;
+    userVerification?: PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsAuthenticatorSelectionUserVerification;
+  };
+
+export type PasskeyGenerateSignUpSessionSuccessResponseDataPublicKeyOptsExtensions =
+  {
+    credProps?: boolean;
+  };
 
 /**
  * WebAuthn options to complete the passkey registration on the client side.
@@ -880,66 +890,71 @@ export interface PasskeyGenerateSignUpSessionSuccessResponse {
   metadata?: ResponseMetadata;
 }
 
-export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType = typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType[keyof typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType = {
-  'public-key': 'public-key',
-} as const;
-
-export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem = typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem[keyof typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem];
-
+export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType =
+  (typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType)[keyof typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem = {
-  ble: 'ble',
-  cable: 'cable',
-  hybrid: 'hybrid',
-  internal: 'internal',
-  nfc: 'nfc',
-  'smart-card': 'smart-card',
-  usb: 'usb',
-} as const;
+export const PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType =
+  {
+    "public-key": "public-key",
+  } as const;
 
-export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem = {
-  /** Base64URL-encoded identifier of the allowed credential. */
-  id?: string;
-  type?: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType;
-  /** Optional list of transports supported by this credential. */
-  transports?: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem[];
-};
+export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem =
+  (typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem)[keyof typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem =
+  {
+    ble: "ble",
+    cable: "cable",
+    hybrid: "hybrid",
+    internal: "internal",
+    nfc: "nfc",
+    "smart-card": "smart-card",
+    usb: "usb",
+  } as const;
+
+export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem =
+  {
+    /** Base64URL-encoded identifier of the allowed credential. */
+    id?: string;
+    type?: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType;
+    /** Optional list of transports supported by this credential. */
+    transports?: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem[];
+  };
 
 /**
  * Indicates whether the authenticator must perform user verification.
  */
-export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification = typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification[keyof typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification];
-
+export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification =
+  (typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification)[keyof typeof PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification = {
-  required: 'required',
-  preferred: 'preferred',
-  discouraged: 'discouraged',
-} as const;
+export const PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification =
+  {
+    required: "required",
+    preferred: "preferred",
+    discouraged: "discouraged",
+  } as const;
 
 /**
  * Options provided to the client for completing the WebAuthn authentication ceremony.
  */
-export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptions = {
-  /** The relying party identifier, usually the domain name of your web application. */
-  rpId: string;
-  /** A unique cryptographic challenge generated by the server to prevent replay attacks. */
-  challenge: string;
-  /** A list of previously registered credentials that are allowed for authentication.  
+export type PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptions =
+  {
+    /** The relying party identifier, usually the domain name of your web application. */
+    rpId: string;
+    /** A unique cryptographic challenge generated by the server to prevent replay attacks. */
+    challenge: string;
+    /** A list of previously registered credentials that are allowed for authentication.  
 If empty, the authenticator may select any credential associated with the user.
  */
-  allowCredentials: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem[];
-  /** The time, in milliseconds, that the client is allowed to take to complete the authentication. */
-  timeout: number;
-  /** Indicates whether the authenticator must perform user verification. */
-  userVerification: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification;
-};
+    allowCredentials: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem[];
+    /** The time, in milliseconds, that the client is allowed to take to complete the authentication. */
+    timeout: number;
+    /** Indicates whether the authenticator must perform user verification. */
+    userVerification: PasskeyGenerateSignInSessionSuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification;
+  };
 
 /**
  * Contains the created public key credential request options used by the client to proceed with WebAuthn authentication.
@@ -964,66 +979,71 @@ export interface PasskeyGenerateSignInSessionSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType = typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType[keyof typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType = {
-  'public-key': 'public-key',
-} as const;
-
-export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem = typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem[keyof typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem];
-
+export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType =
+  (typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType)[keyof typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem = {
-  ble: 'ble',
-  cable: 'cable',
-  hybrid: 'hybrid',
-  internal: 'internal',
-  nfc: 'nfc',
-  'smart-card': 'smart-card',
-  usb: 'usb',
-} as const;
+export const PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType =
+  {
+    "public-key": "public-key",
+  } as const;
 
-export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem = {
-  /** Base64URL-encoded identifier of the allowed credential. */
-  id?: string;
-  type?: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType;
-  /** Optional list of transports supported by this credential. */
-  transports?: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem[];
-};
+export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem =
+  (typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem)[keyof typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem =
+  {
+    ble: "ble",
+    cable: "cable",
+    hybrid: "hybrid",
+    internal: "internal",
+    nfc: "nfc",
+    "smart-card": "smart-card",
+    usb: "usb",
+  } as const;
+
+export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem =
+  {
+    /** Base64URL-encoded identifier of the allowed credential. */
+    id?: string;
+    type?: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemType;
+    /** Optional list of transports supported by this credential. */
+    transports?: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItemTransportsItem[];
+  };
 
 /**
  * Indicates whether the authenticator must perform user verification.
  */
-export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification = typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification[keyof typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification];
-
+export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification =
+  (typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification)[keyof typeof PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification = {
-  required: 'required',
-  preferred: 'preferred',
-  discouraged: 'discouraged',
-} as const;
+export const PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification =
+  {
+    required: "required",
+    preferred: "preferred",
+    discouraged: "discouraged",
+  } as const;
 
 /**
  * Options provided to the client for completing the WebAuthn authentication ceremony.
  */
-export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptions = {
-  /** The relying party identifier, usually the domain name of your web application. */
-  rpId: string;
-  /** A unique cryptographic challenge generated by the server to prevent replay attacks. */
-  challenge: string;
-  /** A list of previously registered credentials that are allowed for authentication.  
+export type PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptions =
+  {
+    /** The relying party identifier, usually the domain name of your web application. */
+    rpId: string;
+    /** A unique cryptographic challenge generated by the server to prevent replay attacks. */
+    challenge: string;
+    /** A list of previously registered credentials that are allowed for authentication.  
 If empty, the authenticator may select any credential associated with the user.
  */
-  allowCredentials: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem[];
-  /** The time, in milliseconds, that the client is allowed to take to complete the authentication. */
-  timeout: number;
-  /** Indicates whether the authenticator must perform user verification. */
-  userVerification: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification;
-};
+    allowCredentials: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsAllowCredentialsItem[];
+    /** The time, in milliseconds, that the client is allowed to take to complete the authentication. */
+    timeout: number;
+    /** Indicates whether the authenticator must perform user verification. */
+    userVerification: PasskeyGenerateRemoveKeySuccessResponseDataPublicKeyCredentialRequestOptionsUserVerification;
+  };
 
 /**
  * Contains the created public key credential request options used by the client to proceed with WebAuthn authentication.
@@ -1088,14 +1108,15 @@ export interface PasskeyRemovedSuccessResponse {
   metadata: ResponseMetadata;
 }
 
-export type PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItemAaguid = {
-  /** The name of the passkey provider. */
-  name?: string;
-  /** The base64 encoded SVG for the dark theme icon. */
-  icon_dark?: string;
-  /** The base64 encoded SVG for the light theme icon. */
-  icon_light?: string;
-};
+export type PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItemAaguid =
+  {
+    /** The name of the passkey provider. */
+    name?: string;
+    /** The base64 encoded SVG for the dark theme icon. */
+    icon_dark?: string;
+    /** The base64 encoded SVG for the light theme icon. */
+    icon_light?: string;
+  };
 
 export type PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItem = {
   aaguid?: PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItemAaguid;
@@ -1180,7 +1201,7 @@ export interface GetCurrentSessionSuccessResponse {
 
 export type DeleteSessionByIdSuccessResponseData = {
   /** If the deleted session was the current session, indicates the next action for the client (e.g., LOGIN.LOGOUT).
- */
+   */
   nextStep?: string;
 };
 
@@ -1244,12 +1265,12 @@ export interface EmailCheckSuccessResponse {
   metadata?: ResponseMetadata;
 }
 
-export type InternalServerErrorErrorCode = typeof InternalServerErrorErrorCode[keyof typeof InternalServerErrorErrorCode];
-
+export type InternalServerErrorErrorCode =
+  (typeof InternalServerErrorErrorCode)[keyof typeof InternalServerErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const InternalServerErrorErrorCode = {
-  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
 } as const;
 
 export interface InternalServerError {
@@ -1259,12 +1280,12 @@ export interface InternalServerError {
   requestId: string;
 }
 
-export type ForbiddenErrorErrorCode = typeof ForbiddenErrorErrorCode[keyof typeof ForbiddenErrorErrorCode];
-
+export type ForbiddenErrorErrorCode =
+  (typeof ForbiddenErrorErrorCode)[keyof typeof ForbiddenErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ForbiddenErrorErrorCode = {
-  ACCESS_FORBIDDEN: 'ACCESS_FORBIDDEN',
+  ACCESS_FORBIDDEN: "ACCESS_FORBIDDEN",
 } as const;
 
 export interface ForbiddenError {
@@ -1274,12 +1295,12 @@ export interface ForbiddenError {
   requestId: string;
 }
 
-export type TooManyRequestsErrorErrorCode = typeof TooManyRequestsErrorErrorCode[keyof typeof TooManyRequestsErrorErrorCode];
-
+export type TooManyRequestsErrorErrorCode =
+  (typeof TooManyRequestsErrorErrorCode)[keyof typeof TooManyRequestsErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TooManyRequestsErrorErrorCode = {
-  TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
+  TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS",
 } as const;
 
 export interface TooManyRequestsError {
@@ -1289,12 +1310,12 @@ export interface TooManyRequestsError {
   requestId: string;
 }
 
-export type EmailServiceErrorErrorCode = typeof EmailServiceErrorErrorCode[keyof typeof EmailServiceErrorErrorCode];
-
+export type EmailServiceErrorErrorCode =
+  (typeof EmailServiceErrorErrorCode)[keyof typeof EmailServiceErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EmailServiceErrorErrorCode = {
-  EMAIL_SERVICE_ERROR: 'EMAIL_SERVICE_ERROR',
+  EMAIL_SERVICE_ERROR: "EMAIL_SERVICE_ERROR",
 } as const;
 
 export interface EmailServiceError {
@@ -1304,12 +1325,13 @@ export interface EmailServiceError {
   requestId: string;
 }
 
-export type InvalidRequestBodyValidationErrorErrorCode = typeof InvalidRequestBodyValidationErrorErrorCode[keyof typeof InvalidRequestBodyValidationErrorErrorCode];
-
+export type InvalidRequestBodyValidationErrorErrorCode =
+  (typeof InvalidRequestBodyValidationErrorErrorCode)[keyof typeof InvalidRequestBodyValidationErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const InvalidRequestBodyValidationErrorErrorCode = {
-  VALIDATION_ERROR_INVALID_REQUEST_BODY: 'VALIDATION_ERROR_INVALID_REQUEST_BODY',
+  VALIDATION_ERROR_INVALID_REQUEST_BODY:
+    "VALIDATION_ERROR_INVALID_REQUEST_BODY",
 } as const;
 
 export type InvalidRequestBodyValidationErrorErrorsItem = {
@@ -1326,12 +1348,12 @@ export interface InvalidRequestBodyValidationError {
   errors: InvalidRequestBodyValidationErrorErrorsItem[];
 }
 
-export type EmailAlreadyExistsErrorErrorCode = typeof EmailAlreadyExistsErrorErrorCode[keyof typeof EmailAlreadyExistsErrorErrorCode];
-
+export type EmailAlreadyExistsErrorErrorCode =
+  (typeof EmailAlreadyExistsErrorErrorCode)[keyof typeof EmailAlreadyExistsErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EmailAlreadyExistsErrorErrorCode = {
-  AUTH_EMAIL_ALREADY_EXISTS: 'AUTH_EMAIL_ALREADY_EXISTS',
+  AUTH_EMAIL_ALREADY_EXISTS: "AUTH_EMAIL_ALREADY_EXISTS",
 } as const;
 
 export interface EmailAlreadyExistsError {
@@ -1341,12 +1363,12 @@ export interface EmailAlreadyExistsError {
   requestId: string;
 }
 
-export type UserNotFoundErrorErrorCode = typeof UserNotFoundErrorErrorCode[keyof typeof UserNotFoundErrorErrorCode];
-
+export type UserNotFoundErrorErrorCode =
+  (typeof UserNotFoundErrorErrorCode)[keyof typeof UserNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UserNotFoundErrorErrorCode = {
-  AUTH_USER_NOT_FOUND: 'AUTH_USER_NOT_FOUND',
+  AUTH_USER_NOT_FOUND: "AUTH_USER_NOT_FOUND",
 } as const;
 
 export interface UserNotFoundError {
@@ -1356,12 +1378,12 @@ export interface UserNotFoundError {
   requestId: string;
 }
 
-export type EmailNotFoundErrorErrorCode = typeof EmailNotFoundErrorErrorCode[keyof typeof EmailNotFoundErrorErrorCode];
-
+export type EmailNotFoundErrorErrorCode =
+  (typeof EmailNotFoundErrorErrorCode)[keyof typeof EmailNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EmailNotFoundErrorErrorCode = {
-  AUTH_EMAIL_NOT_FOUND: 'AUTH_EMAIL_NOT_FOUND',
+  AUTH_EMAIL_NOT_FOUND: "AUTH_EMAIL_NOT_FOUND",
 } as const;
 
 export interface EmailNotFoundError {
@@ -1371,12 +1393,12 @@ export interface EmailNotFoundError {
   requestId: string;
 }
 
-export type EmailAlreadyVerifiedErrorErrorCode = typeof EmailAlreadyVerifiedErrorErrorCode[keyof typeof EmailAlreadyVerifiedErrorErrorCode];
-
+export type EmailAlreadyVerifiedErrorErrorCode =
+  (typeof EmailAlreadyVerifiedErrorErrorCode)[keyof typeof EmailAlreadyVerifiedErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const EmailAlreadyVerifiedErrorErrorCode = {
-  AUTH_EMAIL_NOT_FOUND: 'AUTH_EMAIL_NOT_FOUND',
+  AUTH_EMAIL_NOT_FOUND: "AUTH_EMAIL_NOT_FOUND",
 } as const;
 
 export interface EmailAlreadyVerifiedError {
@@ -1386,12 +1408,12 @@ export interface EmailAlreadyVerifiedError {
   requestId: string;
 }
 
-export type InvalidCredentialsErrorErrorCode = typeof InvalidCredentialsErrorErrorCode[keyof typeof InvalidCredentialsErrorErrorCode];
-
+export type InvalidCredentialsErrorErrorCode =
+  (typeof InvalidCredentialsErrorErrorCode)[keyof typeof InvalidCredentialsErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const InvalidCredentialsErrorErrorCode = {
-  AUTH_INVALID_CREDENTIALS: 'AUTH_INVALID_CREDENTIALS',
+  AUTH_INVALID_CREDENTIALS: "AUTH_INVALID_CREDENTIALS",
 } as const;
 
 export interface InvalidCredentialsError {
@@ -1401,12 +1423,12 @@ export interface InvalidCredentialsError {
   requestId: string;
 }
 
-export type PasswordReuseNotAllowedErrorCode = typeof PasswordReuseNotAllowedErrorCode[keyof typeof PasswordReuseNotAllowedErrorCode];
-
+export type PasswordReuseNotAllowedErrorCode =
+  (typeof PasswordReuseNotAllowedErrorCode)[keyof typeof PasswordReuseNotAllowedErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasswordReuseNotAllowedErrorCode = {
-  AUTH_PASSWORD_REUSE_NOT_ALLOWED: 'AUTH_PASSWORD_REUSE_NOT_ALLOWED',
+  AUTH_PASSWORD_REUSE_NOT_ALLOWED: "AUTH_PASSWORD_REUSE_NOT_ALLOWED",
 } as const;
 
 export interface PasswordReuseNotAllowed {
@@ -1416,12 +1438,13 @@ export interface PasswordReuseNotAllowed {
   requestId: string;
 }
 
-export type VerificationCodeNotFoundErrorErrorCode = typeof VerificationCodeNotFoundErrorErrorCode[keyof typeof VerificationCodeNotFoundErrorErrorCode];
-
+export type VerificationCodeNotFoundErrorErrorCode =
+  (typeof VerificationCodeNotFoundErrorErrorCode)[keyof typeof VerificationCodeNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const VerificationCodeNotFoundErrorErrorCode = {
-  VERIFICATION_CODE_ERROR_CODE_NOT_FOUND: 'VERIFICATION_CODE_ERROR_CODE_NOT_FOUND',
+  VERIFICATION_CODE_ERROR_CODE_NOT_FOUND:
+    "VERIFICATION_CODE_ERROR_CODE_NOT_FOUND",
 } as const;
 
 export interface VerificationCodeNotFoundError {
@@ -1431,12 +1454,12 @@ export interface VerificationCodeNotFoundError {
   requestId: string;
 }
 
-export type VerificationCodeExpiredErrorErrorCode = typeof VerificationCodeExpiredErrorErrorCode[keyof typeof VerificationCodeExpiredErrorErrorCode];
-
+export type VerificationCodeExpiredErrorErrorCode =
+  (typeof VerificationCodeExpiredErrorErrorCode)[keyof typeof VerificationCodeExpiredErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const VerificationCodeExpiredErrorErrorCode = {
-  VERIFICATION_CODE_ERROR_CODE_EXPIRED: 'VERIFICATION_CODE_ERROR_CODE_EXPIRED',
+  VERIFICATION_CODE_ERROR_CODE_EXPIRED: "VERIFICATION_CODE_ERROR_CODE_EXPIRED",
 } as const;
 
 export interface VerificationCodeExpiredError {
@@ -1446,12 +1469,13 @@ export interface VerificationCodeExpiredError {
   requestId: string;
 }
 
-export type VerificationCodeConsumedErrorErrorCode = typeof VerificationCodeConsumedErrorErrorCode[keyof typeof VerificationCodeConsumedErrorErrorCode];
-
+export type VerificationCodeConsumedErrorErrorCode =
+  (typeof VerificationCodeConsumedErrorErrorCode)[keyof typeof VerificationCodeConsumedErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const VerificationCodeConsumedErrorErrorCode = {
-  VERIFICATION_CODE_ERROR_CODE_CONSUMED: 'VERIFICATION_CODE_ERROR_CODE_CONSUMED',
+  VERIFICATION_CODE_ERROR_CODE_CONSUMED:
+    "VERIFICATION_CODE_ERROR_CODE_CONSUMED",
 } as const;
 
 export interface VerificationCodeConsumedError {
@@ -1461,12 +1485,12 @@ export interface VerificationCodeConsumedError {
   requestId: string;
 }
 
-export type AuthenticationTokenNotFoundErrorErrorCode = typeof AuthenticationTokenNotFoundErrorErrorCode[keyof typeof AuthenticationTokenNotFoundErrorErrorCode];
-
+export type AuthenticationTokenNotFoundErrorErrorCode =
+  (typeof AuthenticationTokenNotFoundErrorErrorCode)[keyof typeof AuthenticationTokenNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthenticationTokenNotFoundErrorErrorCode = {
-  AUTH_TOKEN_NOT_FOUND: 'AUTH_TOKEN_NOT_FOUND',
+  AUTH_TOKEN_NOT_FOUND: "AUTH_TOKEN_NOT_FOUND",
 } as const;
 
 export interface AuthenticationTokenNotFoundError {
@@ -1476,12 +1500,12 @@ export interface AuthenticationTokenNotFoundError {
   requestId: string;
 }
 
-export type AuthenticationTokenUserNotFoundErrorErrorCode = typeof AuthenticationTokenUserNotFoundErrorErrorCode[keyof typeof AuthenticationTokenUserNotFoundErrorErrorCode];
-
+export type AuthenticationTokenUserNotFoundErrorErrorCode =
+  (typeof AuthenticationTokenUserNotFoundErrorErrorCode)[keyof typeof AuthenticationTokenUserNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthenticationTokenUserNotFoundErrorErrorCode = {
-  AUTH_TOKEN_USER_NOT_FOUND: 'AUTH_TOKEN_USER_NOT_FOUND',
+  AUTH_TOKEN_USER_NOT_FOUND: "AUTH_TOKEN_USER_NOT_FOUND",
 } as const;
 
 export interface AuthenticationTokenUserNotFoundError {
@@ -1491,12 +1515,12 @@ export interface AuthenticationTokenUserNotFoundError {
   requestId: string;
 }
 
-export type AuthenticationTokenInvalidSessionErrorErrorCode = typeof AuthenticationTokenInvalidSessionErrorErrorCode[keyof typeof AuthenticationTokenInvalidSessionErrorErrorCode];
-
+export type AuthenticationTokenInvalidSessionErrorErrorCode =
+  (typeof AuthenticationTokenInvalidSessionErrorErrorCode)[keyof typeof AuthenticationTokenInvalidSessionErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthenticationTokenInvalidSessionErrorErrorCode = {
-  AUTH_TOKEN_SESSION_INVALID: 'AUTH_TOKEN_SESSION_INVALID',
+  AUTH_TOKEN_SESSION_INVALID: "AUTH_TOKEN_SESSION_INVALID",
 } as const;
 
 export interface AuthenticationTokenInvalidSessionError {
@@ -1506,12 +1530,12 @@ export interface AuthenticationTokenInvalidSessionError {
   requestId: string;
 }
 
-export type AuthenticationTokenSessionMismatchErrorErrorCode = typeof AuthenticationTokenSessionMismatchErrorErrorCode[keyof typeof AuthenticationTokenSessionMismatchErrorErrorCode];
-
+export type AuthenticationTokenSessionMismatchErrorErrorCode =
+  (typeof AuthenticationTokenSessionMismatchErrorErrorCode)[keyof typeof AuthenticationTokenSessionMismatchErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthenticationTokenSessionMismatchErrorErrorCode = {
-  AUTH_TOKEN_SESSION_MISMATCH: 'AUTH_TOKEN_SESSION_MISMATCH',
+  AUTH_TOKEN_SESSION_MISMATCH: "AUTH_TOKEN_SESSION_MISMATCH",
 } as const;
 
 export interface AuthenticationTokenSessionMismatchError {
@@ -1521,12 +1545,12 @@ export interface AuthenticationTokenSessionMismatchError {
   requestId: string;
 }
 
-export type AuthenticationTokenInvalidTokenErorrErrorCode = typeof AuthenticationTokenInvalidTokenErorrErrorCode[keyof typeof AuthenticationTokenInvalidTokenErorrErrorCode];
-
+export type AuthenticationTokenInvalidTokenErorrErrorCode =
+  (typeof AuthenticationTokenInvalidTokenErorrErrorCode)[keyof typeof AuthenticationTokenInvalidTokenErorrErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthenticationTokenInvalidTokenErorrErrorCode = {
-  AUTH_TOKEN_INVALID: 'AUTH_TOKEN_INVALID',
+  AUTH_TOKEN_INVALID: "AUTH_TOKEN_INVALID",
 } as const;
 
 export interface AuthenticationTokenInvalidTokenErorr {
@@ -1536,12 +1560,12 @@ export interface AuthenticationTokenInvalidTokenErorr {
   requestId: string;
 }
 
-export type AuthenticationTokenExpiredErrorErrorCode = typeof AuthenticationTokenExpiredErrorErrorCode[keyof typeof AuthenticationTokenExpiredErrorErrorCode];
-
+export type AuthenticationTokenExpiredErrorErrorCode =
+  (typeof AuthenticationTokenExpiredErrorErrorCode)[keyof typeof AuthenticationTokenExpiredErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthenticationTokenExpiredErrorErrorCode = {
-  AUTH_TOKEN_EXPIRED: 'AUTH_TOKEN_EXPIRED',
+  AUTH_TOKEN_EXPIRED: "AUTH_TOKEN_EXPIRED",
 } as const;
 
 export interface AuthenticationTokenExpiredError {
@@ -1551,12 +1575,12 @@ export interface AuthenticationTokenExpiredError {
   requestId: string;
 }
 
-export type AccessTokenTypeErrorErrorCode = typeof AccessTokenTypeErrorErrorCode[keyof typeof AccessTokenTypeErrorErrorCode];
-
+export type AccessTokenTypeErrorErrorCode =
+  (typeof AccessTokenTypeErrorErrorCode)[keyof typeof AccessTokenTypeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AccessTokenTypeErrorErrorCode = {
-  AUTH_ACCESS_TOKEN_TYPE_INVALID: 'AUTH_ACCESS_TOKEN_TYPE_INVALID',
+  AUTH_ACCESS_TOKEN_TYPE_INVALID: "AUTH_ACCESS_TOKEN_TYPE_INVALID",
 } as const;
 
 export interface AccessTokenTypeError {
@@ -1566,12 +1590,12 @@ export interface AccessTokenTypeError {
   requestId: string;
 }
 
-export type MFATokenTypeErrorErrorCode = typeof MFATokenTypeErrorErrorCode[keyof typeof MFATokenTypeErrorErrorCode];
-
+export type MFATokenTypeErrorErrorCode =
+  (typeof MFATokenTypeErrorErrorCode)[keyof typeof MFATokenTypeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFATokenTypeErrorErrorCode = {
-  AUTH_MFA_TOKEN_TYPE_INVALID: 'AUTH_MFA_TOKEN_TYPE_INVALID',
+  AUTH_MFA_TOKEN_TYPE_INVALID: "AUTH_MFA_TOKEN_TYPE_INVALID",
 } as const;
 
 export interface MFATokenTypeError {
@@ -1581,12 +1605,12 @@ export interface MFATokenTypeError {
   requestId: string;
 }
 
-export type MFATokenInvalidEndpointErrorErrorCode = typeof MFATokenInvalidEndpointErrorErrorCode[keyof typeof MFATokenInvalidEndpointErrorErrorCode];
-
+export type MFATokenInvalidEndpointErrorErrorCode =
+  (typeof MFATokenInvalidEndpointErrorErrorCode)[keyof typeof MFATokenInvalidEndpointErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFATokenInvalidEndpointErrorErrorCode = {
-  AUTH_MFA_INVALID_ENDPOINT: 'AUTH_MFA_INVALID_ENDPOINT',
+  AUTH_MFA_INVALID_ENDPOINT: "AUTH_MFA_INVALID_ENDPOINT",
 } as const;
 
 export interface MFATokenInvalidEndpointError {
@@ -1596,12 +1620,12 @@ export interface MFATokenInvalidEndpointError {
   requestId: string;
 }
 
-export type MFATokenInvalidTokenPurposeErrorErrorCode = typeof MFATokenInvalidTokenPurposeErrorErrorCode[keyof typeof MFATokenInvalidTokenPurposeErrorErrorCode];
-
+export type MFATokenInvalidTokenPurposeErrorErrorCode =
+  (typeof MFATokenInvalidTokenPurposeErrorErrorCode)[keyof typeof MFATokenInvalidTokenPurposeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFATokenInvalidTokenPurposeErrorErrorCode = {
-  AUTH_TOKEN_INVALID_TYPE: 'AUTH_TOKEN_INVALID_TYPE',
+  AUTH_TOKEN_INVALID_TYPE: "AUTH_TOKEN_INVALID_TYPE",
 } as const;
 
 export interface MFATokenInvalidTokenPurposeError {
@@ -1611,12 +1635,12 @@ export interface MFATokenInvalidTokenPurposeError {
   requestId: string;
 }
 
-export type MFAForbiddenErrorErrorCode = typeof MFAForbiddenErrorErrorCode[keyof typeof MFAForbiddenErrorErrorCode];
-
+export type MFAForbiddenErrorErrorCode =
+  (typeof MFAForbiddenErrorErrorCode)[keyof typeof MFAForbiddenErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MFAForbiddenErrorErrorCode = {
-  ACCESS_FORBIDDEN: 'ACCESS_FORBIDDEN',
+  ACCESS_FORBIDDEN: "ACCESS_FORBIDDEN",
 } as const;
 
 export interface MFAForbiddenError {
@@ -1626,12 +1650,12 @@ export interface MFAForbiddenError {
   requestId: string;
 }
 
-export type MagicLinkTokenTypeErrorErrorCode = typeof MagicLinkTokenTypeErrorErrorCode[keyof typeof MagicLinkTokenTypeErrorErrorCode];
-
+export type MagicLinkTokenTypeErrorErrorCode =
+  (typeof MagicLinkTokenTypeErrorErrorCode)[keyof typeof MagicLinkTokenTypeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MagicLinkTokenTypeErrorErrorCode = {
-  AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID: 'AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID',
+  AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID: "AUTH_MAGIC_LINK_TOKEN_TYPE_INVALID",
 } as const;
 
 export interface MagicLinkTokenTypeError {
@@ -1641,12 +1665,12 @@ export interface MagicLinkTokenTypeError {
   requestId: string;
 }
 
-export type RefreshTokenTypeErrorErrorCode = typeof RefreshTokenTypeErrorErrorCode[keyof typeof RefreshTokenTypeErrorErrorCode];
-
+export type RefreshTokenTypeErrorErrorCode =
+  (typeof RefreshTokenTypeErrorErrorCode)[keyof typeof RefreshTokenTypeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RefreshTokenTypeErrorErrorCode = {
-  AUTH_REFRESH_TOKEN_TYPE_INVALID: 'AUTH_REFRESH_TOKEN_TYPE_INVALID',
+  AUTH_REFRESH_TOKEN_TYPE_INVALID: "AUTH_REFRESH_TOKEN_TYPE_INVALID",
 } as const;
 
 export interface RefreshTokenTypeError {
@@ -1656,12 +1680,12 @@ export interface RefreshTokenTypeError {
   requestId: string;
 }
 
-export type RefreshTokenInvalidSessionErrorErrorCode = typeof RefreshTokenInvalidSessionErrorErrorCode[keyof typeof RefreshTokenInvalidSessionErrorErrorCode];
-
+export type RefreshTokenInvalidSessionErrorErrorCode =
+  (typeof RefreshTokenInvalidSessionErrorErrorCode)[keyof typeof RefreshTokenInvalidSessionErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RefreshTokenInvalidSessionErrorErrorCode = {
-  AUTH_REFRESH_TOKEN_SESSION_INVALID: 'AUTH_REFRESH_TOKEN_SESSION_INVALID',
+  AUTH_REFRESH_TOKEN_SESSION_INVALID: "AUTH_REFRESH_TOKEN_SESSION_INVALID",
 } as const;
 
 export interface RefreshTokenInvalidSessionError {
@@ -1671,12 +1695,12 @@ export interface RefreshTokenInvalidSessionError {
   requestId: string;
 }
 
-export type RefreshTokenExpiredSessionErrorErrorCode = typeof RefreshTokenExpiredSessionErrorErrorCode[keyof typeof RefreshTokenExpiredSessionErrorErrorCode];
-
+export type RefreshTokenExpiredSessionErrorErrorCode =
+  (typeof RefreshTokenExpiredSessionErrorErrorCode)[keyof typeof RefreshTokenExpiredSessionErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RefreshTokenExpiredSessionErrorErrorCode = {
-  AUTH_REFRESH_TOKEN_SESSION_EXPIRED: 'AUTH_REFRESH_TOKEN_SESSION_EXPIRED',
+  AUTH_REFRESH_TOKEN_SESSION_EXPIRED: "AUTH_REFRESH_TOKEN_SESSION_EXPIRED",
 } as const;
 
 export interface RefreshTokenExpiredSessionError {
@@ -1686,12 +1710,12 @@ export interface RefreshTokenExpiredSessionError {
   requestId: string;
 }
 
-export type MfaAlreadyEnabledErrorErrorCode = typeof MfaAlreadyEnabledErrorErrorCode[keyof typeof MfaAlreadyEnabledErrorErrorCode];
-
+export type MfaAlreadyEnabledErrorErrorCode =
+  (typeof MfaAlreadyEnabledErrorErrorCode)[keyof typeof MfaAlreadyEnabledErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MfaAlreadyEnabledErrorErrorCode = {
-  MFA_ALREADY_ENABLED: 'MFA_ALREADY_ENABLED',
+  MFA_ALREADY_ENABLED: "MFA_ALREADY_ENABLED",
 } as const;
 
 export interface MfaAlreadyEnabledError {
@@ -1701,12 +1725,12 @@ export interface MfaAlreadyEnabledError {
   requestId: string;
 }
 
-export type MfaAlreadyDisabledErrorErrorCode = typeof MfaAlreadyDisabledErrorErrorCode[keyof typeof MfaAlreadyDisabledErrorErrorCode];
-
+export type MfaAlreadyDisabledErrorErrorCode =
+  (typeof MfaAlreadyDisabledErrorErrorCode)[keyof typeof MfaAlreadyDisabledErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MfaAlreadyDisabledErrorErrorCode = {
-  MFA_ALREADY_DISABLED: 'MFA_ALREADY_DISABLED',
+  MFA_ALREADY_DISABLED: "MFA_ALREADY_DISABLED",
 } as const;
 
 export interface MfaAlreadyDisabledError {
@@ -1716,12 +1740,12 @@ export interface MfaAlreadyDisabledError {
   requestId: string;
 }
 
-export type MfaTemporarySecretExpiredErrorErrorCode = typeof MfaTemporarySecretExpiredErrorErrorCode[keyof typeof MfaTemporarySecretExpiredErrorErrorCode];
-
+export type MfaTemporarySecretExpiredErrorErrorCode =
+  (typeof MfaTemporarySecretExpiredErrorErrorCode)[keyof typeof MfaTemporarySecretExpiredErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MfaTemporarySecretExpiredErrorErrorCode = {
-  MFA_EXPIRED_TEMP_SECRET: 'MFA_EXPIRED_TEMP_SECRET',
+  MFA_EXPIRED_TEMP_SECRET: "MFA_EXPIRED_TEMP_SECRET",
 } as const;
 
 export interface MfaTemporarySecretExpiredError {
@@ -1731,12 +1755,12 @@ export interface MfaTemporarySecretExpiredError {
   requestId: string;
 }
 
-export type MfaInvalidVerificationCodeErrorErrorCode = typeof MfaInvalidVerificationCodeErrorErrorCode[keyof typeof MfaInvalidVerificationCodeErrorErrorCode];
-
+export type MfaInvalidVerificationCodeErrorErrorCode =
+  (typeof MfaInvalidVerificationCodeErrorErrorCode)[keyof typeof MfaInvalidVerificationCodeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MfaInvalidVerificationCodeErrorErrorCode = {
-  MFA_INVALID_VERIFICATION_CODE: 'MFA_INVALID_VERIFICATION_CODE',
+  MFA_INVALID_VERIFICATION_CODE: "MFA_INVALID_VERIFICATION_CODE",
 } as const;
 
 export interface MfaInvalidVerificationCodeError {
@@ -1746,12 +1770,12 @@ export interface MfaInvalidVerificationCodeError {
   requestId: string;
 }
 
-export type MfaNotEnabledErrorErrorCode = typeof MfaNotEnabledErrorErrorCode[keyof typeof MfaNotEnabledErrorErrorCode];
-
+export type MfaNotEnabledErrorErrorCode =
+  (typeof MfaNotEnabledErrorErrorCode)[keyof typeof MfaNotEnabledErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MfaNotEnabledErrorErrorCode = {
-  MFA_NOT_ENABLED: 'MFA_NOT_ENABLED',
+  MFA_NOT_ENABLED: "MFA_NOT_ENABLED",
 } as const;
 
 export interface MfaNotEnabledError {
@@ -1761,12 +1785,12 @@ export interface MfaNotEnabledError {
   requestId: string;
 }
 
-export type InvalidBackupCodeErrorErrorCode = typeof InvalidBackupCodeErrorErrorCode[keyof typeof InvalidBackupCodeErrorErrorCode];
-
+export type InvalidBackupCodeErrorErrorCode =
+  (typeof InvalidBackupCodeErrorErrorCode)[keyof typeof InvalidBackupCodeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const InvalidBackupCodeErrorErrorCode = {
-  BACKUPCODE_INVALID_CODE: 'BACKUPCODE_INVALID_CODE',
+  BACKUPCODE_INVALID_CODE: "BACKUPCODE_INVALID_CODE",
 } as const;
 
 export interface InvalidBackupCodeError {
@@ -1776,12 +1800,12 @@ export interface InvalidBackupCodeError {
   requestId: string;
 }
 
-export type OIDCSessionNotFoundErrorErrorCode = typeof OIDCSessionNotFoundErrorErrorCode[keyof typeof OIDCSessionNotFoundErrorErrorCode];
-
+export type OIDCSessionNotFoundErrorErrorCode =
+  (typeof OIDCSessionNotFoundErrorErrorCode)[keyof typeof OIDCSessionNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OIDCSessionNotFoundErrorErrorCode = {
-  OIDC_SESSION_NOT_FOUND: 'OIDC_SESSION_NOT_FOUND',
+  OIDC_SESSION_NOT_FOUND: "OIDC_SESSION_NOT_FOUND",
 } as const;
 
 export interface OIDCSessionNotFoundError {
@@ -1791,12 +1815,12 @@ export interface OIDCSessionNotFoundError {
   requestId: string;
 }
 
-export type OIDCSessionExpiredErrorErrorCode = typeof OIDCSessionExpiredErrorErrorCode[keyof typeof OIDCSessionExpiredErrorErrorCode];
-
+export type OIDCSessionExpiredErrorErrorCode =
+  (typeof OIDCSessionExpiredErrorErrorCode)[keyof typeof OIDCSessionExpiredErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OIDCSessionExpiredErrorErrorCode = {
-  OIDC_SESSION_CONSUMED: 'OIDC_SESSION_CONSUMED',
+  OIDC_SESSION_CONSUMED: "OIDC_SESSION_CONSUMED",
 } as const;
 
 export interface OIDCSessionExpiredError {
@@ -1806,12 +1830,12 @@ export interface OIDCSessionExpiredError {
   requestId: string;
 }
 
-export type OIDCSessionConsumedErrorErrorCode = typeof OIDCSessionConsumedErrorErrorCode[keyof typeof OIDCSessionConsumedErrorErrorCode];
-
+export type OIDCSessionConsumedErrorErrorCode =
+  (typeof OIDCSessionConsumedErrorErrorCode)[keyof typeof OIDCSessionConsumedErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OIDCSessionConsumedErrorErrorCode = {
-  OIDC_SESSION_CONSUMED: 'OIDC_SESSION_CONSUMED',
+  OIDC_SESSION_CONSUMED: "OIDC_SESSION_CONSUMED",
 } as const;
 
 export interface OIDCSessionConsumedError {
@@ -1821,12 +1845,12 @@ export interface OIDCSessionConsumedError {
   requestId: string;
 }
 
-export type OIDCFailedAuthenticationErrorErrorCode = typeof OIDCFailedAuthenticationErrorErrorCode[keyof typeof OIDCFailedAuthenticationErrorErrorCode];
-
+export type OIDCFailedAuthenticationErrorErrorCode =
+  (typeof OIDCFailedAuthenticationErrorErrorCode)[keyof typeof OIDCFailedAuthenticationErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OIDCFailedAuthenticationErrorErrorCode = {
-  OIDC_FAILED_AUTHENTIFICATION: 'OIDC_FAILED_AUTHENTIFICATION',
+  OIDC_FAILED_AUTHENTIFICATION: "OIDC_FAILED_AUTHENTIFICATION",
 } as const;
 
 export interface OIDCFailedAuthenticationError {
@@ -1836,12 +1860,12 @@ export interface OIDCFailedAuthenticationError {
   requestId: string;
 }
 
-export type PasskeyChallengeSessionNotFoundErrorErrorCode = typeof PasskeyChallengeSessionNotFoundErrorErrorCode[keyof typeof PasskeyChallengeSessionNotFoundErrorErrorCode];
-
+export type PasskeyChallengeSessionNotFoundErrorErrorCode =
+  (typeof PasskeyChallengeSessionNotFoundErrorErrorCode)[keyof typeof PasskeyChallengeSessionNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyChallengeSessionNotFoundErrorErrorCode = {
-  PASSKEY_CHALLENGE_SESSION_INVALID: 'PASSKEY_CHALLENGE_SESSION_INVALID',
+  PASSKEY_CHALLENGE_SESSION_INVALID: "PASSKEY_CHALLENGE_SESSION_INVALID",
 } as const;
 
 export interface PasskeyChallengeSessionNotFoundError {
@@ -1851,12 +1875,12 @@ export interface PasskeyChallengeSessionNotFoundError {
   requestId: string;
 }
 
-export type PasskeyChallengeSessionConsumedErrorErrorCode = typeof PasskeyChallengeSessionConsumedErrorErrorCode[keyof typeof PasskeyChallengeSessionConsumedErrorErrorCode];
-
+export type PasskeyChallengeSessionConsumedErrorErrorCode =
+  (typeof PasskeyChallengeSessionConsumedErrorErrorCode)[keyof typeof PasskeyChallengeSessionConsumedErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyChallengeSessionConsumedErrorErrorCode = {
-  PASSKEY_CHALLENGE_SESSION_CONSUMED: 'PASSKEY_CHALLENGE_SESSION_CONSUMED',
+  PASSKEY_CHALLENGE_SESSION_CONSUMED: "PASSKEY_CHALLENGE_SESSION_CONSUMED",
 } as const;
 
 export interface PasskeyChallengeSessionConsumedError {
@@ -1866,12 +1890,13 @@ export interface PasskeyChallengeSessionConsumedError {
   requestId: string;
 }
 
-export type PasskeyChallengeSessionInvalidPurposeErrorErrorCode = typeof PasskeyChallengeSessionInvalidPurposeErrorErrorCode[keyof typeof PasskeyChallengeSessionInvalidPurposeErrorErrorCode];
-
+export type PasskeyChallengeSessionInvalidPurposeErrorErrorCode =
+  (typeof PasskeyChallengeSessionInvalidPurposeErrorErrorCode)[keyof typeof PasskeyChallengeSessionInvalidPurposeErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyChallengeSessionInvalidPurposeErrorErrorCode = {
-  PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE: 'PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE',
+  PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE:
+    "PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE",
 } as const;
 
 export interface PasskeyChallengeSessionInvalidPurposeError {
@@ -1881,12 +1906,12 @@ export interface PasskeyChallengeSessionInvalidPurposeError {
   requestId: string;
 }
 
-export type PasskeyChallengeSessionExpiredErrorErrorCode = typeof PasskeyChallengeSessionExpiredErrorErrorCode[keyof typeof PasskeyChallengeSessionExpiredErrorErrorCode];
-
+export type PasskeyChallengeSessionExpiredErrorErrorCode =
+  (typeof PasskeyChallengeSessionExpiredErrorErrorCode)[keyof typeof PasskeyChallengeSessionExpiredErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyChallengeSessionExpiredErrorErrorCode = {
-  PASSKEY_CHALLENGE_SESSION__EXPIRED: 'PASSKEY_CHALLENGE_SESSION__EXPIRED',
+  PASSKEY_CHALLENGE_SESSION__EXPIRED: "PASSKEY_CHALLENGE_SESSION__EXPIRED",
 } as const;
 
 export interface PasskeyChallengeSessionExpiredError {
@@ -1896,12 +1921,12 @@ export interface PasskeyChallengeSessionExpiredError {
   requestId: string;
 }
 
-export type PasskeyChallengeVerificationErrorErrorCode = typeof PasskeyChallengeVerificationErrorErrorCode[keyof typeof PasskeyChallengeVerificationErrorErrorCode];
-
+export type PasskeyChallengeVerificationErrorErrorCode =
+  (typeof PasskeyChallengeVerificationErrorErrorCode)[keyof typeof PasskeyChallengeVerificationErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyChallengeVerificationErrorErrorCode = {
-  PASSKEY_CHALENGE_VERIFICATION_ERROR: 'PASSKEY_CHALENGE_VERIFICATION_ERROR',
+  PASSKEY_CHALENGE_VERIFICATION_ERROR: "PASSKEY_CHALENGE_VERIFICATION_ERROR",
 } as const;
 
 export interface PasskeyChallengeVerificationError {
@@ -1911,12 +1936,12 @@ export interface PasskeyChallengeVerificationError {
   requestId: string;
 }
 
-export type PasskeyNotFoundErrorErrorCode = typeof PasskeyNotFoundErrorErrorCode[keyof typeof PasskeyNotFoundErrorErrorCode];
-
+export type PasskeyNotFoundErrorErrorCode =
+  (typeof PasskeyNotFoundErrorErrorCode)[keyof typeof PasskeyNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PasskeyNotFoundErrorErrorCode = {
-  PASSKEY_NOT_FOUND: 'PASSKEY_NOT_FOUND',
+  PASSKEY_NOT_FOUND: "PASSKEY_NOT_FOUND",
 } as const;
 
 export interface PasskeyNotFoundError {
@@ -1926,12 +1951,12 @@ export interface PasskeyNotFoundError {
   requestId: string;
 }
 
-export type UserSessionNotFoundErrorErrorCode = typeof UserSessionNotFoundErrorErrorCode[keyof typeof UserSessionNotFoundErrorErrorCode];
-
+export type UserSessionNotFoundErrorErrorCode =
+  (typeof UserSessionNotFoundErrorErrorCode)[keyof typeof UserSessionNotFoundErrorErrorCode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UserSessionNotFoundErrorErrorCode = {
-  AUTH_SESSION_NOT_FOUND: 'AUTH_SESSION_NOT_FOUND',
+  AUTH_SESSION_NOT_FOUND: "AUTH_SESSION_NOT_FOUND",
 } as const;
 
 export interface UserSessionNotFoundError {
@@ -1941,23 +1966,66 @@ export interface UserSessionNotFoundError {
   requestId: string;
 }
 
-export type InvalidAccessJwtTokenResponse = AuthenticationTokenNotFoundError | AccessTokenTypeError | AuthenticationTokenUserNotFoundError | AuthenticationTokenInvalidSessionError | AuthenticationTokenSessionMismatchError | AuthenticationTokenInvalidTokenErorr | AuthenticationTokenExpiredError;
+export type InvalidAccessJwtTokenResponse =
+  | AuthenticationTokenNotFoundError
+  | AccessTokenTypeError
+  | AuthenticationTokenUserNotFoundError
+  | AuthenticationTokenInvalidSessionError
+  | AuthenticationTokenSessionMismatchError
+  | AuthenticationTokenInvalidTokenErorr
+  | AuthenticationTokenExpiredError;
 
-export type InvalidMFAJwtTokenResponse = AuthenticationTokenNotFoundError | MFATokenTypeError | MFATokenInvalidEndpointError | MFATokenInvalidTokenPurposeError | AuthenticationTokenUserNotFoundError | AuthenticationTokenInvalidSessionError | AuthenticationTokenSessionMismatchError | AuthenticationTokenInvalidTokenErorr | AuthenticationTokenExpiredError;
+export type InvalidMFAJwtTokenResponse =
+  | AuthenticationTokenNotFoundError
+  | MFATokenTypeError
+  | MFATokenInvalidEndpointError
+  | MFATokenInvalidTokenPurposeError
+  | AuthenticationTokenUserNotFoundError
+  | AuthenticationTokenInvalidSessionError
+  | AuthenticationTokenSessionMismatchError
+  | AuthenticationTokenInvalidTokenErorr
+  | AuthenticationTokenExpiredError;
 
-export type InvalidMagicLinkJwtTokenResponse = AuthenticationTokenNotFoundError | MagicLinkTokenTypeError | AuthenticationTokenUserNotFoundError | AuthenticationTokenInvalidSessionError | AuthenticationTokenSessionMismatchError | AuthenticationTokenInvalidTokenErorr | AuthenticationTokenExpiredError;
+export type InvalidMagicLinkJwtTokenResponse =
+  | AuthenticationTokenNotFoundError
+  | MagicLinkTokenTypeError
+  | AuthenticationTokenUserNotFoundError
+  | AuthenticationTokenInvalidSessionError
+  | AuthenticationTokenSessionMismatchError
+  | AuthenticationTokenInvalidTokenErorr
+  | AuthenticationTokenExpiredError;
 
-export type InvalidRefreshJwtTokenResponse = RefreshTokenInvalidSessionError | AuthenticationTokenNotFoundError | RefreshTokenTypeError | AuthenticationTokenUserNotFoundError | RefreshTokenExpiredSessionError | AuthenticationTokenSessionMismatchError | AuthenticationTokenInvalidTokenErorr | AuthenticationTokenExpiredError;
+export type InvalidRefreshJwtTokenResponse =
+  | RefreshTokenInvalidSessionError
+  | AuthenticationTokenNotFoundError
+  | RefreshTokenTypeError
+  | AuthenticationTokenUserNotFoundError
+  | RefreshTokenExpiredSessionError
+  | AuthenticationTokenSessionMismatchError
+  | AuthenticationTokenInvalidTokenErorr
+  | AuthenticationTokenExpiredError;
 
-export type AuthSignUpMutationFn400 = EmailAlreadyExistsError | InvalidRequestBodyValidationError;
+export type AuthSignUpMutationFn400 =
+  | EmailAlreadyExistsError
+  | InvalidRequestBodyValidationError;
 
-export type AuthSignInMutationFn200 = LoginEmailVerificationPendingResponse | MFAPendingResponse | LoginSuccessResponse;
+export type AuthSignInMutationFn200 =
+  | LoginEmailVerificationPendingResponse
+  | MFAPendingResponse
+  | LoginSuccessResponse;
 
-export type AuthPasswordForgotMutationFn200 = MFAPendingResponse | ForgotPasswordSuccessResponse;
+export type AuthPasswordForgotMutationFn200 =
+  | MFAPendingResponse
+  | ForgotPasswordSuccessResponse;
 
-export type AuthPasswordResetMutationFn400 = VerificationCodeExpiredError | VerificationCodeConsumedError | PasswordReuseNotAllowed;
+export type AuthPasswordResetMutationFn400 =
+  | VerificationCodeExpiredError
+  | VerificationCodeConsumedError
+  | PasswordReuseNotAllowed;
 
-export type AuthPasswordResetMutationFn404 = VerificationCodeNotFoundError | UserNotFoundError;
+export type AuthPasswordResetMutationFn404 =
+  | VerificationCodeNotFoundError
+  | UserNotFoundError;
 
 export type AuthResendEmailMutationFnBody = {
   email: string;
@@ -1971,19 +2039,23 @@ export type AuthEmailVerifyMutationFnBody = {
   code: string;
 };
 
-export type AuthEmailVerifyMutationFn400 = VerificationCodeExpiredError | VerificationCodeConsumedError;
+export type AuthEmailVerifyMutationFn400 =
+  | VerificationCodeExpiredError
+  | VerificationCodeConsumedError;
 
 export type MfaVerifyMutationFnBody = {
   /** The 6-digit one-time password (OTP) generated by the user's authenticator app or received via the selected MFA method.
- */
+   */
   code: string;
 };
 
-export type MfaVerifyMutationFn400 = MfaTemporarySecretExpiredError | MfaInvalidVerificationCodeError;
+export type MfaVerifyMutationFn400 =
+  | MfaTemporarySecretExpiredError
+  | MfaInvalidVerificationCodeError;
 
 export type MfaRevokeMutationFnBody = {
   /** The 6-digit one-time password (OTP) generated by the user's authenticator app.   Must be valid at the time of request.
- */
+   */
   code: string;
 };
 
@@ -1999,19 +2071,23 @@ export type MfaBackupCodeLoginMutationFnBody = {
 
 export type MfaVerifyLoginMutationFnBody = {
   /** The 6-digit one-time password (OTP) generated by the user's authenticator app.   Must be valid at the time of request.
- */
+   */
   code: string;
 };
 
-export type MfaVerifyLoginMutationFn400 = MfaNotEnabledError | MfaInvalidVerificationCodeError;
+export type MfaVerifyLoginMutationFn400 =
+  | MfaNotEnabledError
+  | MfaInvalidVerificationCodeError;
 
 export type MfaVerifyForgotPasswordMutationFnBody = {
   /** The 6-digit one-time password (OTP) generated by the user's authenticator app.   Must be valid at the time of request.
- */
+   */
   code: string;
 };
 
-export type MfaVerifyForgotPasswordMutationFn400 = MfaNotEnabledError | MfaInvalidVerificationCodeError;
+export type MfaVerifyForgotPasswordMutationFn400 =
+  | MfaNotEnabledError
+  | MfaInvalidVerificationCodeError;
 
 export type PasskeySignUpInitMutationFnBody = {
   /** The display name of the user registering a passkey. */
@@ -2020,39 +2096,72 @@ export type PasskeySignUpInitMutationFnBody = {
   email: string;
 };
 
-export type PasskeySignUpVerifyMutationFn401 = PasskeyChallengeSessionNotFoundError | PasskeyChallengeSessionExpiredError | PasskeyChallengeVerificationError;
+export type PasskeySignUpVerifyMutationFn401 =
+  | PasskeyChallengeSessionNotFoundError
+  | PasskeyChallengeSessionExpiredError
+  | PasskeyChallengeVerificationError;
 
-export type PasskeySignInVerifyMutationFn200 = LoginEmailVerificationPendingResponse | LoginSuccessResponse;
+export type PasskeySignInVerifyMutationFn200 =
+  | LoginEmailVerificationPendingResponse
+  | LoginSuccessResponse;
 
-export type PasskeySignInVerifyMutationFn401 = PasskeyChallengeSessionNotFoundError | PasskeyChallengeSessionExpiredError | PasskeyChallengeVerificationError | PasskeyNotFoundError;
+export type PasskeySignInVerifyMutationFn401 =
+  | PasskeyChallengeSessionNotFoundError
+  | PasskeyChallengeSessionExpiredError
+  | PasskeyChallengeVerificationError
+  | PasskeyNotFoundError;
 
-export type PasskeyAddPasskeyByUserIdVerifyMutationFn401 = PasskeyChallengeSessionNotFoundError | PasskeyChallengeSessionExpiredError | PasskeyChallengeVerificationError | PasskeyNotFoundError | AuthenticationTokenNotFoundError | AccessTokenTypeError | AuthenticationTokenUserNotFoundError | AuthenticationTokenInvalidSessionError | AuthenticationTokenSessionMismatchError | AuthenticationTokenInvalidTokenErorr | AuthenticationTokenExpiredError;
+export type PasskeyAddPasskeyByUserIdVerifyMutationFn401 =
+  | PasskeyChallengeSessionNotFoundError
+  | PasskeyChallengeSessionExpiredError
+  | PasskeyChallengeVerificationError
+  | PasskeyNotFoundError
+  | AuthenticationTokenNotFoundError
+  | AccessTokenTypeError
+  | AuthenticationTokenUserNotFoundError
+  | AuthenticationTokenInvalidSessionError
+  | AuthenticationTokenSessionMismatchError
+  | AuthenticationTokenInvalidTokenErorr
+  | AuthenticationTokenExpiredError;
 
-export type PasskeyRemovePasskeyByIdVerifyMutationFn401 = PasskeyChallengeSessionNotFoundError | PasskeyChallengeSessionExpiredError | PasskeyChallengeVerificationError | AuthenticationTokenNotFoundError | AccessTokenTypeError | AuthenticationTokenUserNotFoundError | AuthenticationTokenInvalidSessionError | AuthenticationTokenSessionMismatchError | AuthenticationTokenInvalidTokenErorr | AuthenticationTokenExpiredError;
+export type PasskeyRemovePasskeyByIdVerifyMutationFn401 =
+  | PasskeyChallengeSessionNotFoundError
+  | PasskeyChallengeSessionExpiredError
+  | PasskeyChallengeVerificationError
+  | AuthenticationTokenNotFoundError
+  | AccessTokenTypeError
+  | AuthenticationTokenUserNotFoundError
+  | AuthenticationTokenInvalidSessionError
+  | AuthenticationTokenSessionMismatchError
+  | AuthenticationTokenInvalidTokenErorr
+  | AuthenticationTokenExpiredError;
 
 export type OidcGoogleCallbackGetQueryFnParams = {
-/**
- * Authorization code returned by Google
- */
-code: string;
-/**
- * Unique state generated during the authorization request
- */
-state: string;
+  /**
+   * Authorization code returned by Google
+   */
+  code: string;
+  /**
+   * Unique state generated during the authorization request
+   */
+  state: string;
 };
 
-export type OidcGoogleCallbackGetQueryFn400 = OIDCSessionExpiredError | OIDCSessionConsumedError;
+export type OidcGoogleCallbackGetQueryFn400 =
+  | OIDCSessionExpiredError
+  | OIDCSessionConsumedError;
 
 export type OidcGithubCallbackGetQueryFnParams = {
-/**
- * Authorization code returned by Github
- */
-code: string;
-/**
- * Unique state generated during the authorization request
- */
-state: string;
+  /**
+   * Authorization code returned by Github
+   */
+  code: string;
+  /**
+   * Unique state generated during the authorization request
+   */
+  state: string;
 };
 
-export type OidcGithubCallbackGetQueryFn400 = OIDCSessionExpiredError | OIDCSessionConsumedError;
-
+export type OidcGithubCallbackGetQueryFn400 =
+  | OIDCSessionExpiredError
+  | OIDCSessionConsumedError;

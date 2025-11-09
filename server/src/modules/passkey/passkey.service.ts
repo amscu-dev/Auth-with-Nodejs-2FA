@@ -56,8 +56,15 @@ export default class PasskeyService {
         ErrorCode.AUTH_USER_NOT_FOUND
       );
     }
-    if (user.isEmailVerified) return true;
-    return false;
+    if (user.isEmailVerified)
+      return {
+        isCompletedSignUp: true,
+        email: user.email,
+      };
+    return {
+      isCompletedSignUp: false,
+      email: user.email,
+    };
   }
 
   public async generatePasskeySignUpSession(

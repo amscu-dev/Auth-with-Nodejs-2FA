@@ -68,6 +68,7 @@ export class MagicLinkService {
     const user = await UserModel.findOne({
       email,
     });
+    console.log(user);
     if (!user) {
       throw new NotFoundException(
         "User with the specified email was not found.",

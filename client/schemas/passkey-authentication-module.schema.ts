@@ -8,6 +8,33 @@
  */
 import * as zod from "zod";
 
+export const passkeySignInInitResponseBody = zod.object({
+  success: zod.boolean(),
+  statusCode: zod.number(),
+  message: zod.string().min(1),
+  metadata: zod.object({
+    requestId: zod.string(),
+    timestamp: zod.iso.datetime(),
+  }),
+  data: zod.object({
+    publicKeyCredentialRequestOptions: zod.object({
+      allowCredentials: zod.array(
+        zod.object({
+          id: zod.string().min(1),
+          type: zod.enum(["public-key"]),
+          transports: zod.array(
+            zod.enum(["ble", "hybrid", "internal", "nfc", "usb"])
+          ),
+        })
+      ),
+      challenge: zod.string().min(1),
+      rpId: zod.string().min(1),
+      timeout: zod.number(),
+      userVerification: zod.enum(["required"]),
+    }),
+  }),
+});
+
 export const passkeySignUpInitResponseBody = zod.object({
   success: zod.boolean(),
   statusCode: zod.number(),

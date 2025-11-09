@@ -111,17 +111,18 @@ export class PasskeyController {
         passkeyAuthenticationResponseJSONSchema.parse(req.body);
 
       // ! 02. Confirm that user verified his email
-      const isCompletedSignUP = await this.passkeyService.confirmSignUp(
-        authenticationResponse.response.userHandle
-      );
-      if (!isCompletedSignUP) {
+      const { isCompletedSignUp, email } =
+        await this.passkeyService.confirmSignUp(
+          authenticationResponse.response.userHandle
+        );
+      if (!isCompletedSignUp) {
         return res.status(HTTPSTATUS.OK).json(
           new ApiResponse({
             success: true,
             statusCode: HTTPSTATUS.OK,
             message:
               "Authentication pending: your email address has not yet been verified. Please confirm your email to proceed.",
-            data: { nextStep: LOGIN.CONFIRM_SIGN_UP },
+            data: { nextStep: LOGIN.CONFIRM_SIGN_UP, email },
             metadata: {
               requestId: req.requestId,
             },

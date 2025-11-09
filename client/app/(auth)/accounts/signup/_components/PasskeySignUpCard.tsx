@@ -59,9 +59,9 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
     },
   });
   const onSubmit = async (
-    data: z.infer<typeof passkeySignUpInitMutationFnBody>
+    formData: z.infer<typeof passkeySignUpInitMutationFnBody>
   ) => {
-    await signUpInit(data, {
+    await signUpInit(formData, {
       onError: (err) => {
         if (err.response) {
           if (
@@ -91,10 +91,10 @@ const PasskeySignUpCard: React.FC<PasskeySignUpCardProps> = ({
             });
 
             await signUpVerify(credential, {
-              onSuccess: (data) => {
+              onSuccess: () => {
                 setIsRedirecting(true);
                 router.push(
-                  `/accounts/signup/verify-email?email=${encodeURIComponent(data.data.user?.email || "")}&name=${encodeURIComponent(data.data.user?.name || "")}`
+                  `/accounts/signup/verify-email?email=${encodeURIComponent(formData.email)}`
                 );
               },
             });

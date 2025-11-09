@@ -1,6 +1,6 @@
 import { authCheckEmailMutationFnBody } from "@/schemas/password-authentication-module.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import client from "@/api/index";
 import z from "zod";
@@ -20,9 +20,14 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 import { RotatingLines } from "react-loader-spinner";
 import { GoPasskeyFill } from "react-icons/go";
 import Link from "next/link";
+import { RiLockPasswordLine } from "react-icons/ri";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { passkeySignInInitResponseBody } from "@/schemas/passkey-authentication-module.schema";
+import { startAuthentication, WebAuthnError } from "@simplewebauthn/browser";
+import { hasUserHandle } from "@/lib/helpers";
 
 interface MainSignInCardProps {
   handleSignInMethod: (method: string) => void;
@@ -51,6 +56,10 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
     isPending: isPendingVerifyPasskey,
   } = client.Passkey.SignInVerify.useMutation();
 
+  // REDIRECT STATE
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+  const [isAuthenticatingPasskey, setIsAuthenticatingPasskey] =
+    useState<boolean>(false);
   // FORM STATE
   const form = useForm<z.infer<typeof authCheckEmailMutationFnBody>>({
     resolver: zodResolver(authCheckEmailMutationFnBody),
@@ -67,10 +76,13 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
     isPendingCheckEmail ||
     isPendingMagicLink ||
     isPendingInitPasskey ||
-    isPendingVerifyPasskey;
+    isPendingVerifyPasskey ||
+    isRedirecting ||
+    isAuthenticatingPasskey;
 
+  // FORM SUBMISSION
   const onSubmit = async (
-    data: z.infer<typeof authCheckEmailMutationFnBody>,
+    formData: z.infer<typeof authCheckEmailMutationFnBody>,
     e: React.FormEvent<HTMLFormElement>
   ) => {
     // EVENT CAST
@@ -80,9 +92,9 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
     const buttonType = submitter.name;
     // HANDLING DIFERENT CASES
     if (buttonType === "password") {
-      await checkEmail(data, {
+      await checkEmail(formData, {
         onSuccess: (data) => {
-          if (data.data.isNewEmail) {
+          if (!data.data.isNewEmail) {
             handleEmailAddress(data.data.email);
             handleSignInMethod("password");
           } else {
@@ -90,6 +102,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
               type: "custom",
               message: "Seems you do not have an account.",
             });
+            toast.error("User with the specified email was not found.");
             requestAnimationFrame(() => {
               form.setFocus("email");
             });
@@ -98,7 +111,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
       });
     }
     if (buttonType === "magic") {
-      await authenticateMagicLink(data, {
+      await authenticateMagicLink(formData, {
         onError: (err) => {
           if (err.response?.data.errorCode === "AUTH_USER_NOT_FOUND") {
             form.setError("email", {
@@ -112,11 +125,89 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
         },
         onSuccess: (data) => {
           if ((data.data.nextStep = "CHECK_EMAIL_FOR_MAGIC_LINK")) {
-            router.push("/accounts/magic/email-sent");
+            router.push(
+              `/accounts/magic/email-sent?email=${encodeURIComponent(formData.email)}`
+            );
           }
         },
       });
     }
+  };
+
+  // GOOGLE AUTH LOGIC
+  const handleGoogleAuth = async () => {
+    await authenticateGoogle(undefined, {
+      onSuccess: () => {
+        setIsRedirecting(true);
+        toast.loading("You will be redirected to Google for authentication…");
+      },
+    });
+  };
+
+  // GITHUB AUTH LOGIC
+  const handleGithubAuth = async () => {
+    await authenticateGithub(undefined, {
+      onSuccess: () => {
+        setIsRedirecting(true);
+        toast.loading("You will be redirected to Github for authentication…");
+      },
+    });
+  };
+
+  // PASSKEY AUTH LOGINC
+  const handlePasskeyAuth = async () => {
+    await authenticateInitPasskey(undefined, {
+      onSuccess: async (data) => {
+        try {
+          const {
+            data: { publicKeyCredentialRequestOptions },
+          } = passkeySignInInitResponseBody.parse(data);
+          try {
+            setIsAuthenticatingPasskey(true);
+            const credential = await startAuthentication({
+              optionsJSON: {
+                ...publicKeyCredentialRequestOptions,
+              },
+            });
+            if (!hasUserHandle(credential)) {
+              toast.error(
+                "Unable to retrieve the user identifier. Please try again or sign in using your original authentication method."
+              );
+              return;
+            }
+            await authenticateVerifyPasskey(credential, {
+              onSuccess: (verifyData) => {
+                setIsRedirecting(true);
+                if (verifyData.data.nextStep === "OK") {
+                  router.replace("/home");
+                }
+                if (verifyData.data.nextStep === "CONFIRM_SIGN_UP") {
+                  router.push(
+                    `/accounts/signup/verify-email?email=${encodeURIComponent(verifyData.data.email)}`
+                  );
+                }
+              },
+            });
+          } catch (error) {
+            setIsRedirecting(false);
+            setIsAuthenticatingPasskey(false);
+            if (error instanceof WebAuthnError) {
+              toast.error(error.message);
+              console.error(error);
+            } else {
+              toast.error(
+                "There was an error processing your request please try again later"
+              );
+            }
+          }
+        } catch (error) {
+          toast.error(
+            "There was an error processing your request please try again later"
+          );
+          console.error(error);
+        }
+      },
+    });
   };
 
   return (
@@ -141,7 +232,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
               form.handleSubmit((data) => onSubmit(data, e))();
             }}
           >
-            <div className="flex items-center justify-center flex-col w-full gap-4 mb-10">
+            <div className="flex items-center justify-center flex-col w-full gap-4 mb-1">
               <FormInput
                 name="email"
                 label="Please enter your email"
@@ -153,6 +244,17 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                 inputClass="text-sm"
               />
             </div>
+            <div className="flex items-center justify-end mb-4">
+              <Button
+                variant="link"
+                className="px-0 group text-[10px] font-light text-end"
+                disabled={disable}
+                onClick={() => {}}
+              >
+                <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+                <Link href="/accounts/forgot-password">Forgot password ?</Link>
+              </Button>
+            </div>
             <div className="flex flex-col gap-3">
               <Button
                 className="w-full"
@@ -161,6 +263,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                 name="password"
                 type="submit"
               >
+                <RiLockPasswordLine />
                 Continue with password{" "}
                 <RotatingLines
                   visible={isPendingCheckEmail}
@@ -177,9 +280,6 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                 disabled={disable}
                 name="magic"
                 type="submit"
-                // onClick={(e) => {
-                //   console.log(e);
-                // }}
               >
                 <FaWandMagicSparkles /> Continue with email{" "}
                 <RotatingLines
@@ -208,6 +308,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
             size="lg"
             disabled={disable}
             name="google"
+            onClick={handleGoogleAuth}
           >
             <FaGoogle /> Continue with Google{" "}
             <RotatingLines
@@ -224,6 +325,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
             size="lg"
             disabled={disable}
             name="github"
+            onClick={handleGithubAuth}
           >
             <FaGithub /> Continue with Github{" "}
             <RotatingLines
@@ -240,6 +342,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
             size="lg"
             disabled={disable}
             name="passkey"
+            onClick={handlePasskeyAuth}
           >
             <GoPasskeyFill /> Continue with Passkey{" "}
             <RotatingLines

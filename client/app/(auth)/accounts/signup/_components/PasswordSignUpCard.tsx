@@ -49,11 +49,13 @@ const PasswordSignUpCard: React.FC<PasswordSignUpCardProps> = ({
   const { mutate: signUp, isPending: isPendingRegistration } =
     client.PasswordAuth.SignUp.useMutation();
 
-  const onSubmit = async (data: z.infer<typeof authSignUpMutationFnBody>) => {
-    await signUp(data, {
-      onSuccess: (data) => {
+  const onSubmit = async (
+    formData: z.infer<typeof authSignUpMutationFnBody>
+  ) => {
+    await signUp(formData, {
+      onSuccess: () => {
         router.push(
-          `/accounts/signup/verify-email?email=${encodeURIComponent(data.data.user?.email || "")}&name=${encodeURIComponent(data.data.user?.name || "")}`
+          `/accounts/signup/verify-email?email=${encodeURIComponent(formData.email)}`
         );
       },
     });
