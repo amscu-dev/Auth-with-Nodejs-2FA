@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/theme-provider";
 import QueryProvider from "@/context/query-provider";
 import { Toaster } from "@/components/ui/sonner";
+import NextTopLoader from "nextjs-toploader";
 
 const dm_sans = DM_Sans({ subsets: ["latin"] });
 
@@ -29,6 +30,12 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
+              <NextTopLoader
+                showSpinner={false}
+                height={5}
+                speed={800}
+                color="linear-gradient(to right, rgb(219, 234, 254), rgb(147, 197, 253), rgb(59, 130, 246))"
+              />
               {children}
               <Toaster
                 position="top-center"

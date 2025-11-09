@@ -38,12 +38,11 @@ export const authSignUpMutationFnBody = zod
       .describe("The user's full name"),
 
     email: zod
-      .string()
+      .email({ message: "Please enter a valid email address." })
       .min(1, { message: "Please enter your email address." })
       .max(authSignUpMutationFnBodyEmailMax, {
         message: `Email cannot exceed ${authSignUpMutationFnBodyEmailMax} characters.`,
-      })
-      .email({ message: "Please enter a valid email address." }),
+      }),
 
     password: zod
       .string()
@@ -93,13 +92,23 @@ export const authSignInMutationFnBodyPasswordRegExp = new RegExp(
 );
 
 export const authSignInMutationFnBody = zod.object({
-  email: zod.email().min(1).max(authSignInMutationFnBodyEmailMax),
+  email: zod
+    .email({ message: "Please enter a valid email address." })
+    .min(1, { message: "Please enter your email address." })
+    .max(authSignUpMutationFnBodyEmailMax, {
+      message: `Email cannot exceed ${authSignUpMutationFnBodyEmailMax} characters.`,
+    }),
   password: zod
     .string()
-    .min(authSignInMutationFnBodyPasswordMin)
-    .regex(authSignInMutationFnBodyPasswordRegExp)
+    .min(authSignUpMutationFnBodyPasswordMin, {
+      message: `Password must be at least ${authSignUpMutationFnBodyPasswordMin} characters long.`,
+    })
+    .regex(authSignUpMutationFnBodyPasswordRegExp, {
+      message:
+        "Password must contain a capital letter, contain at least one number and one special character.",
+    })
     .describe(
-      "Must start with a capital letter and contain at least one special character"
+      "Must contain a capital letter and contain at least one special character"
     ),
 });
 
