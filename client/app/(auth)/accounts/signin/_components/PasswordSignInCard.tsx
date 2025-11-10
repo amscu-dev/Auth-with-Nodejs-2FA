@@ -64,7 +64,7 @@ const PasswordSignInCard: React.FC<PasswordSignInCardProps> = ({
           );
         }
         if (nextStep === "MFA_REQUIRED") {
-          router.push("/acccounts/2fa");
+          router.push("/accounts/signin/mfa");
         }
       },
       onError: (error) => {

@@ -162,7 +162,7 @@ export class AuthService {
       const mfaSession = await MFASessionModel.create({
         tokenJTI: tokenId,
         userId: user._id,
-        mfaSessionPurpose: "forgot_password",
+        mfaSessionPurpose: "login",
         requestIP: ip,
       });
       const mfaToken = signJwtToken(

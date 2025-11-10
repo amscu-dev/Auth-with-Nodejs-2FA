@@ -53,8 +53,8 @@ const verifyCallback: VerifyCallbackWithRequest = async (
     // ! Check purpose of the token and request path
     const requestPath = req.originalUrl || req.url;
     const pathPurposeMap = {
-      [`${config.BASE_PATH}/mfa/verify-login`]: "login",
-      [`${config.BASE_PATH}/mfa/verify-forgot-password`]: "forgot_password",
+      [`${config.BASE_PATH}/mfa/verify/login`]: "login",
+      [`${config.BASE_PATH}/mfa/verify/forgot-password`]: "forgot_password",
     };
     const expectedPurpose = pathPurposeMap[requestPath];
 

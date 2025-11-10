@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import EmailVerifiedCard from "./EmailVerifiedCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import client from "@/api/index";
@@ -13,6 +13,7 @@ const ConfirmEmailCard: React.FC<ConfirmEmailCardProps> = () => {
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
   const code = searchParams.get("code");
+  const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
   // SERVICE
   const {
     mutate: verifyEmail,
@@ -31,6 +32,7 @@ const ConfirmEmailCard: React.FC<ConfirmEmailCardProps> = () => {
         { code },
         {
           onSuccess: () => {
+            setIsEmailVerified(true);
             toast.success("Your email has been verified successfully!");
           },
         }
@@ -61,7 +63,10 @@ const ConfirmEmailCard: React.FC<ConfirmEmailCardProps> = () => {
     );
   }
 
-  return <EmailVerifiedCard />;
+  if (isEmailVerified && !error) {
+    return <EmailVerifiedCard />;
+  }
+  return <ConfirmEmailCardFallback />;
 };
 
 export default ConfirmEmailCard;

@@ -6,6 +6,7 @@ import type {
 import { nameSchema } from "./reusable/name.schema";
 import { emailSchema } from "./reusable/email.schema";
 import { userIdSchema } from "./reusable/userid.schema";
+import { base64UrlToObjectId } from "@/common/utils/mongoIdConvertToUnit8Array";
 
 export const clientDataJSONSchema = z.object({
   type: z.enum(["webauthn.create", "webauthn.get"]),
@@ -71,7 +72,7 @@ const passkeySignInVerifyRequestBodySchema = z.object({
     clientDataJSON: z.string(),
     authenticatorData: z.string(),
     signature: z.string(),
-    userHandle: z.string(),
+    userHandle: z.string().transform((val) => base64UrlToObjectId(val)),
   }),
 }) satisfies z.ZodType<AuthenticationResponseJSON>;
 

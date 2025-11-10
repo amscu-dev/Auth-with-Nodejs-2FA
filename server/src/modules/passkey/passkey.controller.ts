@@ -6,6 +6,8 @@ import { HTTPSTATUS } from "@/config/http.config";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
 import LOGIN from "@/common/enums/login-codes";
 import { setAuthenticationCookies } from "@/common/utils/cookie";
+import mongoose from "mongoose";
+import { base64UrlToObjectId } from "@/common/utils/mongoIdConvertToUnit8Array";
 
 export class PasskeyController {
   private passkeyService: PasskeyService;

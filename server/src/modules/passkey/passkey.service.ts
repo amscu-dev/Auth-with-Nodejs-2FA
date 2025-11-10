@@ -8,7 +8,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from "@/common/utils/catch-errors";
-import objectIdToUint8Array from "@/common/utils/objectIdToUint8Array";
+import {
+  base64UrlToObjectId,
+  objectIdToUint8Array,
+} from "@/common/utils/mongoIdConvertToUnit8Array";
 import { generateUniqueCode } from "@/common/utils/uuid";
 import { config } from "@/config/app.config";
 import { PasskeyChallengeSessionModel } from "@/database/models/passkeyChallengeSession.model";
@@ -83,7 +86,6 @@ export default class PasskeyService {
     }
 
     const userId = new mongoose.Types.ObjectId();
-
     // ! 03. Create PublicKeyCredentialCreationOptions
     const publicKeyCredentialCreationOptions =
       await generateRegistrationOptions({
@@ -105,7 +107,6 @@ export default class PasskeyService {
         },
         supportedAlgorithmIDs: [-7, -8, -257],
       });
-
     // ! 04. Create PasskeySession
     await PasskeyChallengeSessionModel.create({
       challenge: publicKeyCredentialCreationOptions.challenge,
@@ -315,6 +316,7 @@ export default class PasskeyService {
         ErrorCode.PASSKEY_CHALLENGE_SESSION__EXPIRED
       );
     }
+
     // ! 03. Find user provided by authentificator
     const user = await UserModel.findById(
       authenticationResponse.response.userHandle

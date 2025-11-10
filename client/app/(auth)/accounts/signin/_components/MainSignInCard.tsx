@@ -125,6 +125,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
         },
         onSuccess: (data) => {
           if ((data.data.nextStep = "CHECK_EMAIL_FOR_MAGIC_LINK")) {
+            setIsRedirecting(true);
             router.push(
               `/accounts/magic/email-sent?email=${encodeURIComponent(formData.email)}`
             );
@@ -186,6 +187,10 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                     `/accounts/signup/verify-email?email=${encodeURIComponent(verifyData.data.email)}`
                   );
                 }
+              },
+              onError: () => {
+                setIsRedirecting(false);
+                setIsAuthenticatingPasskey(false);
               },
             });
           } catch (error) {
