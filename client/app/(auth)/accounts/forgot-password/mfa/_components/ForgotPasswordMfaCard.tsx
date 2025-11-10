@@ -63,7 +63,6 @@ const ForgotPasswordMfaCard: React.FC<ForgotPasswordMfaCardProps> = () => {
   const onSumbit = async (
     formData: z.infer<typeof MfaRequestSchema.verifyCodeForgotPassword>
   ) => {
-    console.log(formData);
     await sendTOTP(formData, {
       onSuccess: (data) => {
         if (data.data.nextStep === "OK") {

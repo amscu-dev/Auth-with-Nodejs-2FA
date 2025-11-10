@@ -56,7 +56,6 @@ const SignInMfaCard: React.FC<SignInMfaCardProps> = ({ on2MfaMethod }) => {
   const onSumbit = async (
     formData: z.infer<typeof MfaRequestSchema.verifyCodeLogin>
   ) => {
-    console.log(formData);
     await sendTOTP(formData, {
       onSuccess: (data) => {
         if (data.data.nextStep === "OK") {

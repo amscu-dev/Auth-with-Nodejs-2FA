@@ -264,7 +264,6 @@ export class OIDCSessionService {
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error);
         throw new UnauthorizedException(
           "Authentication failed while communicating with the external identity provider. Please try again or use a different sign-in method.",
           ErrorCode.OIDC_FAILED_AUTHENTIFICATION

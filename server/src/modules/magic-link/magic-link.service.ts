@@ -22,6 +22,7 @@ import SessionModel from "@/database/models/session.model";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import { MagicLinkRegisterData } from "@/common/interface/magic-link.interface";
 import mongoose from "mongoose";
+import { config } from "@/config/app.config";
 
 export class MagicLinkService {
   public async createMagicLinkSession(
@@ -46,8 +47,7 @@ export class MagicLinkService {
       },
       { ...magicLinkTokenOptions, algorithm: "HS256" }
     );
-    // * TODO : Modificare hardcodare link
-    const magicLink = `http://localhost:8000/api/v1/magic-link/authenticate/${magicToken}`;
+    const magicLink = `${config.FRONTEND_ORIGIN}/accounts/magic/authenticate/${magicToken}`;
 
     const isMagicLinkEmailSend = await apiRequestWithRetry(() => {
       return sendEmail({
@@ -68,7 +68,6 @@ export class MagicLinkService {
     const user = await UserModel.findOne({
       email,
     });
-    console.log(user);
     if (!user) {
       throw new NotFoundException(
         "User with the specified email was not found.",

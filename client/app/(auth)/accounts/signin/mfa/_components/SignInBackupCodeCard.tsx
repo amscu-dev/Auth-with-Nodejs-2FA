@@ -58,7 +58,6 @@ const SignInBackupCodeCard: React.FC<SignInBackupCodeCardProps> = ({
   const onSumbit = async (
     formData: z.infer<typeof MfaRequestSchema.loginWithBackupCode>
   ) => {
-    console.log(formData);
     await sendBackupCode(formData, {
       onSuccess: (data) => {
         if (data.data.nextStep === "OK") {

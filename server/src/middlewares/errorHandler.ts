@@ -32,7 +32,6 @@ export const errorHandler: ErrorRequestHandler = (
   res,
   next
 ): any => {
-  console.log(error);
   // ! Centralized log error
   logWithMetadata({
     level: "error",

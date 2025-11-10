@@ -82,16 +82,20 @@ export const MagicLink = {
     },
   },
   Authenticate: {
-    useQuery: (
-      token: string,
-      options?: UseQueryOptions<
+    useMutation: (
+      options?: UseMutationOptions<
         MagicLinkAuthenticateQueryFnResult,
-        AxiosErrorRes
+        AxiosErrorRes,
+        { token: string }
       >
     ) => {
-      return useQuery<MagicLinkAuthenticateQueryFnResult, AxiosErrorRes>({
-        queryKey: ["user"],
-        queryFn: () => magicLinkAuthenticateQueryFn(token),
+      return useMutation<
+        MagicLinkAuthenticateQueryFnResult,
+        AxiosErrorRes,
+        { token: string }
+      >({
+        mutationKey: ["user"],
+        mutationFn: ({ token }) => magicLinkAuthenticateQueryFn(token),
         ...options,
       });
     },

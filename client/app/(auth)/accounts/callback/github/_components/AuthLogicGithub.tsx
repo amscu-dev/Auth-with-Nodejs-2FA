@@ -28,7 +28,7 @@ const AuthLogicGithub: React.FC<AuthLogicGithubProps> = () => {
               );
               setTimeout(() => {
                 router.replace("/home");
-              }, 1000);
+              }, 500);
             },
             onError: () => {
               toast.error("Github login failed");
