@@ -2,7 +2,7 @@ import z from "zod";
 import type {
   RegistrationResponseJSON,
   AuthenticationResponseJSON,
-} from "@simplewebauthn/server";
+} from "@simplewebauthn/browser";
 import { nameSchema } from "./reusable/name.schema";
 import { emailSchema } from "./reusable/email.schema";
 import { userIdSchema } from "./reusable/userid.schema";

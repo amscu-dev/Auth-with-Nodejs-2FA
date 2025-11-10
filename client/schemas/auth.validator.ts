@@ -47,6 +47,10 @@ const authResetPasswordRequestBodySchema = z.object({
   password: passwordSchema,
 });
 
+const simplePasswordSchema = z.object({
+  password: passwordSchema,
+});
+
 export const AuthRequestSchema = {
   signUp: authSignUpRequestBodySchema,
   signIn: authSignInRequestBodySchema,
@@ -55,4 +59,5 @@ export const AuthRequestSchema = {
   checkEmail: authCheckEmailRequestBodySchema,
   forgotPassword: authForgotPasswordRequestBodySchema,
   resetPassword: authResetPasswordRequestBodySchema,
+  password: simplePasswordSchema,
 };

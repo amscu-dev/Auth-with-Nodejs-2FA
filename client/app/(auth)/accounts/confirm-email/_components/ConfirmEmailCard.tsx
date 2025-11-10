@@ -14,6 +14,7 @@ const ConfirmEmailCard: React.FC<ConfirmEmailCardProps> = () => {
   const email = searchParams.get("email");
   const code = searchParams.get("code");
   const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
+  const [isCheckingParams, setIsCheckingParams] = useState(true);
   // SERVICE
   const {
     mutate: verifyEmail,
@@ -24,28 +25,34 @@ const ConfirmEmailCard: React.FC<ConfirmEmailCardProps> = () => {
   const router = useRouter();
   useEffect(() => {
     if (!email || !code) {
-      router.replace("/acccounts/signin");
+      router.replace("/accounts/signin");
       return;
+    } else {
+      setIsCheckingParams(false);
+      const handleVerifyEmail = async () => {
+        await verifyEmail(
+          { code },
+          {
+            onSuccess: () => {
+              setIsEmailVerified(true);
+              toast.success("Your email has been verified successfully!");
+            },
+          }
+        );
+      };
+      handleVerifyEmail();
     }
-    const handleVerifyEmail = async () => {
-      await verifyEmail(
-        { code },
-        {
-          onSuccess: () => {
-            setIsEmailVerified(true);
-            toast.success("Your email has been verified successfully!");
-          },
-        }
-      );
-    };
-    handleVerifyEmail();
   }, [email, code, router, verifyEmail]);
+
+  if (isCheckingParams) {
+    return <ConfirmEmailCardFallback />;
+  }
 
   if (isPending) {
     return <ConfirmEmailCardFallback />;
   }
 
-  if (error) {
+  if (error && !isEmailVerified) {
     if (
       error.response &&
       (error.response.data.errorCode === "AUTH_EMAIL_ALREADY_VERIFIED" ||
@@ -63,10 +70,7 @@ const ConfirmEmailCard: React.FC<ConfirmEmailCardProps> = () => {
     );
   }
 
-  if (isEmailVerified && !error) {
-    return <EmailVerifiedCard />;
-  }
-  return <ConfirmEmailCardFallback />;
+  return <EmailVerifiedCard />;
 };
 
 export default ConfirmEmailCard;

@@ -1,15 +1,7 @@
 import { Card } from "@/components/ui/card";
 import React, { Suspense } from "react";
 import EmailCard from "./_components/EmailCard";
-import { HiViewGridAdd } from "react-icons/hi";
-
-function EmailCardFallback() {
-  return (
-    <div>
-      <HiViewGridAdd size="3rem" className="animate-ping" />
-    </div>
-  );
-}
+import EmailCardFallback from "./_components/EmailCardFallback";
 
 const MagicLinkEmailPage = () => {
   return (

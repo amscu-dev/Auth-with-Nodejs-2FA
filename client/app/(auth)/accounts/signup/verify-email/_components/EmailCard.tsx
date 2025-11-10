@@ -8,6 +8,7 @@ import client from "@/api/index";
 import { toast } from "sonner";
 import { RotatingLines } from "react-loader-spinner";
 import { FaCheckCircle } from "react-icons/fa";
+import EmailCardFallback from "./EmailCardFallback";
 
 interface EmailCardProps {}
 
@@ -18,10 +19,12 @@ const EmailCard: React.FC<EmailCardProps> = () => {
   const { mutate: resendMail, isPending } =
     client.PasswordAuth.ResendEmail.useMutation();
   const email = searchParams.get("email");
-
+  const [isCheckingParams, setIsCheckingParams] = useState(true);
   useEffect(() => {
     if (!email) {
       router.push("/accounts/signup");
+    } else {
+      setIsCheckingParams(false);
     }
   }, [email, router]);
 
@@ -40,6 +43,10 @@ const EmailCard: React.FC<EmailCardProps> = () => {
       }
     );
   };
+
+  if (isCheckingParams) {
+    return <EmailCardFallback />;
+  }
   return (
     <div className="flex flex-col items-center h-full">
       <div className="flex w-full items-center justify-center sm:mb-6 sm:mt-3 mt-0">
