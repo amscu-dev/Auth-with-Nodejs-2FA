@@ -127,7 +127,7 @@ export class PasskeyController {
       }
       // ! 03. Call service
       const { user, accessToken, refreshToken, mfaRequired, mfaToken } =
-        await this.passkeyService.verifyPasskeySessionAndAuthenticateUser(
+        await this.passkeyService.verifyPasskeySignInSessionAndAuthenticateUser(
           authenticationResponse,
           req
         );

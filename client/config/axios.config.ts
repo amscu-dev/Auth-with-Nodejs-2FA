@@ -50,6 +50,7 @@ AXIOS_INSTANCE.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 export const customAxiosInstance = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig

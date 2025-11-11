@@ -1,5 +1,3 @@
-import useragent from "express-useragent";
-import geoip from "geoip-lite";
 import { ErrorCode } from "@/common/enums/error-code.enum";
 import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import { LoginData, RegisterData } from "@/common/interface/auth.interface";
@@ -37,12 +35,11 @@ import {
 } from "@/mailers/templates/template";
 import mongoose from "mongoose";
 import apiRequestWithRetry from "@/common/utils/retry-api";
-import { Location } from "@/database/models/resetPasswordLog.model";
 import logPasswordReset from "@/common/utils/logPasswordReset";
 import { generateUniqueCode } from "@/common/utils/uuid";
 import { MFASessionModel } from "@/database/models/mfaSession.model";
 import { Request } from "express";
-
+import { getInfoFromAsyncLocalStorage } from "@/common/context/asyncLocalStorage";
 export class AuthService {
   public async register(registerData: RegisterData) {
     // ! 01. Extract Data
@@ -119,9 +116,10 @@ export class AuthService {
     if (user.isEmailVerified) return true;
     return false;
   }
-  public async login(loginData: LoginData, uaSource: string, ip: string) {
+  public async login(loginData: LoginData) {
     // ! 01. Extract data
     const { email, password } = loginData;
+    const { reqIp, reqUserAgent } = getInfoFromAsyncLocalStorage();
 
     // ! 02. Check user existance
     const user = await UserModel.findOne({
@@ -153,8 +151,6 @@ export class AuthService {
 
     // ! 04. If password match, start authentication process:
 
-    const parsedUA = useragent.parse(uaSource ?? "unknown");
-
     // ! 05. Check if user has MFA enabled
     if (user.userPreferences.enable2FA) {
       // ! 05.1. Generate a MFA session, and send an associated cookie token
@@ -163,7 +159,7 @@ export class AuthService {
         tokenJTI: tokenId,
         userId: user._id,
         mfaSessionPurpose: "login",
-        requestIP: ip,
+        requestIP: reqIp,
       });
       const mfaToken = signJwtToken(
         {
@@ -188,12 +184,7 @@ export class AuthService {
     // ! 06. If user, does not have MFA enabled, start registration process:
     const session = await SessionModel.create({
       userId: user._id,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
-      },
+      userAgent: reqUserAgent,
     });
     const accessToken = signJwtToken(
       {
@@ -334,9 +325,11 @@ export class AuthService {
       isNewEmail: false,
     };
   }
-  public async forgotPassword(email: string, ip: string) {
+  public async forgotPassword(email: string) {
     // ! 01. Check for user existance
     const user = await UserModel.findOne({ email });
+    const { reqIp } = getInfoFromAsyncLocalStorage();
+
     if (!user) {
       throw new NotFoundException(
         "User with the specified email was not found.",
@@ -364,7 +357,7 @@ export class AuthService {
         tokenJTI: tokenId,
         userId: user._id,
         mfaSessionPurpose: "forgot_password",
-        requestIP: ip,
+        requestIP: reqIp,
       });
       const mfaToken = signJwtToken(
         {
@@ -416,30 +409,14 @@ export class AuthService {
       mfaToken: "",
     };
   }
-  public async resetPassword(
-    verificationCode: string,
-    password: string,
-    ip: string | undefined,
-    userAgent: string | undefined
-  ) {
+  public async resetPassword(verificationCode: string, password: string) {
+    const { reqIp, reqIpLocation, reqUserAgent } =
+      getInfoFromAsyncLocalStorage();
     // ! 01. Check verification code existence and integrity
     const validCode = await VerificationCodeModel.findOne({
       code: verificationCode,
       type: VerificationEnum.PASSWORD_RESET,
     });
-
-    // ! * Indenity IP Address
-    let location: Location = {
-      city: "unknown",
-      region: "unknown",
-      country: "unknown",
-    };
-    if (ip) {
-      const geo = geoip.lookup(ip);
-      location.city = geo?.city || "unknown";
-      location.region = geo?.region || "unknown";
-      location.country = geo?.country || "unknown";
-    }
 
     if (!validCode) {
       throw new NotFoundException(
@@ -450,11 +427,11 @@ export class AuthService {
     if (validCode.used) {
       await logPasswordReset({
         userId: validCode.userId,
-        ip,
-        userAgent,
+        ip: reqIp,
+        location: reqIpLocation,
+        userAgent: reqUserAgent,
         status: "failed",
         reason: "This verification code has already been used.",
-        location,
       });
       if (validCode.used) {
         throw new BadRequestException(
@@ -466,11 +443,11 @@ export class AuthService {
     if (validCode.expiresAt < new Date()) {
       await logPasswordReset({
         userId: validCode.userId,
-        ip,
-        userAgent,
+        ip: reqIp,
+        location: reqIpLocation,
+        userAgent: reqUserAgent,
         status: "failed",
         reason: "Expired verification code.",
-        location,
       });
       if (validCode.expiresAt < new Date()) {
         throw new BadRequestException(
@@ -494,12 +471,12 @@ export class AuthService {
     if (!isNewPasswordValid) {
       await logPasswordReset({
         userId: validCode.userId,
-        ip,
-        userAgent,
+        ip: reqIp,
+        location: reqIpLocation,
+        userAgent: reqUserAgent,
         status: "failed",
         reason:
           "You cannot reuse a previous password. Please choose a new one.",
-        location,
       });
 
       throw new BadRequestException(
@@ -537,11 +514,11 @@ export class AuthService {
         // ! 04.5 Create a new password log
         await logPasswordReset({
           userId: validCode.userId,
-          ip,
-          userAgent,
+          ip: reqIp,
+          location: reqIpLocation,
+          userAgent: reqUserAgent,
           status: "success",
           reason: "User sucessfully reset his password.",
-          location,
           session: mongoSession,
         });
       });
@@ -549,13 +526,7 @@ export class AuthService {
       await apiRequestWithRetry(() => {
         return sendEmail({
           to: currentUser.email,
-          ...passwordResetSuccessTemplate(
-            ip,
-            userAgent,
-            location.city,
-            location.region,
-            location.country
-          ),
+          ...passwordResetSuccessTemplate(reqIp, reqIpLocation, reqUserAgent),
         });
       });
     } catch (error) {

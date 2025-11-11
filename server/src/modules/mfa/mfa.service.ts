@@ -6,7 +6,6 @@ import { Request } from "express";
 import {
   BadRequestException,
   ConflictException,
-  InternalServerException,
   NotFoundException,
   ServiceUnavaibleException,
 } from "@/common/utils/catch-errors";
@@ -27,6 +26,7 @@ import { VerificationEnum } from "@/common/enums/verification-code.enum";
 import apiRequestWithRetry from "@/common/utils/retry-api";
 import { sendEmail } from "@/mailers/mailer";
 import { passwordResetTemplate } from "@/mailers/templates/template";
+import { getInfoFromAsyncLocalStorage } from "@/common/context/asyncLocalStorage";
 
 export class MfaService {
   public async generateMFASetup(req: Express.Request) {
@@ -311,8 +311,7 @@ export class MfaService {
   public async verifyMFAForLogin(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
-    const uaSource = req.headers["user-agent"];
-    const parsedUA = useragent.parse(uaSource ?? "unknown");
+    const { reqUserAgent } = getInfoFromAsyncLocalStorage();
 
     if (!currentUser) {
       throw new NotFoundException(
@@ -353,12 +352,7 @@ export class MfaService {
     // ! 04. If all okey, create auth session
     const session = await SessionModel.create({
       userId: currentUser._id,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
-      },
+      userAgent: reqUserAgent,
     });
 
     // ! 05. Generate tokens associated with session

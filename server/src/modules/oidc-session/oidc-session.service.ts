@@ -34,6 +34,7 @@ import SessionModel from "@/database/models/session.model";
 import UserModel from "@/database/models/user.model";
 import axios from "axios";
 import { Request } from "express";
+import { getInfoFromAsyncLocalStorage } from "@/common/context/asyncLocalStorage";
 
 export class OIDCSessionService {
   private async findOIDCSession(
@@ -73,6 +74,8 @@ export class OIDCSessionService {
     name: string;
     req: Request;
   }) {
+    const { reqIp, reqIpLocation, reqUserAgent } =
+      getInfoFromAsyncLocalStorage();
     // ! Find User in DB
     const user = await UserModel.findOneAndUpdate(
       {
@@ -94,18 +97,11 @@ export class OIDCSessionService {
       },
       { new: true, upsert: true }
     );
-    // ! Parse UA Agent
-    const uaSource = req.headers["user-agent"];
-    const parsedUA = useragent.parse(uaSource ?? "unknown");
+
     // ! CREATE SESSION
     const sessionAuth = await SessionModel.create({
       userId: user._id,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
-      },
+      userAgent: reqUserAgent,
     });
 
     // ! CREATE TOKENS

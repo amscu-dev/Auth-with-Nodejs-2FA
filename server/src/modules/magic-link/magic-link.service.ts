@@ -23,6 +23,7 @@ import { ErrorCode } from "@/common/enums/error-code.enum";
 import { MagicLinkRegisterData } from "@/common/interface/magic-link.interface";
 import mongoose from "mongoose";
 import { config } from "@/config/app.config";
+import { getInfoFromAsyncLocalStorage } from "@/common/context/asyncLocalStorage";
 
 export class MagicLinkService {
   public async createMagicLinkSession(
@@ -145,23 +146,15 @@ export class MagicLinkService {
   public async authenticateUser(req: Request) {
     // ! 01. We extract user from req, we already proved existance in passport middleware
     const user = req.user as Express.User;
-
+    const { reqUserAgent } = getInfoFromAsyncLocalStorage();
     // ! 02. Create session & authenticate user
     const mongoSession = await mongoose.startSession();
     try {
       const { sessionAuth } = await mongoSession.withTransaction(async () => {
-        // ! 02.1 Parse UA Agent
-        const uaSource = req.headers["user-agent"];
-        const parsedUA = useragent.parse(uaSource ?? "unknown");
         // ! 02.2 Create Session
         const sessionAuth = new SessionModel({
           userId: user._id,
-          userAgent: {
-            browser: parsedUA.browser || "unknown",
-            version: parsedUA.version || "unknown",
-            os: parsedUA.os || "unknown",
-            platform: parsedUA.platform || "unknown",
-          },
+          userAgent: reqUserAgent,
         });
         if (!user.isEmailVerified) {
           user.isEmailVerified = true;

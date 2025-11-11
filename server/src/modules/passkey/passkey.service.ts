@@ -8,10 +8,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from "@/common/utils/catch-errors";
-import {
-  base64UrlToObjectId,
-  objectIdToUint8Array,
-} from "@/common/utils/mongoIdConvertToUnit8Array";
+import { objectIdToUint8Array } from "@/common/utils/mongoIdConvertToUnit8Array";
 import { generateUniqueCode } from "@/common/utils/uuid";
 import { config } from "@/config/app.config";
 import { PasskeyChallengeSessionModel } from "@/database/models/passkeyChallengeSession.model";
@@ -49,6 +46,7 @@ import {
   refreshTokenSignOptions,
   signJwtToken,
 } from "@/common/utils/jwt";
+import { getInfoFromAsyncLocalStorage } from "@/common/context/asyncLocalStorage";
 
 export default class PasskeyService {
   public async confirmSignUp(userid: string) {
@@ -274,10 +272,11 @@ export default class PasskeyService {
     return publicKeyCredentialRequestOptions;
   }
 
-  public async verifyPasskeySessionAndAuthenticateUser(
+  public async verifyPasskeySignInSessionAndAuthenticateUser(
     authenticationResponse: AuthenticationResponseJSON,
     req: Request
   ) {
+    const { reqUserAgent } = getInfoFromAsyncLocalStorage();
     // ! 01. Extract challenge from clientDataJSON
     const { challenge } = clientDataJSONSchema.parse(
       JSON.parse(
@@ -366,18 +365,9 @@ export default class PasskeyService {
     passkey.lastUsed = new Date();
     await passkey.save();
 
-    // ! 07. Create Session & JWT Tokens
-    const uaSource = req.headers["user-agent"];
-    const parsedUA = useragent.parse(uaSource ?? "unknown");
-
     const session = await SessionModel.create({
       userId: user._id,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
-      },
+      userAgent: reqUserAgent,
     });
 
     const accessToken = signJwtToken(

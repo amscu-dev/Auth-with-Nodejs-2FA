@@ -3,9 +3,11 @@ import { UserAgent } from "./session.model";
 import mongoose from "../mongoose/mongoose";
 import executionTimePlugin from "../plugins/dbLogger";
 export interface Location {
-  city?: string | undefined;
-  region?: string | undefined;
-  country?: string | undefined;
+  city: string;
+  region: string;
+  country: string;
+  ip: string;
+  timezone: string;
 }
 
 export interface PasswordResetLogDocument extends Document {

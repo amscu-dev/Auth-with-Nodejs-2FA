@@ -13,7 +13,6 @@ import {
 import { NotFoundException } from "@/common/utils/catch-errors";
 import LOGIN from "@/common/enums/login-codes";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
-import z from "zod";
 
 export class AuthController {
   private authService: AuthService;
@@ -54,7 +53,6 @@ export class AuthController {
   public login = asyncHandler(
     async (req: Request, res: Response): Promise<any> => {
       // ! 01. Validate input
-      const uaSource = req.headers["user-agent"];
       const body = AuthRequestSchema.signIn.parse(req.body);
 
       // ! 02. Check if user verified his email
@@ -80,7 +78,7 @@ export class AuthController {
 
       // ! 04. Verify user credentials
       const { user, accessToken, refreshToken, mfaRequired, mfaToken } =
-        await this.authService.login(body, req.ip || "", uaSource || "");
+        await this.authService.login(body);
 
       // ! 05. If Mfa Required send data with nextStep: MFA_REQUIRED
       if (mfaRequired && !accessToken && mfaToken) {
@@ -203,7 +201,7 @@ export class AuthController {
 
       // ! 02. Call service
       const { url, mfaRequired, mfaToken } =
-        await this.authService.forgotPassword(email, req.ip || "");
+        await this.authService.forgotPassword(email);
 
       // ! 03. If user has mfa, request mfa, before sending code
       if (mfaRequired && mfaToken) {
@@ -242,19 +240,10 @@ export class AuthController {
       const { verificationCode, password } =
         AuthRequestSchema.resetPassword.parse(req.body);
 
-      // ! 02. Collect ip & userAgent
-      const ip = req.ip;
-      const userAgent = req.headers["user-agent"];
+      // ! 02. Call service
+      await this.authService.resetPassword(verificationCode, password);
 
-      // ! 03. Call service
-      await this.authService.resetPassword(
-        verificationCode,
-        password,
-        ip,
-        userAgent
-      );
-
-      // ! 04. Clear cookies and inform user that action performed well.
+      // ! 03. Clear cookies and inform user that action performed well.
       return clearAuthenticationCookies(res)
         .status(HTTPSTATUS.OK)
         .json(
