@@ -20,6 +20,8 @@ import {
   AuthPasswordForgotMutationFnResult,
   authPasswordResetMutationFn,
   AuthPasswordResetMutationFnResult,
+  authRefreshTokenQueryFn,
+  AuthRefreshTokenQueryFnResult,
   authResendEmailMutationFn,
   AuthResendEmailMutationFnResult,
   authSignInMutationFn,
@@ -175,6 +177,17 @@ export const PasswordAuth = {
         ...options,
         mutationKey: ["user"],
         mutationFn: () => authLogoutMutationFn(),
+      });
+    },
+  },
+  ResetToken: {
+    useMutation: (
+      options?: UseMutationOptions<AuthRefreshTokenQueryFnResult, AxiosErrorRes>
+    ) => {
+      return useMutation<AuthRefreshTokenQueryFnResult, AxiosErrorRes>({
+        ...options,
+        mutationKey: ["refresh"],
+        mutationFn: () => authRefreshTokenQueryFn(),
       });
     },
   },

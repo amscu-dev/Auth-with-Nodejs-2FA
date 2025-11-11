@@ -19,14 +19,14 @@ const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
     (req) => {
       // ! 0. Evaluate the existence of token
-      const accessToken = req.cookies.accessToken;
-      if (!accessToken) {
+      const refreshToken = req.cookies.refreshToken;
+      if (!refreshToken) {
         throw new UnauthorizedException(
           "Authentication failed, no authentication token provided.",
           ErrorCode.AUTH_TOKEN_NOT_FOUND
         );
       }
-      return accessToken;
+      return refreshToken;
     },
   ]),
   issuer: config.AUTHENTICATION.TOKEN_ISSUER,

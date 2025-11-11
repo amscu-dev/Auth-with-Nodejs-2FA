@@ -102,7 +102,6 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
               type: "custom",
               message: "Seems you do not have an account.",
             });
-            toast.error("User with the specified email was not found.");
             requestAnimationFrame(() => {
               form.setFocus("email");
             });

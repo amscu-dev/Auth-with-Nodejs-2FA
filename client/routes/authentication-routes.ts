@@ -1,0 +1,2 @@
+const AUTHENTICATION_ROUTES_PREFIX = "/accounts";
+export default AUTHENTICATION_ROUTES_PREFIX;

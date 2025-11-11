@@ -43,6 +43,8 @@ const PasswordResetLogSchema = new Schema<PasswordResetLogDocument>({
     city: { type: String },
     region: { type: String },
     country: { type: String },
+    timezone: { type: String },
+    ip: { type: String },
   },
 });
 

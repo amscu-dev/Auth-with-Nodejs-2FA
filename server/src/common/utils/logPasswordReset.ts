@@ -1,8 +1,7 @@
 import PasswordResetLogModel, {
   Location,
 } from "@/database/models/resetPasswordLog.model";
-import mongoose, { Schema } from "mongoose";
-import useragent from "express-useragent";
+import mongoose from "mongoose";
 import { UserAgent } from "@/database/models/session.model";
 
 const logPasswordReset = async ({

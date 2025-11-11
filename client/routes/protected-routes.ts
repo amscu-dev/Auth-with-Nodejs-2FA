@@ -1,0 +1,2 @@
+const PROTECTED_ROUTES_PREFIX = "/home";
+export default PROTECTED_ROUTES_PREFIX;
