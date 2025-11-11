@@ -22,23 +22,25 @@ const logPasswordReset = async ({
   session?: mongoose.mongo.ClientSession;
 }) => {
   const parsedUA = useragent.parse(userAgent ?? "unknown");
-
   const ipValue = ip || "unknown";
+
   await PasswordResetLogModel.create(
-    {
-      userId,
-      status,
-      reason,
-      ip: ipValue,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
+    [
+      {
+        userId,
+        status,
+        reason,
+        ip: ipValue,
+        userAgent: {
+          browser: parsedUA.browser || "unknown",
+          version: parsedUA.version || "unknown",
+          os: parsedUA.os || "unknown",
+          platform: parsedUA.platform || "unknown",
+        },
+        location,
+        method: "email",
       },
-      location,
-      method: "email",
-    },
+    ],
     { session }
   );
 };

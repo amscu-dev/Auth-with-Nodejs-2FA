@@ -1,4 +1,3 @@
-import React from "react";
 import MagicLinkAuthenticateCard from "./_components/MagicLinkAuthenticateCard";
 
 interface MagicLinkAuthenticatePageProps {}

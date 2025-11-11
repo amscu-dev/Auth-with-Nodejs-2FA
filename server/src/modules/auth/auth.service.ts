@@ -501,6 +501,7 @@ export class AuthService {
           "You cannot reuse a previous password. Please choose a new one.",
         location,
       });
+
       throw new BadRequestException(
         "You cannot reuse an old password.",
         ErrorCode.AUTH_PASSWORD_REUSE_NOT_ALLOWED

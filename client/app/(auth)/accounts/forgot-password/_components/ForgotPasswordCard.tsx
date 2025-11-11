@@ -53,7 +53,7 @@ const ForgotPasswordCard: React.FC<ForgotPasswordCardProps> = () => {
           setIsEmailSent(true);
         }
         if (nextStep === "MFA_REQUIRED") {
-          router.replace("/forgot-password/mfa");
+          router.replace("/accounts/forgot-password/mfa");
         }
       },
       onError: (error) => {

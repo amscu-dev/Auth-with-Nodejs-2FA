@@ -79,6 +79,7 @@ export const errorHandler: ErrorRequestHandler = (
     });
   }
   if (error instanceof mongoose.Error.ValidationError) {
+    console.log(error);
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       success: false,
       message: "Validation failed",
@@ -88,6 +89,7 @@ export const errorHandler: ErrorRequestHandler = (
   }
 
   if (error instanceof mongoose.Error.CastError) {
+    console.log(error);
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       success: false,
       message: "Invalid resource ID format",
