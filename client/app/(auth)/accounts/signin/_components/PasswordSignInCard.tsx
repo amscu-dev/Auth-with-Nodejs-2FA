@@ -21,6 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { useRouter } from "next/navigation";
 import { AuthRequestSchema } from "@/schemas/auth.validator";
+import { env } from "@/env";
 
 interface PasswordSignInCardProps {
   handleSignInMethod: (method: string) => void;
@@ -56,7 +57,7 @@ const PasswordSignInCard: React.FC<PasswordSignInCardProps> = ({
       onSuccess: ({ data: { nextStep } }) => {
         setIsRedirecting(true);
         if (nextStep === "OK") {
-          router.push("/home");
+          router.push(env.NEXT_PUBLIC_LOGIN_REDIRECT);
         }
         if (nextStep === "CONFIRM_SIGN_UP") {
           router.push(

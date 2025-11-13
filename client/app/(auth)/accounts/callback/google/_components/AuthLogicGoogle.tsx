@@ -4,6 +4,7 @@ import React from "react";
 import client from "@/api/index";
 import { toast } from "sonner";
 import GoogleFallback from "./GoogleFallback";
+import { env } from "@/env";
 
 interface AuthLogicGoogleProps {}
 
@@ -18,7 +19,7 @@ const AuthLogicGoogle: React.FC<AuthLogicGoogleProps> = () => {
 
   React.useEffect(() => {
     if (!state || !code || !scope) {
-      router.replace("/accounts/signup");
+      router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
     } else {
       const run = async () => {
         await authGoogle(
@@ -29,12 +30,12 @@ const AuthLogicGoogle: React.FC<AuthLogicGoogleProps> = () => {
                 "You have successfully logged in! Redirecting to the main page..."
               );
               setTimeout(() => {
-                router.replace("/home");
+                router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
               }, 1000);
             },
             onError: () => {
               toast.error("Google login failed");
-              router.replace("/accounts/signup");
+              router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
             },
           }
         );

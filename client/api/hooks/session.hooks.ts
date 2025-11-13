@@ -28,10 +28,13 @@ const Session = {
   },
   GetCurrent: {
     useQuery: (
-      options?: UseQueryOptions<SessionGetCurrentQueryFnResult, AxiosErrorRes>
+      options?: Omit<
+        UseQueryOptions<SessionGetCurrentQueryFnResult, AxiosErrorRes>,
+        "queryKey" | "queryFn"
+      >
     ) => {
       return useQuery<SessionGetCurrentQueryFnResult, AxiosErrorRes>({
-        queryKey: ["current-session"],
+        queryKey: ["userSession"],
         queryFn: () => sessionGetCurrentQueryFn(),
         ...options,
       });

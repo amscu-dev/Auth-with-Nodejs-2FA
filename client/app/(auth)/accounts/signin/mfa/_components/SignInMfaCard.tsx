@@ -28,6 +28,7 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { FaCheckCircle } from "react-icons/fa";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { env } from "@/env";
 
 interface SignInMfaCardProps {
   on2MfaMethod: (method: "totp" | "backup-code") => void;
@@ -63,13 +64,13 @@ const SignInMfaCard: React.FC<SignInMfaCardProps> = ({ on2MfaMethod }) => {
           toast.success(
             "Authentication successful. You will be redirected to your dashboard ..."
           );
-          router.replace("/home");
+          router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
         }
       },
       onError: (error) => {
         if (error.status === 401 || error.status === 403) {
           setIsRedirecting(true);
-          router.replace("/accounts/signin");
+          router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
         }
         if (error.response && error.response.data.message) {
           form.setError("code", { message: error.response.data.message });

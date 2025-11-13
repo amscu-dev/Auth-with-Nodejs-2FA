@@ -41,7 +41,10 @@ export class MfaService {
     }
 
     // ! 02. For Every Request at this endpoint we will regenerate code.
-    const secret = speakeasy.generateSecret({ name: config.APP_NAME });
+    const secret = speakeasy.generateSecret({
+      name: config.APP_NAME,
+      length: 12,
+    });
     const secretKey = secret.base32;
     const url = speakeasy.otpauthURL({
       secret: secretKey,
@@ -175,7 +178,7 @@ export class MfaService {
 
     if (!isValid) {
       throw new BadRequestException(
-        "The MFA code you entered is incorrect or has expired. Please request a new code to complete the verification.",
+        "The verification code you entered is invalid or has expired. Please enter a valid code to continue.",
         ErrorCode.MFA_INVALID_VERIFICATION_CODE
       );
     }

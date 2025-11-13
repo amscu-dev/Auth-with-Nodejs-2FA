@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/context/theme-provider";
 import QueryProvider from "@/context/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from "nextjs-toploader";
-
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 const dm_sans = DM_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -43,6 +43,7 @@ export default function RootLayout({
                 richColors={true}
               />
             </ThemeProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
           </QueryProvider>
         </body>
       </html>

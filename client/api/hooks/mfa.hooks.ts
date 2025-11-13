@@ -2,8 +2,7 @@ import { AxiosErrorRes } from "@/config/axios.config";
 import {
   useMutation,
   UseMutationOptions,
-  useQuery,
-  UseQueryOptions,
+  useQueryClient,
 } from "@tanstack/react-query";
 import {
   mfaBackupCodeConsumeMutationFn,
@@ -32,13 +31,13 @@ import {
 
 const Mfa = {
   Setup: {
-    useQuery: (
-      options?: UseQueryOptions<MfaSetupQueryFnResult, AxiosErrorRes>
+    useMutation: (
+      options?: UseMutationOptions<MfaSetupQueryFnResult, AxiosErrorRes>
     ) => {
-      return useQuery<MfaSetupQueryFnResult, AxiosErrorRes>({
+      return useMutation<MfaSetupQueryFnResult, AxiosErrorRes>({
         ...options,
-        queryKey: ["mfa-setup"],
-        queryFn: () => mfaSetupQueryFn(),
+        mutationKey: ["mfa-setup"],
+        mutationFn: () => mfaSetupQueryFn(),
       });
     },
   },
@@ -55,10 +54,10 @@ const Mfa = {
         AxiosErrorRes,
         MfaVerifyMutationFnBody
       >({
-        ...options,
         mutationKey: ["mfa-verify"],
         mutationFn: (data: MfaVerifyMutationFnBody) =>
           mfaVerifyMutationFn(data),
+        ...options,
       });
     },
   },

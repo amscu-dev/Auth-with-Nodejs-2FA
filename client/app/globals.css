@@ -152,6 +152,22 @@ body {
   }
 }
 
+@keyframes slideTopAndBack {
+  0% {
+    top: 100%;
+  }
+  40% {
+    top: 0%;
+  }
+  100% {
+    top: 50%;
+  }
+}
+
+.slide-top-back {
+  animation: slideTopAndBack 2.5s ease-in-out forwards;
+}
+
 .show-error {
   display: block;
   animation: slide-in 500ms forwards;

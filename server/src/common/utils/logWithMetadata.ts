@@ -48,7 +48,7 @@ export function logWithMetadata({
   if (level === "info") {
     loggerChild.info(message);
   } else if (level === "warn") {
-    loggerChild.warn(message);
+    loggerChild.warning(message);
   } else {
     loggerChild.error(message);
   }

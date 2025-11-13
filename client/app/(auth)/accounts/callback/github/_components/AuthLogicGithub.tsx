@@ -4,6 +4,7 @@ import React from "react";
 import client from "@/api/index";
 import { toast } from "sonner";
 import GithubFallback from "./GithubFallback";
+import { env } from "@/env";
 interface AuthLogicGithubProps {}
 
 const AuthLogicGithub: React.FC<AuthLogicGithubProps> = () => {
@@ -16,7 +17,7 @@ const AuthLogicGithub: React.FC<AuthLogicGithubProps> = () => {
 
   React.useEffect(() => {
     if (!state || !code) {
-      router.replace("/accounts/signup");
+      router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
     } else {
       const run = async () => {
         await authGithub(
@@ -27,12 +28,12 @@ const AuthLogicGithub: React.FC<AuthLogicGithubProps> = () => {
                 "You have successfully logged in! Redirecting to the main page..."
               );
               setTimeout(() => {
-                router.replace("/home");
+                router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
               }, 500);
             },
             onError: () => {
               toast.error("Github login failed");
-              router.replace("/accounts/signup");
+              router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
             },
           }
         );

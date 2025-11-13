@@ -28,6 +28,7 @@ import { startAuthentication, WebAuthnError } from "@simplewebauthn/browser";
 import { hasUserHandle } from "@/lib/helpers";
 import { PasskeyResponseSchema } from "@/schemas/passkey.validator";
 import { AuthRequestSchema } from "@/schemas/auth.validator";
+import { env } from "@/env";
 
 interface MainSignInCardProps {
   handleSignInMethod: (method: string) => void;
@@ -179,7 +180,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
               onSuccess: (verifyData) => {
                 setIsRedirecting(true);
                 if (verifyData.data.nextStep === "OK") {
-                  router.replace("/home");
+                  router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
                 }
                 if (verifyData.data.nextStep === "CONFIRM_SIGN_UP") {
                   router.push(

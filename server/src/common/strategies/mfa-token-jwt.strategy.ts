@@ -54,6 +54,7 @@ const verifyCallback: VerifyCallbackWithRequest = async (
     const requestPath = req.originalUrl || req.url;
     const pathPurposeMap = {
       [`${config.BASE_PATH}/mfa/verify/login`]: "login",
+      [`${config.BASE_PATH}/mfa/backup-code/login`]: "login",
       [`${config.BASE_PATH}/mfa/verify/forgot-password`]: "forgot_password",
     };
     const expectedPurpose = pathPurposeMap[requestPath];
@@ -67,7 +68,8 @@ const verifyCallback: VerifyCallbackWithRequest = async (
         false
       );
     }
-
+    console.log(expectedPurpose);
+    console.log(payload.purpose);
     if (payload.purpose !== expectedPurpose) {
       return done(
         new UnauthorizedException(

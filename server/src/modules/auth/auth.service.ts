@@ -136,7 +136,7 @@ export class AuthService {
 
     if (!supportsRegular) {
       throw new ForbiddenException(
-        "You do not have permission to perform this action. To benefit of 2FA, please add a password-based login method in your account settings first. (choose forgot password)",
+        "You do not have permission to perform this action. Please add a password-based login method in your account settings first. (choose forgot password)",
         ErrorCode.ACCESS_FORBIDDEN
       );
     }

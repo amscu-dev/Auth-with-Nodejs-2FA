@@ -4,6 +4,7 @@ import MagicLinkAuthenticateFallback from "./MagicLinkAuthenticateFallback";
 import client from "@/api/index";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { env } from "@/env";
 
 interface MagicLinkAuthenticateCardProps {}
 
@@ -27,7 +28,7 @@ const MagicLinkAuthenticateCard: React.FC<
         "We couldn’t find your magic token. Please open the login link from your email again."
       );
       setTimeout(() => {
-        router.replace("/accounts/signin");
+        router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
       }, 500);
     }
 
@@ -40,7 +41,7 @@ const MagicLinkAuthenticateCard: React.FC<
               "You have successfully logged in! Redirecting to the main page..."
             );
             setTimeout(() => {
-              router.replace("/home");
+              router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
             }, 500);
           },
           onError: () => {
@@ -48,7 +49,7 @@ const MagicLinkAuthenticateCard: React.FC<
               "This magic link is invalid or has expired. Please request a new ones"
             );
             setTimeout(() => {
-              router.replace("/accounts/signin");
+              router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
             }, 500);
           },
         }
