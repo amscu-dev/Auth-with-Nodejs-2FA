@@ -2,8 +2,6 @@
 import { useAuthContext } from "@/context/auth-provider";
 import React from "react";
 import { MdOutlineQrCodeScanner } from "react-icons/md";
-import { IoShieldCheckmarkSharp } from "react-icons/io5";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import EnableMfa from "./EnableMfa";
 import DisableMfa from "./DisableMfa";
@@ -13,7 +11,7 @@ const MfaSection: React.FC<MfaSectionProps> = () => {
   const { user, isLoading, isFetching } = useAuthContext();
   const hasMfa = user?.userPreferences.enable2FA;
   return (
-    <div className="w-full flex flex-col gap-2 pl-2 pt-4 border-b pb-3">
+    <>
       <div className="flex items-center justify-start gap-2">
         <MdOutlineQrCodeScanner />
         <h1 className="text-base font-semibold">Two-Factor Authentication</h1>
@@ -36,7 +34,7 @@ const MfaSection: React.FC<MfaSectionProps> = () => {
           <EnableMfa />
         )}
       </div>
-    </div>
+    </>
   );
 };
 

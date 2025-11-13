@@ -30,7 +30,6 @@ import { CiCircleInfo } from "react-icons/ci";
 import { FaCircleCheck } from "react-icons/fa6";
 import { toast } from "sonner";
 import { useAuthContext } from "@/context/auth-provider";
-import { AxiosError } from "axios";
 
 interface EnableMfaProps {}
 const EnableMfa: React.FC<EnableMfaProps> = () => {

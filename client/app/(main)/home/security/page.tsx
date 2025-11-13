@@ -2,6 +2,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MfaCard from "./_components/MfaCard";
+import PasskeyCard from "./_components/PasskeyCard";
 const HomeSecurityPage = () => {
   return (
     <main className="w-full h-full flex">
@@ -10,7 +11,7 @@ const HomeSecurityPage = () => {
           <TabsTrigger value="mfa">Two-Factor Authentication (2FA)</TabsTrigger>
           <TabsTrigger value="sessions">Authentication Sessions</TabsTrigger>
         </TabsList>
-        <TabsContent value="mfa" className="flex-1 mx-2 mb-4">
+        <TabsContent value="mfa" className="flex-1 mx-2 mb-4 flex flex-col">
           <MfaCard />
           <PasskeyCard />
         </TabsContent>

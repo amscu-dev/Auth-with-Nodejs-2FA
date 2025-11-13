@@ -1111,25 +1111,25 @@ export interface PasskeyRemovedSuccessResponse {
 export type PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItemAaguid =
   {
     /** The name of the passkey provider. */
-    name?: string;
+    name: string;
     /** The base64 encoded SVG for the dark theme icon. */
-    icon_dark?: string;
+    icon_dark: string;
     /** The base64 encoded SVG for the light theme icon. */
-    icon_light?: string;
+    icon_light: string;
   };
 
 export type PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItem = {
-  aaguid?: PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItemAaguid;
+  aaguid: PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItemAaguid;
   /** The unique identifier of the passkey credential. */
-  credentialId?: string;
+  credentialId: string;
   /** The date and time when the passkey was created. */
-  createdAt?: string;
+  createdAt: Date;
   /** The date and time when the passkey was last used. */
-  lastUsed?: string;
+  lastUsed: Date;
 };
 
 export type PasskeyGetAllPasskeyByUserIdSuccessResponseData = {
-  passkeys?: PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItem[];
+  passkeys: PasskeyGetAllPasskeyByUserIdSuccessResponseDataPasskeysItem[];
 };
 
 export type PasskeyGetAllPasskeyByUserIdSuccessResponseMetadata = {
@@ -1141,13 +1141,13 @@ export type PasskeyGetAllPasskeyByUserIdSuccessResponseMetadata = {
 
 export interface PasskeyGetAllPasskeyByUserIdSuccessResponse {
   /** Indicates whether the request was successful. */
-  success?: boolean;
+  success: boolean;
   /** HTTP status code. */
-  statusCode?: number;
+  statusCode: number;
   /** A message summarizing the request result. */
-  message?: string;
-  data?: PasskeyGetAllPasskeyByUserIdSuccessResponseData;
-  metadata?: PasskeyGetAllPasskeyByUserIdSuccessResponseMetadata;
+  message: string;
+  data: PasskeyGetAllPasskeyByUserIdSuccessResponseData;
+  metadata: PasskeyGetAllPasskeyByUserIdSuccessResponseMetadata;
 }
 
 export type GetAllSessionsSuccessResponseDataSessionsItemUserAgent = {

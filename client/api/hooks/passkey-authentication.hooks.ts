@@ -206,6 +206,7 @@ const Passkey = {
         ...options,
         queryKey: ["passkeys", userid],
         queryFn: () => passkeyAllGetByUserIdQueryFn(userid),
+        enabled: !!userid,
       });
     },
   },

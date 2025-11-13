@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import React, { useId, useState } from "react";
+import React, { useState } from "react";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
 import client from "@/api/index";
 import {
@@ -186,7 +186,7 @@ const DisableMfa: React.FC<DisableMfaProps> = () => {
                       className="text-xs font-light"
                       disabled={isPendingDisableMfaTOTP}
                       type="button"
-                      onClick={(e) => {
+                      onClick={() => {
                         totpForm.reset();
                         setMfaDisabledMethod("backup");
                       }}
@@ -278,7 +278,7 @@ const DisableMfa: React.FC<DisableMfaProps> = () => {
                       className="text-xs font-light"
                       disabled={isPendingDisableMfaBackupCode}
                       type="button"
-                      onClick={(e) => {
+                      onClick={() => {
                         backupForm.reset();
                         setMfaDisabledMethod("mfa");
                       }}

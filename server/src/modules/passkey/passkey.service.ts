@@ -495,7 +495,7 @@ export default class PasskeyService {
       );
     }
 
-    if (challengeSession.passkeyChallengeSessionPurpose !== "signin") {
+    if (challengeSession.passkeyChallengeSessionPurpose !== "add-new-key") {
       throw new BadRequestException(
         "Authentication failed, the passkey session purpose does not match the expected type. Please restart the passkey process.",
         ErrorCode.PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE
@@ -620,6 +620,7 @@ export default class PasskeyService {
       challenge: publicKeyCredentialRequestOptions.challenge,
       passkeyChallengeSessionPurpose: "delete-key",
     });
+    console.log(publicKeyCredentialRequestOptions.challenge);
     return publicKeyCredentialRequestOptions;
   }
 
@@ -661,12 +662,11 @@ export default class PasskeyService {
         decodeBase64(authenticationResponse.response.clientDataJSON, "utf8")
       )
     );
-
+    console.log(challenge);
     // ! 04. Find session challenge
     const challengeSession = await PasskeyChallengeSessionModel.findOne({
       challenge: challenge,
       passkeyChallengeSessionPurpose: "delete-key",
-      userId: userid,
     });
 
     if (!challengeSession) {
@@ -683,7 +683,7 @@ export default class PasskeyService {
       );
     }
 
-    if (challengeSession.passkeyChallengeSessionPurpose !== "signin") {
+    if (challengeSession.passkeyChallengeSessionPurpose !== "delete-key") {
       throw new BadRequestException(
         "Authentication failed, the passkey session purpose does not match the expected type. Please restart the passkey process.",
         ErrorCode.PASSKEY_CHALLENGE_SESSION__INVALID_PURPOSE
