@@ -31,10 +31,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { data, error, isLoading, isFetching, refetch } =
     client.Session.GetCurrent.useQuery({
-      staleTime: Infinity,
+      staleTime: 1000 * 60 * 15,
     });
   const user = data?.data.user;
-
+  console.log(isFetching);
   return (
     <AuthContext.Provider
       value={{ user, error, isLoading, isFetching, refetch }}

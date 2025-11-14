@@ -23,7 +23,7 @@ const options: StrategyOptionsWithRequest = {
       if (!accessToken) {
         throw new UnauthorizedException(
           "Authentication failed, no authentication token provided.",
-          ErrorCode.AUTH_TOKEN_NOT_FOUND
+          ErrorCode.AUTH_ACCESS_TOKEN_NOT_FOUND
         );
       }
       return accessToken;
@@ -57,7 +57,7 @@ const verifyCallback: VerifyCallbackWithRequest = async (
       return done(
         new UnauthorizedException(
           "Authentication failed, the user associated with this token does not exist.",
-          ErrorCode.AUTH_TOKEN_USER_NOT_FOUND
+          ErrorCode.AUTH_ACCESS_TOKEN_USER_NOT_FOUND
         ),
         false
       );
@@ -69,7 +69,7 @@ const verifyCallback: VerifyCallbackWithRequest = async (
       return done(
         new UnauthorizedException(
           "Authentication failed, the token session is invalid, expired, or has already been consumed.",
-          ErrorCode.AUTH_TOKEN_SESSION_INVALID
+          ErrorCode.AUTH_ACCESS_TOKEN_SESSION_INVALID
         )
       );
     }
@@ -80,7 +80,7 @@ const verifyCallback: VerifyCallbackWithRequest = async (
       return done(
         new UnauthorizedException(
           "Authentication failed, the access token does not match the current session.",
-          ErrorCode.AUTH_TOKEN_SESSION_MISMATCH
+          ErrorCode.AUTH_ACCESS_TOKEN_SESSION_MISMATCH
         )
       );
     }
@@ -117,13 +117,13 @@ export const AuthenticateAccessJWTToken = (
         if (!user && info.name === "JsonWebTokenError") {
           throw new UnauthorizedException(
             `Authentication failed: ${info.message}`,
-            ErrorCode.AUTH_TOKEN_INVALID
+            ErrorCode.AUTH_ACCESS_TOKEN_INVALID
           );
         }
         if (!user && info.name === "TokenExpiredError") {
           throw new UnauthorizedException(
             `Authentication failed: ${info.message}`,
-            ErrorCode.AUTH_TOKEN_EXPIRED
+            ErrorCode.AUTH_ACCESS_TOKEN_EXPIRED
           );
         }
       }

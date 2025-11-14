@@ -1,5 +1,6 @@
 import { Location } from "@/database/models/resetPasswordLog.model";
 import { UserAgent } from "@/database/models/session.model";
+import mongoose from "@/database/mongoose/mongoose";
 import { AsyncLocalStorage } from "async_hooks";
 
 export type AsyncRequestContext = {
@@ -13,6 +14,7 @@ export type AsyncRequestContext = {
   reqHeaders?: Record<string, any>;
   reqPayload?: any;
   reqQueryStrings?: Record<string, any>;
+  reqMfaSessionId?: mongoose.Types.ObjectId;
 };
 
 export const asyncLocalStorage = new AsyncLocalStorage<Map<string, any>>();
@@ -25,6 +27,9 @@ export const getInfoFromAsyncLocalStorage = () => {
   const reqUserAgent = asyncLocalStorage
     .getStore()
     ?.get("reqUserAgent") as UserAgent;
+  const reqMfaSessionId = asyncLocalStorage
+    .getStore()
+    ?.get("reqMfaSessionId") as mongoose.Types.ObjectId;
 
-  return { reqIp, reqIpLocation, reqUserAgent };
+  return { reqIp, reqIpLocation, reqUserAgent, reqMfaSessionId };
 };

@@ -1,4 +1,10 @@
-import { AxiosError, AxiosRequestConfig, AxiosInstance } from "axios";
+import {
+  AxiosError,
+  AxiosRequestConfig,
+  AxiosInstance,
+  isAxiosError,
+  AxiosResponse,
+} from "axios";
 import axios from "axios";
 import { env } from "@/env";
 import { ErrorCode } from "@/types/enums/error-code.enum";
@@ -33,19 +39,84 @@ const AXIOS_INSTANCE: AxiosInstance = axios.create({
   timeout: 10000,
 });
 
+const accessTokenErrorCodes = [
+  "AUTH_ACCESS_TOKEN_NOT_FOUND",
+  "AUTH_ACCESS_TOKEN_TYPE_INVALID",
+  "AUTH_ACESS_TOKEN_USER_NOT_FOUND",
+  "AUTH_ACCESS_TOKEN_SESSION_INVALID",
+  "AUTH_ACCESS_TOKEN_SESSION_MISMATCH",
+  "AUTH_ACCESS_TOKEN_EXPIRED",
+  "AUTH_ACCESS_TOKEN_INVALID",
+];
+
+interface FailedRequestsQueue {
+  resolve: (value: AxiosResponse) => void;
+  reject: (value: AxiosError) => void;
+  config: AxiosRequestConfig;
+  error: AxiosError;
+}
+
+let failedRequestsQueue: FailedRequestsQueue[] = [];
+let isTokenRefreshing = false;
+
 AXIOS_INSTANCE.interceptors.response.use(
   (response) => {
-    if (response.status === 201 && response.data.data.url) {
-      window.location.href = response.data.data.url;
-    }
     return response;
   },
-  (error) => {
-    if (error.response) {
-      const { data, status } = error.response;
-      if (data === "Unauthorized" && status === 401) {
-        // aici poți implementa retry pe /refresh
+  async (error: AxiosError) => {
+    if (isAxiosError<ErrorRes>(error) && error.response && error.config) {
+      const originalRequestConfig = error.config;
+      const errorCode = error.response.data.errorCode;
+      const isUnauthorizeError = error.response.status === 401;
+      const isAccessTokenError = accessTokenErrorCodes.includes(errorCode);
+
+      // if s not unauthorized error
+      if (!isUnauthorizeError) {
+        return Promise.reject(error);
       }
+      // if s not access token error
+      if (!isAccessTokenError) {
+        return Promise.reject(error);
+      }
+
+      // if request for refreshing token its on, we add request to queue
+      if (isTokenRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedRequestsQueue.push({
+            resolve,
+            reject,
+            config: originalRequestConfig,
+            error: error,
+          });
+        });
+      }
+
+      // we mark begging of refreshing token
+      isTokenRefreshing = true;
+
+      // refresh token logic
+      if (isAccessTokenError && isUnauthorizeError) {
+        try {
+          await AXIOS_INSTANCE.get("/auth/refresh");
+
+          // if we do not got an error here we resolve all other request from queue
+          failedRequestsQueue.forEach(({ resolve, reject, config }) => {
+            AXIOS_INSTANCE(config)
+              .then((response) => resolve(response))
+              .catch((error) => reject(error));
+          });
+        } catch (error: unknown) {
+          console.error(error);
+          failedRequestsQueue.forEach(({ reject, error }) => reject(error));
+          window.location.href = "/accounts/signin";
+          return Promise.reject(error);
+        } finally {
+          failedRequestsQueue = [];
+          isTokenRefreshing = false;
+        }
+      }
+
+      return AXIOS_INSTANCE(originalRequestConfig);
     }
     return Promise.reject(error);
   }

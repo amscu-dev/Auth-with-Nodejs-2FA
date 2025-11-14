@@ -9,6 +9,7 @@ import { useAuthContext } from "@/context/auth-provider";
 import { PasskeyResponseSchema } from "@/schemas/passkey.validator";
 import { startRegistration, WebAuthnError } from "@simplewebauthn/browser";
 import { toast } from "sonner";
+import { Loader } from "lucide-react";
 interface PasskeysNotFoundCardProps {
   refetchPasskeys: () => void;
 }
@@ -38,24 +39,22 @@ const PasskeysNotFoundCard: React.FC<PasskeysNotFoundCardProps> = ({
               data: { publicKeyOpts },
             } = PasskeyResponseSchema.signUpInit.parse(data);
             try {
-              console.log(publicKeyOpts);
               setIsCreatingPasskey(true);
               const credential = await startRegistration({
                 optionsJSON: {
                   ...publicKeyOpts,
                 },
               });
-              console.log(credential);
               await verify(
                 { data: credential, userid: user._id },
                 {
-                  onSuccess: (data) => {
-                    console.log(data);
+                  onSuccess: () => {
                     toast.success(
                       "Passkey has been successfully added! You can now log in without a password."
                     );
                     refetchPasskeys();
                   },
+
                   onError: () => {
                     setIsCreatingPasskey(false);
                   },
@@ -128,7 +127,11 @@ const PasskeysNotFoundCard: React.FC<PasskeysNotFoundCardProps> = ({
         onClick={handleAddPasskey}
         disabled={disabledState}
       >
-        Add Passkey
+        {disabledState ? (
+          <Loader className="animate-spin text-white" />
+        ) : (
+          "Add Passkey"
+        )}
       </Button>
     </div>
   );

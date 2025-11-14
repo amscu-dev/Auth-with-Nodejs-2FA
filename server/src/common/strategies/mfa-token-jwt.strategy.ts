@@ -13,6 +13,7 @@ import { MFATokenPayload } from "../utils/jwt";
 import { MFASessionModel } from "@/database/models/mfaSession.model";
 import { asyncLocalStorage } from "../context/asyncLocalStorage";
 import { UnauthorizedException } from "../utils/catch-errors";
+import mongoose from "@/database/mongoose/mongoose";
 
 const options: StrategyOptionsWithRequest = {
   jwtFromRequest: ExtractJwt.fromExtractors([
@@ -68,8 +69,6 @@ const verifyCallback: VerifyCallbackWithRequest = async (
         false
       );
     }
-    console.log(expectedPurpose);
-    console.log(payload.purpose);
     if (payload.purpose !== expectedPurpose) {
       return done(
         new UnauthorizedException(
@@ -116,11 +115,8 @@ const verifyCallback: VerifyCallbackWithRequest = async (
         )
       );
     }
-    mfaSession.consumed = true;
-    await mfaSession.save();
     req.user = user;
-    req.loginAttemptId = payload.loginAttemptId;
-    done(null, user);
+    done(null, { user: user, mfaTokenSessionId: mfaSession._id });
   } catch (err) {
     done(err, false);
   }
@@ -142,26 +138,29 @@ export const AuthenticateMfaJWTToken = (
     { session: false },
     (
       err: any,
-      user: Express.User,
+      data: { user: Express.User; mfaTokenSessionId: mongoose.Types.ObjectId },
       info: { name: string; message: string } | undefined
     ) => {
       if (info) {
-        if (!user && info.name === "JsonWebTokenError") {
+        if (!data && info.name === "JsonWebTokenError") {
           throw new UnauthorizedException(
             `Authentication failed: ${info.message}`,
             ErrorCode.AUTH_TOKEN_INVALID
           );
         }
-        if (!user && info.name === "TokenExpiredError") {
+        if (!data && info.name === "TokenExpiredError") {
           throw new UnauthorizedException(
             `Authentication failed: ${info.message}`,
             ErrorCode.AUTH_TOKEN_EXPIRED
           );
         }
       }
-      if (user && !err) {
-        req.user = user;
-        asyncLocalStorage.getStore()?.set("reqUserId", user.id);
+      if (data && !err) {
+        req.user = data.user;
+        asyncLocalStorage.getStore()?.set("reqUserId", data.user.id);
+        asyncLocalStorage
+          .getStore()
+          ?.set("reqMfaSessionId", data.mfaTokenSessionId);
       }
       if (err) {
         next(err);

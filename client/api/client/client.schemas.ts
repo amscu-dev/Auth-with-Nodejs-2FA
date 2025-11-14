@@ -1151,38 +1151,38 @@ export interface PasskeyGetAllPasskeyByUserIdSuccessResponse {
 }
 
 export type GetAllSessionsSuccessResponseDataSessionsItemUserAgent = {
-  browser?: string;
-  version?: string;
-  os?: string;
-  platform?: string;
+  browser: string;
+  version: string;
+  os: string;
+  platform: string;
 };
 
 export type GetAllSessionsSuccessResponseDataSessionsItem = {
   /** Unique identifier of the session. */
-  _id?: string;
+  _id: string;
   /** Unique identifier of the user who owns the session. */
-  userId?: string;
-  userAgent?: GetAllSessionsSuccessResponseDataSessionsItemUserAgent;
+  userId: string;
+  userAgent: GetAllSessionsSuccessResponseDataSessionsItemUserAgent;
   /** The expiration date and time of the session. */
-  expiredAt?: string;
+  expiredAt: string;
   /** The creation date and time of the session. */
-  createdAt?: string;
+  createdAt: string;
   /** Indicates if this is the current session. */
-  isCurrent?: boolean;
+  isCurrent: boolean;
 };
 
 export type GetAllSessionsSuccessResponseData = {
-  sessions?: GetAllSessionsSuccessResponseDataSessionsItem[];
+  sessions: GetAllSessionsSuccessResponseDataSessionsItem[];
 };
 
 export interface GetAllSessionsSuccessResponse {
   /** Indicates whether the operation was successful */
-  success?: boolean;
+  success: boolean;
   /** HTTP status code of the response */
-  statusCode?: number;
-  message?: string;
-  data?: GetAllSessionsSuccessResponseData;
-  metadata?: ResponseMetadata;
+  statusCode: number;
+  message: string;
+  data: GetAllSessionsSuccessResponseData;
+  metadata: ResponseMetadata;
 }
 
 export type GetCurrentSessionSuccessResponseData = {

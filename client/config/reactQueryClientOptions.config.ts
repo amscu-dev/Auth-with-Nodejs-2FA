@@ -3,9 +3,9 @@ import {
   QueryCache,
   QueryClientConfig,
 } from "@tanstack/react-query";
-import { AxiosErrorRes } from "./axios.config";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
+import { ErrorRes } from "./axios.config";
 
 let lastDelay = 1000;
 
@@ -21,8 +21,8 @@ const queryClientConfig: QueryClientConfig = {
     // onError from the QueryCache is called only once when a query completely fails — meaning after all retries have been exhausted, not on each individual retry attempt.
     onError: (error) => {
       console.log(error);
-      if (isAxiosError<AxiosErrorRes>(error)) {
-        const msg = error.response?.data?.message || error.message;
+      if (isAxiosError<ErrorRes>(error)) {
+        const msg = error.response?.data.message || error.message;
         toast.error(`${msg}`);
       } else {
         toast.error(`Unknown error: ${(error as Error).message}`);
@@ -31,8 +31,8 @@ const queryClientConfig: QueryClientConfig = {
   }),
   mutationCache: new MutationCache({
     onError: (error) => {
-      if (isAxiosError<AxiosErrorRes>(error)) {
-        const msg = error.response?.data?.message || error.message;
+      if (isAxiosError<ErrorRes>(error)) {
+        const msg = error.response?.data.message || error.message;
         toast.error(`${msg}`);
       } else {
         toast.error(`Unknown error: ${(error as Error).message}`);
@@ -43,7 +43,7 @@ const queryClientConfig: QueryClientConfig = {
     queries: {
       staleTime: 0,
       retry: (failureCount, error) => {
-        if (isAxiosError<AxiosErrorRes>(error)) {
+        if (isAxiosError<ErrorRes>(error)) {
           const code = error.code;
           const status = error.response?.status;
 
@@ -66,7 +66,7 @@ const queryClientConfig: QueryClientConfig = {
     },
     mutations: {
       retry: (failureCount, error) => {
-        if (isAxiosError<AxiosErrorRes>(error)) {
+        if (isAxiosError<ErrorRes>(error)) {
           const code = error.code;
           const status = error.response?.status;
 

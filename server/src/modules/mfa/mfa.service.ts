@@ -27,6 +27,7 @@ import apiRequestWithRetry from "@/common/utils/retry-api";
 import { sendEmail } from "@/mailers/mailer";
 import { passwordResetTemplate } from "@/mailers/templates/template";
 import { getInfoFromAsyncLocalStorage } from "@/common/context/asyncLocalStorage";
+import { MFASessionModel } from "@/database/models/mfaSession.model";
 
 export class MfaService {
   public async generateMFASetup(req: Express.Request) {
@@ -247,10 +248,7 @@ export class MfaService {
   public async loginWithBackupCode(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
-
-    const uaSource = req.headers["user-agent"];
-    const parsedUA = useragent.parse(uaSource ?? "unknown");
-
+    const { reqUserAgent, reqMfaSessionId } = getInfoFromAsyncLocalStorage();
     if (!currentUser) {
       throw new NotFoundException(
         "User with the specified email was not found."
@@ -277,12 +275,12 @@ export class MfaService {
     // ! 04. Create auth session
     const session = await SessionModel.create({
       userId: currentUser._id,
-      userAgent: {
-        browser: parsedUA.browser || "unknown",
-        version: parsedUA.version || "unknown",
-        os: parsedUA.os || "unknown",
-        platform: parsedUA.platform || "unknown",
-      },
+      userAgent: reqUserAgent,
+    });
+
+    // ! 04.1 Now we can mark mfaSession as Consumed
+    await MFASessionModel.findByIdAndUpdate(reqMfaSessionId, {
+      consumed: true,
     });
 
     // ! 05. Create tokens associated with session
@@ -314,7 +312,7 @@ export class MfaService {
   public async verifyMFAForLogin(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
-    const { reqUserAgent } = getInfoFromAsyncLocalStorage();
+    const { reqUserAgent, reqMfaSessionId } = getInfoFromAsyncLocalStorage();
 
     if (!currentUser) {
       throw new NotFoundException(
@@ -358,6 +356,11 @@ export class MfaService {
       userAgent: reqUserAgent,
     });
 
+    // ! 04.1 Now we can mark mfaSession as Consumed
+    await MFASessionModel.findByIdAndUpdate(reqMfaSessionId, {
+      consumed: true,
+    });
+
     // ! 05. Generate tokens associated with session
     const accessToken = signJwtToken(
       {
@@ -386,7 +389,8 @@ export class MfaService {
   public async verifyMFAForChangingPassword(code: string, req: Request) {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
-
+    const { reqMfaSessionId } = getInfoFromAsyncLocalStorage();
+    console.log(reqMfaSessionId);
     if (!currentUser) {
       throw new NotFoundException("User not found.");
     }
@@ -447,7 +451,10 @@ export class MfaService {
         ErrorCode.EMAIL_SERVICE_ERROR
       );
     }
-
+    // ! 06.1 Now we can mark mfaSession as Consumed
+    await MFASessionModel.findByIdAndUpdate(reqMfaSessionId, {
+      consumed: true,
+    });
     return {
       url: resetLink,
     };

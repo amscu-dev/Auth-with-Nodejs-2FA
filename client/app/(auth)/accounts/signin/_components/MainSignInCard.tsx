@@ -181,6 +181,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                 setIsRedirecting(true);
                 if (verifyData.data.nextStep === "OK") {
                   router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
+                  toast.success("Welcome back! You're now signed in.");
                 }
                 if (verifyData.data.nextStep === "CONFIRM_SIGN_UP") {
                   router.push(

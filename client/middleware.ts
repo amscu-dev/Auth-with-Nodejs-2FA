@@ -16,7 +16,6 @@ export async function middleware(request: NextRequest) {
 
   // CASE 01:
   if (isProtectedRoute && !accessToken) {
-    console.log(`Hit protected route: ${isProtectedRoute}`);
     return Response.redirect(
       new URL(
         `/accounts/refresh?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`,
@@ -26,7 +25,6 @@ export async function middleware(request: NextRequest) {
   }
   // CASE 02:
   if (isProtectedRoute && accessToken) {
-    console.log(`Hit protected route: ${isProtectedRoute}`);
     const isUserAuthenticated = await validateAccessToken({ jwt: accessToken });
     if (!isUserAuthenticated)
       return Response.redirect(
@@ -38,7 +36,6 @@ export async function middleware(request: NextRequest) {
   }
   // CASE 03:
   if (isAuthenticationRoute && accessToken) {
-    console.log(`Hit authentication route: ${isAuthenticationRoute}`);
     return Response.redirect(new URL("/home/dashboard", nextUrl));
   }
 

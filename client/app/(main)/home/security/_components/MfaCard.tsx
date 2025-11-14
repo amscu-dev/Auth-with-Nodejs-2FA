@@ -5,7 +5,7 @@ interface MfaCardProps {}
 
 const MfaCard: React.FC<MfaCardProps> = () => {
   return (
-    <div className="w-full flex flex-col gap-2 pl-2 pt-4 border-b pb-3">
+    <div className="w-full flex flex-col gap-2 px-2 py-4 border-b">
       <MfaSection />
     </div>
   );
