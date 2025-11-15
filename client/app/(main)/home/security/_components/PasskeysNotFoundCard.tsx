@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
-import { FaKeycdn } from "react-icons/fa";
 import { GrFingerPrint } from "react-icons/gr";
 import { MdImportantDevices } from "react-icons/md";
 import { AiOutlineSafetyCertificate } from "react-icons/ai";
@@ -10,6 +9,7 @@ import { PasskeyResponseSchema } from "@/schemas/passkey.validator";
 import { startRegistration, WebAuthnError } from "@simplewebauthn/browser";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
+import Image from "next/image";
 interface PasskeysNotFoundCardProps {
   refetchPasskeys: () => void;
 }
@@ -83,14 +83,15 @@ const PasskeysNotFoundCard: React.FC<PasskeysNotFoundCardProps> = ({
   };
   return (
     <div className="flex flex-col items-center justify-center  gap-6">
-      <div>
-        <FaKeycdn className="text-6xl text-muted-foreground/80" />
+      <div className="place-self-center relative w-1/4 aspect-square">
+        <Image fill alt="passkey not found logo" src="/passkey-image.svg" />
       </div>
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-[min-content_max-content] gap-y-1 gap-x-2">
           <span className="place-self-center">
             <GrFingerPrint className="text-xl text-muted-foreground/90" />
           </span>
+
           <p className="text-sm font-semibold tracking-tighter text-muted-foreground/90 justify-self-start place-self-center">
             Log in without password
           </p>

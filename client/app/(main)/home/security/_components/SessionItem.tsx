@@ -58,7 +58,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
   };
   return (
     <div key={_id} className="flex p-2 pl-0">
-      <div className="w-10 aspect-square bg-slate-200 flex items-center justify-center rounded-[10px] mr-2">
+      <div className="w-10 aspect-square bg-muted  flex items-center justify-center rounded-[10px] mr-2">
         <Icon className="text-2xl" />
       </div>
       <div className="mr-6">

@@ -34,7 +34,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       staleTime: 1000 * 60 * 15,
     });
   const user = data?.data.user;
-  console.log(isFetching);
   return (
     <AuthContext.Provider
       value={{ user, error, isLoading, isFetching, refetch }}

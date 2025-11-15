@@ -6,6 +6,7 @@ import QueryProvider from "@/context/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from "nextjs-toploader";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import LinksBar from "@/components/links-bar/LinksBar";
 const dm_sans = DM_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default function RootLayout({
     <>
       <html lang="en" suppressHydrationWarning>
         <head />
-        <body className={`bg-background   ${dm_sans.className} antialiased  `}>
+        <body className={`bg-background ${dm_sans.className} antialiased`}>
           <QueryProvider>
             <ThemeProvider
               attribute="class"
@@ -36,6 +37,7 @@ export default function RootLayout({
                 speed={800}
                 color="linear-gradient(to right, rgb(219, 234, 254), rgb(147, 197, 253), rgb(59, 130, 246))"
               />
+              <LinksBar />
               {children}
               <Toaster
                 position="top-center"

@@ -17,7 +17,7 @@ const MfaSection: React.FC<MfaSectionProps> = () => {
         <h1 className="text-base font-semibold">Two-Factor Authentication</h1>
       </div>
       <div className="flex  gap-3 items-center h-9">
-        <p className="text-xs text-muted-foreground ">
+        <p className="text-xs text-muted-foreground sm:block hidden">
           Use an authenticator app such as Google Authenticator to add an extra
           layer of security to your account and protect your transactions.
         </p>

@@ -9,7 +9,7 @@ const HomeSecurityPage = () => {
   return (
     <main className="w-full h-full flex">
       <Tabs defaultValue="mfa" className="flex-1 flex flex-col">
-        <TabsList className="px-2 py-3 flex  border-b w-full justify-start h-fit bg-background">
+        <TabsList className="px-2 py-3 flex  border-b w-full justify-start h-fit bg-card">
           <TabsTrigger value="mfa" onClick={() => setActiveTab("mfa")}>
             Two-Factor Authentication (2FA)
           </TabsTrigger>

@@ -1,15 +1,15 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { HiViewGridAdd } from "react-icons/hi";
 import { IoCodeSlashOutline } from "react-icons/io5";
+
 const HomeDashboardPage = () => {
   return (
     <div className="w-full flex flex-col items-center justify-center  px-16">
-      <div className="flex w-full items-center justify-center mb-2">
-        <HiViewGridAdd size="3rem" />
+      <div className="relative w-2/5 aspect-square mb-8">
+        <Image fill alt="passkey not found logo" src="/hello-3.svg" />
       </div>
-      <h1 className="text-4xl tracking-wider font-mono mb-4">Welcome</h1>
       <p className="text-center text-sm text-muted-foreground/80 font-normal">
         Thank you for taking the time to explore this project.
       </p>

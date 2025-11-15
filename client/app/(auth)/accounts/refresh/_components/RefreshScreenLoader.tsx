@@ -16,7 +16,7 @@ const RefreshScreenLoader = () => {
           ariaLabel="mutating-dots-loading"
         />
         <p className="text-background text-xl tracking-widest font-semibold">
-          We’re renewing your session to keep you signed in. Please wait…
+          Refreshing your session… Please wait…
         </p>
       </div>
     </div>
