@@ -63,17 +63,35 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
 
   const handleGoogleAuth = async () => {
     await authenticateGoogle(undefined, {
-      onSuccess: () => {
-        setIsRedirecting(true);
-        toast.loading("You will be redirected to Google for authentication…");
+      onSuccess: (data) => {
+        if (!data.data.url) {
+          toast.error(
+            "Could not initiate Google authentication. Please try again."
+          );
+          return;
+        }
+        if (data.data.url) {
+          setIsRedirecting(true);
+          toast.loading("You will be redirected to Google for authentication…");
+          window.location.href = data.data.url;
+        }
       },
     });
   };
   const handleGithubAuth = async () => {
     await authenticateGithub(undefined, {
-      onSuccess: () => {
-        setIsRedirecting(true);
-        toast.loading("You will be redirected to Github for authentication…");
+      onSuccess: (data) => {
+        if (!data.data.url) {
+          toast.error(
+            "Could not initiate Github authentication. Please try again."
+          );
+          return;
+        }
+        if (data.data.url) {
+          setIsRedirecting(true);
+          toast.loading("You will be redirected to Github for authentication…");
+          window.location.href = data.data.url;
+        }
       },
     });
   };

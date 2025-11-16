@@ -20,6 +20,8 @@ export const MFA_PATH = `${config.BASE_PATH}/mfa`;
 const defaults: CookieOptions = {
   httpOnly: true,
   secure: config.NODE_ENV === "production" ? true : false,
+  domain:
+    process.env.NODE_ENV === "production" ? ".loginsandbox.xyz" : undefined,
   sameSite: config.NODE_ENV === "production" ? "strict" : "lax",
 };
 

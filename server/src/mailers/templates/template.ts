@@ -5,7 +5,7 @@ export const verifyEmailTemplate = (
   url: string,
   brandColor: string = "#2563EB"
 ) => ({
-  subject: "Confirm your Authy account",
+  subject: "Confirm your Login Sandbox account",
   text: `Please verify your email address by clicking the following link: ${url}`,
   html: `
     <html><head><style>
@@ -20,7 +20,7 @@ export const verifyEmailTemplate = (
       .footer { font-size: 14px; color: #999999; text-align: center; padding: 20px; }
     </style></head><body>
       <div class="container">
-        <div class="header">Authy</div>
+        <div class="header">Login Sandbox</div>
         <div class="content">
           <h1>Confirm Your Email Address</h1>
           <p>Thank you for signing up! Please confirm your account by clicking the button below.</p>
@@ -39,7 +39,7 @@ export const magicLinkEmailTemplate = (
   magicLinkUrl: string,
   brandColor: string = "#2563EB"
 ) => ({
-  subject: "Your Magic Login Link",
+  subject: "Your Magic Login Link - Login Sandbox -",
   text: `Click the button in this email to sign in to your account.`, // fără URL direct
   html: `
     <html>
@@ -77,7 +77,7 @@ export const magicLinkEmailTemplate = (
       </head>
       <body>
         <div class="container">
-          <div class="header">Authy</div>
+          <div class="header">Login Sandbox</div>
           <div class="content">
             <h1>Sign in to your account</h1>
             <p>Click the button below to sign in instantly. This link is valid for a limited time.</p>
@@ -97,7 +97,7 @@ export const passwordResetTemplate = (
   url: string,
   brandColor: string = "#2563EB"
 ) => ({
-  subject: "Reset Your Password",
+  subject: "Reset Your Password - Login Sandbox -",
   text: `To reset your password, please click the following link: ${url}`,
   html: `
     <html><head><style>
@@ -112,7 +112,7 @@ export const passwordResetTemplate = (
       .footer { font-size: 14px; color: #999999; text-align: center; padding: 20px; }
     </style></head><body>
       <div class="container">
-        <div class="header">Squeezy</div>
+        <div class="header">Login Sandbox</div>
         <div class="content">
           <h1>Reset Your Password</h1>
           <p>We received a request to reset your password. Click the button below to proceed with resetting your password.</p>
@@ -133,7 +133,7 @@ export const passwordResetSuccessTemplate = (
   userAgent: UserAgent,
   brandColor: string = "#2563EB"
 ) => ({
-  subject: "Your Password Has Been Reset Successfully",
+  subject: "Your Password Has Been Reset Successfully - Login Sandbox -",
   text: `Your password has been changed successfully. If you did not perform this action, please secure your account immediately.`,
   html: `
      <html>
@@ -151,7 +151,7 @@ export const passwordResetSuccessTemplate = (
       </head>
       <body>
         <div class="container">
-          <div class="header">Authy</div>
+          <div class="header">Login Sandbox</div>
           <div class="content">
             <h1>Password Reset Successful</h1>
             <p>Your password has been changed successfully. If you did not perform this action, please secure your account immediately.</p>

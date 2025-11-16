@@ -7,7 +7,7 @@ const appConfig = () => ({
   FRONTEND_ORIGIN: getEnv("FRONTEND_ORIGIN"),
   DB_URI: getEnv("DB_URI"),
   PORT: getEnv("PORT", "5000"),
-  BASE_PATH: getEnv("BASE_PATH", "/api/v1"),
+  BASE_PATH: getEnv("BASE_PATH"),
   LOG_LEVEL: getEnv("LOG_LEVEL", "info"),
   AUTHENTICATION: {
     TOKEN_ISSUER: getEnv("AUTHENTICATION_TOKEN_ISSUER"),

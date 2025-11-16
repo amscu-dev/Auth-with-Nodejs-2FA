@@ -40,10 +40,14 @@ import { requestLogger } from "./middlewares/loggMiddleware";
 // ! Initialize app
 const app = express();
 
+app.use((req, res, next) => {
+  console.log("CORS MADE IT HERE");
+  next();
+});
 // ! Library Middlewares
 app.use(express.json());
+app.use(cors({ credentials: true, origin: config.FRONTEND_ORIGIN }));
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(cookieParser());
 app.use(passport.initialize());
 

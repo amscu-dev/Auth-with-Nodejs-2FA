@@ -16,7 +16,7 @@ const LinksBar: React.FC<LinksBarProps> = () => {
       <Button
         asChild
         size="sm"
-        className="rounded-[9px]  mr-auto gap-0"
+        className="rounded-[9px]  mr-auto gap-0 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
         variant="outline"
       >
         <Link href="/">
@@ -28,7 +28,7 @@ const LinksBar: React.FC<LinksBarProps> = () => {
       <Button
         asChild
         size="sm"
-        className="w-28 rounded-[9px] bg-teal-500 text-white"
+        className="w-28 rounded-[9px] bg-teal-500 text-white hover:bg-teal-300"
         variant="outline"
       >
         <Link href="https://docs.loginsandbox.xyz">
