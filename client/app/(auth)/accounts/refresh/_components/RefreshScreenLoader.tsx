@@ -15,7 +15,7 @@ const RefreshScreenLoader = () => {
           color="#ffffff"
           ariaLabel="mutating-dots-loading"
         />
-        <p className="text-background text-xl tracking-widest font-semibold">
+        <p className="dark:text-white text-white text-xl tracking-widest font-semibold">
           Refreshing your session… Please wait…
         </p>
       </div>

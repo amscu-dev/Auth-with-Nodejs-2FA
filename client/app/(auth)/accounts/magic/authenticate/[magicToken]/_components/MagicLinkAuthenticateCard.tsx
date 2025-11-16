@@ -43,17 +43,17 @@ const MagicLinkAuthenticateCard: React.FC<
             toast.success(
               "You have successfully logged in! Redirecting to the main page..."
             );
-            // setTimeout(() => {
-            //   router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
-            // }, 500);
+            setTimeout(() => {
+              router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
+            }, 500);
           },
           onError: () => {
             toast.error(
               "This magic link is invalid or has expired. Please request a new ones"
             );
-            // setTimeout(() => {
-            //   router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
-            // }, 500);
+            setTimeout(() => {
+              router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
+            }, 500);
           },
         }
       );

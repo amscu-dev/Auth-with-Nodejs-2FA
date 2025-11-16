@@ -17,7 +17,7 @@ const GithubFallback: React.FC<GithubFallbackProps> = () => {
           color="#ffffff"
           ariaLabel="mutating-dots-loading"
         />
-        <p className="text-background text-xl tracking-widest font-semibold">
+        <p className="text-xl tracking-widest font-semibold dark:text-white text-white">
           Logging in
         </p>
       </div>

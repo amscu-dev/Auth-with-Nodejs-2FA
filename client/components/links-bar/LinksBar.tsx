@@ -12,8 +12,15 @@ import { usePathname } from "next/navigation";
 interface LinksBarProps {}
 
 const LinksBar: React.FC<LinksBarProps> = () => {
-  // const pathname = usePathname();
-  // console.log(pathname);
+  const pathname = usePathname();
+  const shouldBeHidden =
+    pathname === "/accounts/callback/google" ||
+    pathname === "/accounts/callback/github" ||
+    pathname === "/accounts/refresh" ||
+    pathname.startsWith("/accounts/magic/authenticate/");
+  if (shouldBeHidden) {
+    return null;
+  }
   return (
     <div className="absolute top-2 right-4 left-4 flex items-center justify-center gap-4 z-50 slide-in-from-top">
       <Button
