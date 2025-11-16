@@ -42,7 +42,7 @@ const AXIOS_INSTANCE: AxiosInstance = axios.create({
 const accessTokenErrorCodes = [
   "AUTH_ACCESS_TOKEN_NOT_FOUND",
   "AUTH_ACCESS_TOKEN_TYPE_INVALID",
-  "AUTH_ACESS_TOKEN_USER_NOT_FOUND",
+  "AUTH_ACCESS_TOKEN_USER_NOT_FOUND",
   "AUTH_ACCESS_TOKEN_SESSION_INVALID",
   "AUTH_ACCESS_TOKEN_SESSION_MISMATCH",
   "AUTH_ACCESS_TOKEN_EXPIRED",
@@ -64,60 +64,61 @@ AXIOS_INSTANCE.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    if (isAxiosError<ErrorRes>(error) && error.response && error.config) {
-      const originalRequestConfig = error.config;
-      const errorCode = error.response.data.errorCode;
-      const isUnauthorizeError = error.response.status === 401;
-      const isAccessTokenError = accessTokenErrorCodes.includes(errorCode);
+    console.log(error);
+    // if (isAxiosError<ErrorRes>(error) && error.response && error.config) {
+    //   const originalRequestConfig = error.config;
+    //   const errorCode = error.response.data.errorCode;
+    //   const isUnauthorizeError = error.response.status === 401;
+    //   const isAccessTokenError = accessTokenErrorCodes.includes(errorCode);
 
-      // if s not unauthorized error
-      if (!isUnauthorizeError) {
-        return Promise.reject(error);
-      }
-      // if s not access token error
-      if (!isAccessTokenError) {
-        return Promise.reject(error);
-      }
+    //   // if s not unauthorized error
+    //   if (!isUnauthorizeError) {
+    //     return Promise.reject(error);
+    //   }
+    //   // if s not access token error
+    //   if (!isAccessTokenError) {
+    //     return Promise.reject(error);
+    //   }
 
-      // if request for refreshing token its on, we add request to queue
-      if (isTokenRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedRequestsQueue.push({
-            resolve,
-            reject,
-            config: originalRequestConfig,
-            error: error,
-          });
-        });
-      }
+    //   // if request for refreshing token its on, we add request to queue
+    //   if (isTokenRefreshing) {
+    //     return new Promise((resolve, reject) => {
+    //       failedRequestsQueue.push({
+    //         resolve,
+    //         reject,
+    //         config: originalRequestConfig,
+    //         error: error,
+    //       });
+    //     });
+    //   }
 
-      // we mark begging of refreshing token
-      isTokenRefreshing = true;
+    //   // we mark begging of refreshing token
+    //   isTokenRefreshing = true;
 
-      // refresh token logic
-      if (isAccessTokenError && isUnauthorizeError) {
-        try {
-          await AXIOS_INSTANCE.get("/auth/refresh");
+    //   // refresh token logic
+    //   if (isAccessTokenError && isUnauthorizeError) {
+    //     try {
+    //       await AXIOS_INSTANCE.get("/auth/refresh");
 
-          // if we do not got an error here we resolve all other request from queue
-          failedRequestsQueue.forEach(({ resolve, reject, config }) => {
-            AXIOS_INSTANCE(config)
-              .then((response) => resolve(response))
-              .catch((error) => reject(error));
-          });
-        } catch (error: unknown) {
-          console.error(error);
-          failedRequestsQueue.forEach(({ reject, error }) => reject(error));
-          window.location.href = "/accounts/signin";
-          return Promise.reject(error);
-        } finally {
-          failedRequestsQueue = [];
-          isTokenRefreshing = false;
-        }
-      }
+    //       // if we do not got an error here we resolve all other request from queue
+    //       failedRequestsQueue.forEach(({ resolve, reject, config }) => {
+    //         AXIOS_INSTANCE(config)
+    //           .then((response) => resolve(response))
+    //           .catch((error) => reject(error));
+    //       });
+    //     } catch (error: unknown) {
+    //       console.error(error);
+    //       failedRequestsQueue.forEach(({ reject, error }) => reject(error));
+    //       window.location.href = "/accounts/signin";
+    //       return Promise.reject(error);
+    //     } finally {
+    //       failedRequestsQueue = [];
+    //       isTokenRefreshing = false;
+    //     }
+    //   }
 
-      return AXIOS_INSTANCE(originalRequestConfig);
-    }
+    //   return AXIOS_INSTANCE(originalRequestConfig);
+    // }
     return Promise.reject(error);
   }
 );

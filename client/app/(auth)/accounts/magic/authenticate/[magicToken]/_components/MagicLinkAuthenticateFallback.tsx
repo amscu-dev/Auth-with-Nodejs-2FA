@@ -18,7 +18,7 @@ const MagicLinkAuthenticateFallback: React.FC<
           color="#ffffff"
           ariaLabel="mutating-dots-loading"
         />
-        <p className="text-background text-xl tracking-widest font-semibold">
+        <p className="text-background text-xl tracking-widest font-semibold text-white">
           Logging in
         </p>
       </div>

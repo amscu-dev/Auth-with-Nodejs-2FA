@@ -7,10 +7,13 @@ import Link from "next/link";
 import { IoCodeSlashSharp } from "react-icons/io5";
 import ToggleThemeButton from "./ToggleThemeButton";
 import { HiViewGridAdd } from "react-icons/hi";
+import { usePathname } from "next/navigation";
 
 interface LinksBarProps {}
 
 const LinksBar: React.FC<LinksBarProps> = () => {
+  // const pathname = usePathname();
+  // console.log(pathname);
   return (
     <div className="absolute top-2 right-4 left-4 flex items-center justify-center gap-4 z-50 slide-in-from-top">
       <Button

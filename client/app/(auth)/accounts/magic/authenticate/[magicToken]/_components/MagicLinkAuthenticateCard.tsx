@@ -24,15 +24,18 @@ const MagicLinkAuthenticateCard: React.FC<
   // VALIDATION LOGIC
   useEffect(() => {
     if (!magicToken) {
+      console.log("Se ruleaza !magictoken, valoare token:", magicToken);
       toast.error(
         "We couldn’t find your magic token. Please open the login link from your email again."
       );
       setTimeout(() => {
         router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
       }, 500);
+      return;
     }
 
     const handleAuthentication = async () => {
+      console.log("Se ruleaza handleAuthentication");
       await authenticateToken(
         { token: magicToken },
         {
@@ -40,17 +43,17 @@ const MagicLinkAuthenticateCard: React.FC<
             toast.success(
               "You have successfully logged in! Redirecting to the main page..."
             );
-            setTimeout(() => {
-              router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
-            }, 500);
+            // setTimeout(() => {
+            //   router.replace(env.NEXT_PUBLIC_LOGIN_REDIRECT);
+            // }, 500);
           },
           onError: () => {
             toast.error(
               "This magic link is invalid or has expired. Please request a new ones"
             );
-            setTimeout(() => {
-              router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
-            }, 500);
+            // setTimeout(() => {
+            //   router.replace(env.NEXT_PUBLIC_FAILED_LOGIN_REDIRECT);
+            // }, 500);
           },
         }
       );
