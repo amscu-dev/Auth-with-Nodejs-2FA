@@ -71,7 +71,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
   });
 
   // DISABLE STATE
-  const disable =
+  const disabled =
     isPendingGithubAuth ||
     isPendingGoogleAuth ||
     isPendingCheckEmail ||
@@ -261,7 +261,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                 name="email"
                 label="Please enter your email"
                 autoComplete="off"
-                disabled={disable}
+                disabled={disabled}
                 type="email"
                 placeholder="john.doe@gmail.com"
                 formItemClass="w-full space-y-0"
@@ -272,17 +272,20 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
               <Button
                 variant="link"
                 className="px-0 group text-[10px] font-light text-end"
-                disabled={disable}
+                disabled={disabled}
+                asChild
               >
-                <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
-                <Link href="/accounts/forgot-password">Forgot password ?</Link>
+                <Link href="/accounts/forgot-password">
+                  Forgot password ?{" "}
+                  <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+                </Link>
               </Button>
             </div>
             <div className="flex flex-col gap-3">
               <Button
                 className="w-full"
                 size="lg"
-                disabled={disable}
+                disabled={disabled}
                 name="password"
                 type="submit"
               >
@@ -300,7 +303,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
                 variant="outline"
                 className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
                 size="lg"
-                disabled={disable}
+                disabled={disabled}
                 name="magic"
                 type="submit"
               >
@@ -329,7 +332,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
             size="lg"
-            disabled={disable}
+            disabled={disabled}
             name="google"
             onClick={handleGoogleAuth}
           >
@@ -346,7 +349,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
             size="lg"
-            disabled={disable}
+            disabled={disabled}
             name="github"
             onClick={handleGithubAuth}
           >
@@ -363,7 +366,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
             variant="outline"
             className="w-full flex items-center disabled:bg-accent/90 disabled:text-card"
             size="lg"
-            disabled={disable}
+            disabled={disabled}
             name="passkey"
             onClick={handlePasskeyAuth}
           >
@@ -386,10 +389,13 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
           <Button
             variant="link"
             className="px-0 group font-semibold sm:text-[12px]"
-            disabled={disable}
+            disabled={disabled}
+            asChild
           >
-            <Link href="/accounts/signup">Sign Up</Link>
-            <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+            <Link href="/accounts/signup">
+              Sign Up{" "}
+              <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+            </Link>
           </Button>
         </div>
       </CardFooter>

@@ -131,9 +131,12 @@ const PasswordSignInCard: React.FC<PasswordSignInCardProps> = ({
                 variant="link"
                 className="px-0 group text-[10px] font-light text-end"
                 disabled={disabled}
+                asChild
               >
-                <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
-                <Link href="/accounts/forgot-password">Forgot password ?</Link>
+                <Link href="/accounts/forgot-password">
+                  Forgot password ?{" "}
+                  <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+                </Link>
               </Button>
             </div>
             <div className="flex flex-col gap-3">
@@ -167,9 +170,12 @@ const PasswordSignInCard: React.FC<PasswordSignInCardProps> = ({
             variant="link"
             className="px-0 group font-semibold sm:text-[12px]"
             disabled={disabled}
+            asChild
           >
-            <Link href="/accounts/signup">Sign Up</Link>
-            <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+            <Link href="/accounts/signup">
+              Sign Up{" "}
+              <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+            </Link>
           </Button>
         </div>
       </CardFooter>

@@ -249,9 +249,12 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
             variant="link"
             className="px-0 group font-semibold sm:text-[12px]"
             disabled={disable}
+            asChild
           >
-            <Link href="/accounts/signin">Sign In</Link>
-            <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+            <Link href="/accounts/signin">
+              Sign In{" "}
+              <IoIosArrowRoundForward className="opacity-0 group-hover:opacity-100 transition-all duration-150 -translate-x-3 group-hover:translate-x-0" />
+            </Link>
           </Button>
         </div>
       </CardFooter>
