@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
-import client from "@/api/index";
+import client from "@/services/index";
 import {
   Dialog,
   DialogClose,

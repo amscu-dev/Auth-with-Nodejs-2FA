@@ -20,7 +20,7 @@ import { HiViewGridAdd } from "react-icons/hi";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import client from "@/api/index";
+import client from "@/services/index";
 import { RotatingLines } from "react-loader-spinner";
 import { useRouter } from "next/navigation";
 import { ErrorCode } from "@/types/enums/error-code.enum";

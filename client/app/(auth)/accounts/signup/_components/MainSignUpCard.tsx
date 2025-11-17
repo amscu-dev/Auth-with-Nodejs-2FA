@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
-import client from "@/api/index";
+import client from "@/services/index";
 import { RotatingLines } from "react-loader-spinner";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

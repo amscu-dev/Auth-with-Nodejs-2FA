@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import React, { useState } from "react";
 import { MdOutlineDeleteOutline } from "react-icons/md";
-import client from "@/api/index";
+import client from "@/services/index";
 import { useTheme } from "next-themes";
 import { PasskeyResponseSchema } from "@/schemas/passkey.validator";
 import { startAuthentication, WebAuthnError } from "@simplewebauthn/browser";

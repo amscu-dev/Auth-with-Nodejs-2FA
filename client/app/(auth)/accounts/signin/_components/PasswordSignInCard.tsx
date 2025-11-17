@@ -15,7 +15,7 @@ import { HiViewGridAdd } from "react-icons/hi";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { RotatingLines } from "react-loader-spinner";
-import client from "@/api/index";
+import client from "@/services/index";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";

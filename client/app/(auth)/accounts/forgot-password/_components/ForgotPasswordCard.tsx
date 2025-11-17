@@ -15,7 +15,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { HiViewGridAdd } from "react-icons/hi";
 import { IoIosArrowRoundForward } from "react-icons/io";
-import client from "@/api/index";
+import client from "@/services/index";
 import { RotatingLines } from "react-loader-spinner";
 import { FaCheckCircle } from "react-icons/fa";
 import z from "zod";

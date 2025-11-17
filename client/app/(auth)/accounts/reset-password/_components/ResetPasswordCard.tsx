@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import client from "@/api/index";
+import client from "@/services/index";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { AuthRequestSchema } from "@/schemas/auth.validator";

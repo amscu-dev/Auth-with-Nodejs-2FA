@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import React, { useId, useState } from "react";
 import { TbXboxXFilled } from "react-icons/tb";
-import client from "@/api/index";
+import client from "@/services/index";
 import { Loader } from "lucide-react";
 import Image from "next/image";
 import { FiCopy } from "react-icons/fi";

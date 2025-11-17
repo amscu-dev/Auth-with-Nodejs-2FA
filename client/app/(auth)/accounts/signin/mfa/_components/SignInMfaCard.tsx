@@ -13,7 +13,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { HiViewGridAdd } from "react-icons/hi";
 import z from "zod";
-import client from "@/api/index";
+import client from "@/services/index";
 import {
   InputOTP,
   InputOTPGroup,

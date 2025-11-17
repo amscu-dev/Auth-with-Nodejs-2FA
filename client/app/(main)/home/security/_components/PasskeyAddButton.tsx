@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import React, { useState } from "react";
-import client from "@/api/index";
+import client from "@/services/index";
 import { useAuthContext } from "@/context/auth-provider";
 import { PasskeyResponseSchema } from "@/schemas/passkey.validator";
 import { startRegistration, WebAuthnError } from "@simplewebauthn/browser";

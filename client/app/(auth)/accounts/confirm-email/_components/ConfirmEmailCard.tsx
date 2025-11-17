@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import EmailVerifiedCard from "./EmailVerifiedCard";
 import { useRouter, useSearchParams } from "next/navigation";
-import client from "@/api/index";
+import client from "@/services/index";
 import ConfirmEmailCardFallback from "./ConfirmEmailCardFallback";
 import { toast } from "sonner";
 import EmailErrorVerificationCard from "./EmailErrorVerificationCard";

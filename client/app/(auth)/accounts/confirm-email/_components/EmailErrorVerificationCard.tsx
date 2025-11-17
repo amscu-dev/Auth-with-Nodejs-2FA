@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { HiViewGridAdd } from "react-icons/hi";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import { TbMailX } from "react-icons/tb";
-import client from "@/api/index";
+import client from "@/services/index";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RotatingLines } from "react-loader-spinner";

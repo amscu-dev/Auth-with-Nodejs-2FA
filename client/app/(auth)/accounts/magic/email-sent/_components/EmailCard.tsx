@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { HiViewGridAdd } from "react-icons/hi";
 import { IoIosArrowRoundForward } from "react-icons/io";
-import client from "@/api/index";
+import client from "@/services/index";
 import { toast } from "sonner";
 import { RotatingLines } from "react-loader-spinner";
 import { FaCheckCircle } from "react-icons/fa";

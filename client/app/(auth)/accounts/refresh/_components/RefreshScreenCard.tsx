@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
-import client from "@/api/index";
+import client from "@/services/index";
 import RefreshScreenLoader from "./RefreshScreenLoader";
 import { toast } from "sonner";
 

@@ -19,7 +19,7 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { HiViewGridAdd } from "react-icons/hi";
 import { FaUserShield } from "react-icons/fa";
 import z from "zod";
-import client from "@/api/index";
+import client from "@/services/index";
 import { RotatingLines } from "react-loader-spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";

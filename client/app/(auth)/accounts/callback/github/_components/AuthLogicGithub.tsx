@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
-import client from "@/api/index";
+import client from "@/services/index";
 import { toast } from "sonner";
 import GithubFallback from "./GithubFallback";
 import { env } from "@/env";

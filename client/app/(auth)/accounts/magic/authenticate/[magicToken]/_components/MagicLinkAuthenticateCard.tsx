@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import MagicLinkAuthenticateFallback from "./MagicLinkAuthenticateFallback";
-import client from "@/api/index";
+import client from "@/services/index";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { env } from "@/env";

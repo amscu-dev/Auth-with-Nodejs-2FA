@@ -1,10 +1,10 @@
 "use client";
 import React, { createContext, useContext } from "react";
-import client from "@/api/index";
+import client from "@/services/index";
 import {
   GetCurrentSessionSuccessResponse,
   UserData,
-} from "@/api/client/client.schemas";
+} from "@/services/client/client.schemas";
 import { AxiosErrorRes } from "@/config/axios.config";
 import {
   QueryObserverResult,

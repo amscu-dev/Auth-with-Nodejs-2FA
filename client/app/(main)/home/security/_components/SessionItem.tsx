@@ -6,7 +6,7 @@ import { FaBrave } from "react-icons/fa6";
 import { FaEdge } from "react-icons/fa";
 import { CgBrowser } from "react-icons/cg";
 import { Button } from "@/components/ui/button";
-import client from "@/api/index";
+import client from "@/services/index";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";

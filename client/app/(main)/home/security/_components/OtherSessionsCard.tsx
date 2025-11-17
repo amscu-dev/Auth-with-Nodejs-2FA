@@ -1,6 +1,6 @@
 import React from "react";
 import SessionItem from "./SessionItem";
-import client from "@/api/index";
+import client from "@/services/index";
 import SessionItemSkeleton from "./SessionItemSkeleton";
 import {
   Empty,

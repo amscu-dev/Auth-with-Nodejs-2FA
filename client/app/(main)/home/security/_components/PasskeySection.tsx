@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { GoPasskeyFill } from "react-icons/go";
-import client from "@/api/index";
+import client from "@/services/index";
 import { useAuthContext } from "@/context/auth-provider";
 import PasskeysNotFoundCard from "./PasskeysNotFoundCard";
 import PasskeyItem from "./PasskeyItem";

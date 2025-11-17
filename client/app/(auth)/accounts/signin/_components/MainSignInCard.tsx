@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import client from "@/api/index";
+import client from "@/services/index";
 import z from "zod";
 import {
   Card,

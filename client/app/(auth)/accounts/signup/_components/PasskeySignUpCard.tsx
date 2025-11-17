@@ -21,7 +21,7 @@ import { HiViewGridAdd } from "react-icons/hi";
 import z from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import client from "@/api/index";
+import client from "@/services/index";
 import { ErrorCode } from "@/types/enums/error-code.enum";
 import { startRegistration, WebAuthnError } from "@simplewebauthn/browser";
 import { toast } from "sonner";
