@@ -5,7 +5,11 @@ import { HTTPSTATUS } from "@/config/http.config";
 import { MfaRequestSchema } from "@/validators/mfa.validator";
 import { ApiResponse } from "@/common/utils/ApiSuccessReponse";
 import LOGIN from "@/common/enums/login-codes";
-import { MFA_PATH, setAuthenticationCookies } from "@/common/utils/cookie";
+import {
+  clearMFACookie,
+  MFA_PATH,
+  setAuthenticationCookies,
+} from "@/common/utils/cookie";
 
 export class MfaController {
   private mfaService: MfaService;
@@ -133,13 +137,10 @@ export class MfaController {
 
       // ! 03. Return authenticated user
       return setAuthenticationCookies({
-        res,
+        res: clearMFACookie(res),
         accessToken,
         refreshToken,
       })
-        .clearCookie("mfaToken", {
-          path: MFA_PATH,
-        })
         .status(HTTPSTATUS.OK)
         .json(
           new ApiResponse({
@@ -166,13 +167,10 @@ export class MfaController {
 
       // ! 03. Return authenticated user
       return setAuthenticationCookies({
-        res,
+        res: clearMFACookie(res),
         accessToken,
         refreshToken,
       })
-        .clearCookie("mfaToken", {
-          path: MFA_PATH,
-        })
         .status(HTTPSTATUS.OK)
         .json(
           new ApiResponse({
@@ -199,11 +197,8 @@ export class MfaController {
       await this.mfaService.verifyMFAForChangingPassword(code, req);
 
       // ! 03. Return data
-      return res
+      return clearMFACookie(res)
         .status(HTTPSTATUS.OK)
-        .clearCookie("mfaToken", {
-          path: MFA_PATH,
-        })
         .json(
           new ApiResponse({
             success: true,

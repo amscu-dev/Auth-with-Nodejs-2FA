@@ -69,7 +69,43 @@ export const setAuthenticationCookies = ({
     .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
     .cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
 
-export const clearAuthenticationCookies = (res: Response): Response =>
-  res.clearCookie("accessToken").clearCookie("refreshToken", {
+export const clearAuthenticationCookies = (res: Response): Response => {
+  const isProd = process.env.NODE_ENV === "production";
+
+  const accessCookieOptions: CookieOptions = {
+    path: "/",
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "strict" : "lax",
+    domain: isProd ? ".loginsandbox.xyz" : undefined,
+    expires: new Date(0), // 1970
+  };
+
+  const refreshCookieOptions: CookieOptions = {
     path: REFRESH_PATH,
-  });
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "strict" : "lax",
+    domain: isProd ? ".loginsandbox.xyz" : undefined,
+    expires: new Date(0),
+  };
+
+  return res
+    .clearCookie("accessToken", accessCookieOptions)
+    .clearCookie("refreshToken", refreshCookieOptions);
+};
+
+export const clearMFACookie = (res: Response): Response => {
+  const isProd = process.env.NODE_ENV === "production";
+
+  const mfaCookieOptions: CookieOptions = {
+    path: MFA_PATH,
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "strict" : "lax",
+    domain: isProd ? ".loginsandbox.xyz" : undefined,
+    expires: new Date(0), // invalidate cookie instantly
+  };
+
+  return res.clearCookie("mfaToken", mfaCookieOptions);
+};
