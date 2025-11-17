@@ -12,7 +12,7 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0
   version: 1.0.0
 servers:
-  - url: https://accounts.authportal.com/api/v1
+  - url: https://api.loginsandbox.xyz/v1/accounts
     description: Production Server
 paths:
   /auth/signup:

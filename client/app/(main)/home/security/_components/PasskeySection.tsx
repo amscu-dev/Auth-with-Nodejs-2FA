@@ -6,6 +6,7 @@ import { useAuthContext } from "@/context/auth-provider";
 import PasskeysNotFoundCard from "./PasskeysNotFoundCard";
 import PasskeyItem from "./PasskeyItem";
 import { Skeleton } from "@/components/ui/skeleton";
+import PasskeyAddButton from "./PasskeyAddButton";
 interface PasskeySectionProps {}
 
 const PasskeySection: React.FC<PasskeySectionProps> = () => {
@@ -20,9 +21,15 @@ const PasskeySection: React.FC<PasskeySectionProps> = () => {
   const userHasPasskeys = passkeys.length > 0;
   return (
     <div className="flex flex-col overflow-y-auto w-full flex-1 gap-4">
-      <div className="flex items-center justify-start gap-2">
+      <div className="flex items-center justify-start gap-2 w-3/5">
         <GoPasskeyFill className="text-muted-foreground/90" />
         <h1 className="text-base font-semibold">Passkey (Biometrics)</h1>
+        {userHasPasskeys ? (
+          <PasskeyAddButton
+            buttonClass="w-24 ml-auto"
+            refetchPasskeys={refetch}
+          />
+        ) : null}
       </div>
       {isLoading ? (
         <div className="flex flex-col gap-6">
