@@ -54,10 +54,10 @@ const nextConfig = {
                 ? "max-age=63072000; includeSubDomains; preload"
                 : "",
           },
-          // {
-          //   key: "Content-Security-Policy",
-          //   value: cspHeader.replace(/\n/g, ""),
-          // },
+          {
+            key: "Content-Security-Policy",
+            value: cspHeader.replace(/\n/g, ""),
+          },
         ],
       },
     ];
