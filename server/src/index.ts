@@ -35,10 +35,12 @@ import passkeyRoutes from "./modules/passkey/passkey.routes";
 import addRequestHeaders from "./middlewares/addHeaders";
 import addInfoAsyncLocalStorage from "./middlewares/addInfoAsyncLocalStorage";
 import { requestLogger } from "./middlewares/loggMiddleware";
+import helmet from "helmet";
 
 // ! Initialize app
 const app = express();
 
+app.use(helmet());
 // ! Library Middlewares
 app.use(express.json());
 app.use(cors({ credentials: true, origin: config.FRONTEND_ORIGIN }));
