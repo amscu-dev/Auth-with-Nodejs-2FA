@@ -148,7 +148,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Google for authentication…");
-          window.location.href = data.data.url;
+          router.replace(data.data.url);
         }
       },
     });
@@ -167,7 +167,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Github for authentication…");
-          window.location.href = data.data.url;
+          router.replace(data.data.url);
         }
       },
     });

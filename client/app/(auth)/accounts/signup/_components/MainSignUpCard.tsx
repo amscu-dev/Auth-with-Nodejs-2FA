@@ -27,6 +27,7 @@ import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { AuthRequestSchema } from "@/schemas/auth.validator";
+import { useRouter } from "next/navigation";
 
 interface MainSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
@@ -37,6 +38,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
   handleSignUpMethod,
   handleEmailAddress,
 }) => {
+  const router = useRouter();
   const form = useForm<z.infer<typeof AuthRequestSchema.checkEmail>>({
     resolver: zodResolver(AuthRequestSchema.checkEmail),
     defaultValues: {
@@ -73,7 +75,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Google for authentication…");
-          window.location.href = data.data.url;
+          router.replace(data.data.url);
         }
       },
     });
@@ -90,7 +92,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Github for authentication…");
-          window.location.href = data.data.url;
+          router.replace(data.data.url);
         }
       },
     });
