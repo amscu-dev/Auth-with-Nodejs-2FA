@@ -56,6 +56,7 @@ export default function addInfoAsyncLocalStorage(
   const currentRequestIpGeolocaion = getGeolocationForIp(
     req.headers["x-forwarded-for"]
   );
+
   const currentRequestUserAgent = getParsedUserAgent(req.headers["user-agent"]);
 
   // LOAD DATA INTO ASYNC STORAGE

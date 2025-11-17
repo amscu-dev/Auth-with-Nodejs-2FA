@@ -7,7 +7,6 @@ process.on("uncaughtException", (err: any) => {
 process.on("unhandledRejection", (err: any) => {
   console.error(err?.name, err?.message);
   console.log("Unhandled Promise Rejection! 📛 Shutting down...");
-  // server încă nu există aici dacă îl definești după importuri
   server?.close(() => {
     process.exit(1);
   });
@@ -40,10 +39,6 @@ import { requestLogger } from "./middlewares/loggMiddleware";
 // ! Initialize app
 const app = express();
 
-app.use((req, res, next) => {
-  console.log("CORS MADE IT HERE");
-  next();
-});
 // ! Library Middlewares
 app.use(express.json());
 app.use(cors({ credentials: true, origin: config.FRONTEND_ORIGIN }));
@@ -60,7 +55,7 @@ app.use(requestLogger);
 // ! Health endpoint
 app.get("/health", (req: Request, res: Response) => {
   res.status(HTTPSTATUS.OK).json({
-    message: "OK",
+    "System-Health": "Good",
   });
 });
 
