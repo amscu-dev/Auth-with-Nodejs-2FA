@@ -97,7 +97,8 @@ process.on("unhandledRejection", (err: any) => {
 // ! Start server and DB
 const startServer = async () => {
   await connectDatabase();
-  server = app.listen(config.PORT, () => {
+  const PORT = Number(config.PORT) || 8000;
+  server = app.listen(PORT, "0.0.0.0", () => {
     console.log(
       `Server listening on port ${config.PORT} in ${config.NODE_ENV}`
     );
