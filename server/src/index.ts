@@ -1,17 +1,3 @@
-process.on("uncaughtException", (err: any) => {
-  console.log("Uncaught Exceptions! 📛 Shutting down...");
-  console.error(err.name, err.message);
-  process.exit(1);
-});
-
-process.on("unhandledRejection", (err: any) => {
-  console.error(err?.name, err?.message);
-  console.log("Unhandled Promise Rejection! 📛 Shutting down...");
-  server?.close(() => {
-    process.exit(1);
-  });
-});
-
 import "module-alias/register";
 import "dotenv/config";
 import cors from "cors";
@@ -86,8 +72,41 @@ app.all("{*splat}", (req, res, next) => {
 // ! Global error handler
 app.use(GlobalErrorHandler);
 
-// ! Start Server
-const server = app.listen(config.PORT, async () => {
-  console.log(`Server listening on port ${config.PORT} in ${config.NODE_ENV}`);
-  await connectDatabase();
+// ! Server reference
+let server: ReturnType<typeof app.listen> | undefined;
+
+// ! Error handling
+process.on("uncaughtException", (err: any) => {
+  console.error("Uncaught Exception! 📛 Shutting down...");
+  console.error(err.name, err.message);
+  process.exit(1);
 });
+
+process.on("unhandledRejection", (err: any) => {
+  console.error("Unhandled Promise Rejection! 📛 Shutting down...");
+  console.error(err?.name, err?.message);
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  } else {
+    process.exit(1);
+  }
+});
+
+// ! Start server and DB
+const startServer = async () => {
+  await connectDatabase();
+  server = app.listen(config.PORT, () => {
+    console.log(
+      `Server listening on port ${config.PORT} in ${config.NODE_ENV}`
+    );
+  });
+};
+
+if (config.NODE_ENV !== "production") {
+  startServer();
+}
+
+// vercel export
+export default app;
