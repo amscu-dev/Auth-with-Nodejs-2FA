@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaGoogle } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa";
@@ -27,7 +27,6 @@ import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { AuthRequestSchema } from "@/schemas/auth.validator";
-import { useRouter } from "next/navigation";
 
 interface MainSignUpCardProps {
   handleSignUpMethod: (method: string) => void;
@@ -38,7 +37,6 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
   handleSignUpMethod,
   handleEmailAddress,
 }) => {
-  const router = useRouter();
   const form = useForm<z.infer<typeof AuthRequestSchema.checkEmail>>({
     resolver: zodResolver(AuthRequestSchema.checkEmail),
     defaultValues: {
@@ -56,7 +54,16 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
 
   const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
   const refInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    };
 
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
   const disable =
     isPendingGithubAuth ||
     isPendingGoogleAuth ||
@@ -75,7 +82,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Google for authentication…");
-          router.replace(data.data.url);
+          window.location.href = data.data.url;
         }
       },
     });
@@ -92,7 +99,7 @@ const MainSignUpCard: React.FC<MainSignUpCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Github for authentication…");
-          router.replace(data.data.url);
+          window.location.href = data.data.url;
         }
       },
     });

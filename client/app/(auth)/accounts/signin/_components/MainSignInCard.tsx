@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import client from "@/services/index";
 import z from "zod";
@@ -69,6 +69,17 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
     },
     mode: "onTouched",
   });
+
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   // DISABLE STATE
   const disabled =
@@ -148,7 +159,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Google for authentication…");
-          router.replace(data.data.url);
+          window.location.href = data.data.url;
         }
       },
     });
@@ -167,7 +178,7 @@ const MainSignInCard: React.FC<MainSignInCardProps> = ({
         if (data.data.url) {
           setIsRedirecting(true);
           toast.loading("You will be redirected to Github for authentication…");
-          router.replace(data.data.url);
+          window.location.href = data.data.url;
         }
       },
     });

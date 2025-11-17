@@ -103,6 +103,8 @@ const startServer = async () => {
       `Server listening on port ${config.PORT} in ${config.NODE_ENV}`
     );
   });
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 120000;
 };
 
 startServer();
