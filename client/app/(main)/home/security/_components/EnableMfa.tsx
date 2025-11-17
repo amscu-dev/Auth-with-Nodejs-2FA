@@ -65,7 +65,7 @@ const EnableMfa: React.FC<EnableMfaProps> = () => {
   const disabledState = isPendingMfaVerifySetup || isMfaEnabled;
   const handleEnableMfa = async () => {
     await enableMfa(undefined, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         setOpen(true);
       },
     });
