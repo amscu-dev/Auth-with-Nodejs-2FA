@@ -104,9 +104,4 @@ const startServer = async () => {
   });
 };
 
-if (config.NODE_ENV !== "production") {
-  startServer();
-}
-
-// vercel export
-export default app;
+startServer();
