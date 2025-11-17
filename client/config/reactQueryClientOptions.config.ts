@@ -20,7 +20,6 @@ const queryClientConfig: QueryClientConfig = {
   queryCache: new QueryCache({
     // onError from the QueryCache is called only once when a query completely fails — meaning after all retries have been exhausted, not on each individual retry attempt.
     onError: (error) => {
-      console.log(error);
       if (isAxiosError<ErrorRes>(error)) {
         const msg = error.response?.data.message || error.message;
         toast.error(`${msg}`);

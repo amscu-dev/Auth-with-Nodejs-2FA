@@ -24,7 +24,6 @@ const MagicLinkAuthenticateCard: React.FC<
   // VALIDATION LOGIC
   useEffect(() => {
     if (!magicToken) {
-      console.log("Se ruleaza !magictoken, valoare token:", magicToken);
       toast.error(
         "We couldn’t find your magic token. Please open the login link from your email again."
       );
@@ -35,7 +34,6 @@ const MagicLinkAuthenticateCard: React.FC<
     }
 
     const handleAuthentication = async () => {
-      console.log("Se ruleaza handleAuthentication");
       await authenticateToken(
         { token: magicToken },
         {

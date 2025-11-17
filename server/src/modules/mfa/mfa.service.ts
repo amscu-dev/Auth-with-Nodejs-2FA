@@ -390,7 +390,7 @@ export class MfaService {
     // ! 01. Extract user from req as we already verified that user exists in JWT middleware so ex can safetly assert it
     const currentUser = req.user as Express.User;
     const { reqMfaSessionId } = getInfoFromAsyncLocalStorage();
-    console.log(reqMfaSessionId);
+
     if (!currentUser) {
       throw new NotFoundException("User not found.");
     }

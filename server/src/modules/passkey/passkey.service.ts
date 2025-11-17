@@ -620,7 +620,7 @@ export default class PasskeyService {
       challenge: publicKeyCredentialRequestOptions.challenge,
       passkeyChallengeSessionPurpose: "delete-key",
     });
-    console.log(publicKeyCredentialRequestOptions.challenge);
+
     return publicKeyCredentialRequestOptions;
   }
 
@@ -662,7 +662,7 @@ export default class PasskeyService {
         decodeBase64(authenticationResponse.response.clientDataJSON, "utf8")
       )
     );
-    console.log(challenge);
+
     // ! 04. Find session challenge
     const challengeSession = await PasskeyChallengeSessionModel.findOne({
       challenge: challenge,

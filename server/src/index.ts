@@ -73,7 +73,6 @@ app.use(`${config.BASE_PATH}/passkey`, passkeyRoutes);
 
 // ! Catch-all routes
 app.all("{*splat}", (req, res, next) => {
-  console.log(req.originalUrl);
   next(
     new NotFoundException(
       `Can't find ${req.originalUrl} on this server!`,

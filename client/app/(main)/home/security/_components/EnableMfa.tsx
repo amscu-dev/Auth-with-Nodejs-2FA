@@ -67,7 +67,6 @@ const EnableMfa: React.FC<EnableMfaProps> = () => {
     await enableMfa(undefined, {
       onSuccess: (data) => {
         setOpen(true);
-        console.log(data);
       },
     });
   };
