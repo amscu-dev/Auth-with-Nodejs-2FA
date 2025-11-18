@@ -14,8 +14,8 @@ interface MFACookiePayloadType {
   mfaToken: string;
 }
 
-export const REFRESH_PATH = `${config.BASE_PATH}/auth/refresh`;
-export const MFA_PATH = `${config.BASE_PATH}/mfa`;
+export const REFRESH_PATH = `v1/accounts/auth/refresh`;
+export const MFA_PATH = `v1/accounts//mfa`;
 
 const defaults: CookieOptions = {
   httpOnly: true,
