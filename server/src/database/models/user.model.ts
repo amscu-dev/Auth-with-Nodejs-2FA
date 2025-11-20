@@ -35,7 +35,7 @@ export interface UserDocument extends Document {
 const userSchema = new Schema<UserDocument>(
   {
     name: { type: String, required: true },
-    email: { type: String, unique: true, required: true },
+    email: { type: String, required: true, lowercase: true },
     password: { type: String, required: true },
     oldPassword: { type: [String], required: false, default: [] },
     isEmailVerified: { type: Boolean, default: false },
@@ -67,6 +67,12 @@ const userSchema = new Schema<UserDocument>(
     toJSON: {},
   }
 );
+
+userSchema.index(
+  { email: 1 },
+  { unique: true, collation: { locale: "en", strength: 2 } }
+);
+
 // ! SHOULD BE FIRST MIDDLEWARE
 userSchema.plugin(executionTimePlugin);
 // ! User Document Middleware ~ Runs on Doc before .save()
